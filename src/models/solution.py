@@ -15,6 +15,7 @@ class SolutionStatus(Enum):
     SYNTAX_ERROR = "syntax_error"  # Failed to parse
     RUNTIME_ERROR = "runtime_error"  # Crashed during execution
     TEST_FAILED = "test_failed"  # Tests failed
+    TIMEOUT = "timeout"          # Execution timed out
     PASSED = "passed"            # All tests passed
 
 

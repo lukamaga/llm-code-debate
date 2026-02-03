@@ -662,15 +662,32 @@ class DebateOrchestrator:
         return None
     
     def _find_best_solution(self, solutions: list[Solution]) -> Solution | None:
-        """Find the best solution based on test results and votes."""
+        """Find the best solution based on test results, code quality, and votes."""
         if not solutions:
             return None
-        
-        # Sort by: 1) tests passed (desc), 2) pass rate (desc), 3) votes (desc)
+
         def score(s: Solution) -> tuple:
-            tests_passed = s.execution_result.tests_passed if s.execution_result else 0
+            # 1. Test pass rate (most important)
             pass_rate = s.pass_rate
+
+            # 2. Code quality metrics
+            pylint_score = 0.0
+            complexity_penalty = 0.0
+            maintainability = 0.0
+
+            if s.quality_metrics:
+                pylint_score = s.quality_metrics.pylint_score / 10.0  # Normalize to 0-1
+                # Lower complexity is better, invert and normalize
+                complexity_penalty = max(0, 1 - (s.quality_metrics.cyclomatic_complexity / 20.0))
+                maintainability = s.quality_metrics.maintainability_index / 100.0  # Normalize to 0-1
+
+            # 3. Votes received
             votes = s.votes_received
-            return (tests_passed, pass_rate, votes)
-        
+
+            # Combined score: tests (50%) + quality (30%) + votes (20%)
+            quality_score = (pylint_score + complexity_penalty + maintainability) / 3
+
+            # Return tuple for comparison (higher is better for all)
+            return (pass_rate, quality_score, votes)
+
         return max(solutions, key=score)

@@ -17,6 +17,7 @@ class ConsensusConfig:
     min_votes: int = 2      # Minimum votes to declare consensus
     weight_by_confidence: bool = True  # Weight votes by confidence
     prefer_passing: bool = True  # Prefer solutions that pass tests
+    min_pass_rate: float = 0.5  # Minimum pass rate to declare consensus (50%)
 
 
 class ConsensusDetector:
@@ -78,13 +79,20 @@ class ConsensusDetector:
                 reason="No valid votes for solutions",
             )
 
-        # Apply bonus for passing solutions
+        # Apply bonus for passing solutions and code quality
         if self.config.prefer_passing:
             sol_map = {s.id: s for s in solutions}
             for sol_id in vote_counts:
                 sol = sol_map.get(sol_id)
-                if sol and sol.execution_result and sol.execution_result.all_passed:
-                    vote_counts[sol_id] *= 1.5  # 50% bonus for passing all tests
+                if sol:
+                    # Bonus for passing tests
+                    if sol.execution_result and sol.execution_result.all_passed:
+                        vote_counts[sol_id] *= 1.5  # 50% bonus for passing all tests
+
+                    # Bonus for code quality (Pylint score)
+                    if sol.quality_metrics:
+                        pylint_bonus = sol.quality_metrics.pylint_score / 10.0  # 0-1
+                        vote_counts[sol_id] *= (1 + pylint_bonus * 0.2)  # Up to 20% bonus
 
         # Find winner
         total_weight = sum(vote_counts.values())
@@ -94,14 +102,31 @@ class ConsensusDetector:
 
         # Check threshold
         ratio = winner_weight / total_weight if total_weight > 0 else 0
-        reached = (ratio >= self.config.threshold and winner_raw >= self.config.min_votes)
 
-        # Find winning agent
+        # Find winning solution and agent
+        winner_solution = None
         winning_agent_id = None
         for sol in solutions:
             if sol.id == winner_id:
+                winner_solution = sol
                 winning_agent_id = sol.agent_id
                 break
+
+        # Check if winning solution meets minimum pass rate
+        winner_pass_rate = 0.0
+        if winner_solution and winner_solution.execution_result:
+            winner_pass_rate = winner_solution.pass_rate
+
+        # Consensus requires: threshold met AND min votes AND acceptable pass rate
+        reached = (
+            ratio >= self.config.threshold and
+            winner_raw >= self.config.min_votes and
+            winner_pass_rate >= self.config.min_pass_rate
+        )
+
+        reason = f"Consensus {'reached' if reached else 'not reached'}: {ratio:.1%} agreement"
+        if not reached and winner_pass_rate < self.config.min_pass_rate:
+            reason = f"No consensus: pass rate {winner_pass_rate:.0%} < {self.config.min_pass_rate:.0%} required"
 
         return ConsensusResult(
             reached=reached,
@@ -110,7 +135,7 @@ class ConsensusDetector:
             consensus_ratio=ratio,
             vote_distribution=raw_counts,
             round_num=round_num,
-            reason=f"Consensus {'reached' if reached else 'not reached'}: {ratio:.1%} agreement",
+            reason=reason,
         )
 
     def check_perfect_solution(self, solutions: list["Solution"]) -> "Solution | None":

@@ -776,18 +776,35 @@
             }
 
             if (data.winning_agent) {
-                const c = document.querySelector('[data-agent="' + data.winning_agent + '"]');
-                if (c) c.classList.add('winner');
+                // Mark winner only in the LAST round block
+                const allCards = document.querySelectorAll('[data-agent="' + data.winning_agent + '"]');
+                if (allCards.length > 0) {
+                    const lastCard = allCards[allCards.length - 1];
+                    lastCard.classList.add('winner');
+                }
             }
 
             showResults(data);
         });
 
         socket.on('debate_stopped', (data) => {
+            // Reset buttons
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('stopBtn').style.display = 'none';
+
+            // Reset status
             document.getElementById('roundStatus').textContent = 'Stopped';
             document.getElementById('phaseBadge').classList.remove('active');
+            document.getElementById('phaseBadge').textContent = '';
+
+            // Reset agent cards
             document.querySelectorAll('.agent-card').forEach(c => {
                 c.classList.remove('thinking');
+                const status = c.querySelector('.agent-status');
+                if (status) {
+                    status.textContent = '';
+                    status.classList.remove('active');
+                }
             });
         });
 
