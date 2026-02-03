@@ -13,6 +13,7 @@ import asyncio
 import json
 import logging
 import os
+import sys
 import uuid
 from pathlib import Path
 from threading import Thread, Event
@@ -27,7 +28,14 @@ from ..llm import MultiModelClient
 from ..models import AgentConfig, AgentMessage, DebateConfig, RoundSummary, Task
 from ..analysis import MetricsCollector, DebateVisualizer
 
+# Configure logging to show in console
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 # Create Flask app
 app = Flask(__name__, 
@@ -36,7 +44,7 @@ app = Flask(__name__,
 )
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'debate-secret-key-change-in-production')
 
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # Global instances
 repository: DebateRepository | None = None
@@ -172,6 +180,7 @@ def get_stats():
 @socketio.on('connect')
 def handle_connect():
     """Handle client connection."""
+    print("[DEBUG] Client connected via WebSocket")
     logger.info("Client connected")
     emit('connected', {'status': 'connected'})
 
@@ -186,25 +195,33 @@ def handle_disconnect():
 def handle_start_debate(data: dict):
     """Start a new debate."""
     global current_debate_thread
-    
+
+    print(f"[DEBUG] start_debate received: {data}")
+    logger.info(f"start_debate event received: {data}")
+
     if not llm_client:
+        print("[DEBUG] LLM client not initialized!")
         emit('error', {'message': 'LLM client not initialized'})
         return
-    
+
     # Parse request
     task_path = data.get('task_path')
     agent_models = data.get('agents', ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b'])
     max_rounds = data.get('max_rounds', 5)
-    
+
+    print(f"[DEBUG] task_path={task_path}, agents={agent_models}, max_rounds={max_rounds}")
+
     # Load task
     try:
         with open(task_path) as f:
             task_data = json.load(f)
         task = Task.from_dict(task_data)
+        print(f"[DEBUG] Task loaded: {task.name}")
     except Exception as e:
+        print(f"[DEBUG] Failed to load task: {e}")
         emit('error', {'message': f'Failed to load task: {e}'})
         return
-    
+
     # Create agent configs
     agent_configs = [
         AgentConfig(name=f"agent_{i+1}", model=model)
