@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Code Debate</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #ffffff;
+            --bg2: #f7f7f8;
+            --bg3: #efefef;
+            --text: #111111;
+            --text2: #555555;
+            --text3: #999999;
+            --border: #e0e0e0;
+            --border2: #ccc;
+            --accent: #111111;
+            --accent-light: #f0f0f0;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --blue: #3b82f6;
+            --radius: 8px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg2);
+            color: var(--text);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        header {
+            padding: 14px 28px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.5px;
+        }
+
+        .logo span { color: var(--text3); font-weight: 400; }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text3);
+        }
+
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--red);
+            transition: background 0.3s;
+        }
+
+        .status-dot.connected { background: var(--green); }
+
+        /* Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            gap: 0;
+            min-height: calc(100vh - 53px);
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+            border-right: 1px solid var(--border);
+        }
+
+        .panel:last-child { border-right: none; border-left: 1px solid var(--border); }
+
+        .panel-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text3);
+        }
+
+        .panel-body {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .arena-panel {
+            background: var(--bg2);
+            border-right: none;
+        }
+
+        /* Form Fields */
+        .field { margin-bottom: 20px; }
+
+        .field-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text2);
+            margin-bottom: 8px;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+        }
+
+        /* Agent Cards (config) */
+        .agent-cards { display: flex; flex-direction: column; gap: 6px; }
+
+        .agent-chip {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text);
+        }
+
+        .agent-chip .x {
+            cursor: pointer;
+            color: var(--text3);
+            font-size: 18px;
+            line-height: 1;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.15s;
+        }
+
+        .agent-chip .x:hover { background: var(--bg3); color: var(--red); }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-start {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-start:hover { background: #333; }
+        .btn-start:active { transform: scale(0.98); }
+
+        .btn-stop {
+            background: white;
+            color: var(--red);
+            border: 1px solid var(--red);
+            margin-top: 8px;
+        }
+
+        .btn-stop:hover { background: var(--red); color: white; }
+
+        .btn-close {
+            background: var(--bg2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            margin-top: 16px;
+        }
+
+        .btn-close:hover { background: var(--bg3); }
+
+        /* Arena */
+        .round-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .round-num {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            min-width: 40px;
+        }
+
+        .round-info { font-size: 13px; color: var(--text3); }
+        .round-info strong { color: var(--text); font-weight: 600; }
+
+        .phase-badge {
+            margin-left: auto;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--accent-light);
+            color: var(--text2);
+            display: none;
+        }
+
+        .phase-badge.active { display: inline-block; }
+        .phase-badge.propose { background: #dbeafe; color: #1d4ed8; }
+        .phase-badge.critique { background: #fef3c7; color: #92400e; }
+        .phase-badge.revise { background: #d1fae5; color: #065f46; }
+        .phase-badge.vote { background: #ede9fe; color: #5b21b6; }
+
+        /* Debate Timeline */
+        .timeline { display: flex; flex-direction: column; gap: 16px; }
+
+        .timeline-round {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .timeline-round-header {
+            padding: 12px 16px;
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timeline-round-header .pass-rate {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .timeline-agents {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1px;
+            background: var(--border);
+        }
+
+        .agent-card {
+            background: var(--bg);
+            padding: 16px;
+            transition: all 0.3s;
+        }
+
+        .agent-card.thinking {
+            background: linear-gradient(90deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .agent-card.winner { background: #f0fdf4; }
+
+        .agent-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .agent-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .agent-avatar.a1 { background: #111; }
+        .agent-avatar.a2 { background: #6366f1; }
+        .agent-avatar.a3 { background: #0891b2; }
+        .agent-avatar.a4 { background: #be185d; }
+
+        .agent-name { font-size: 13px; font-weight: 600; }
+        .agent-model { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+
+        .agent-status {
+            font-size: 11px;
+            color: var(--text3);
+            margin-bottom: 8px;
+            min-height: 16px;
+        }
+
+        .agent-status.active { color: var(--blue); }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--bg3);
+            border-radius: 2px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--green);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 2px;
+        }
+
+        .progress-fill.low { background: var(--red); }
+        .progress-fill.mid { background: var(--yellow); }
+
+        .agent-stats {
+            display: flex;
+            gap: 12px;
+        }
+
+        .stat {
+            font-size: 12px;
+            color: var(--text3);
+        }
+
+        .stat strong {
+            color: var(--text);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Placeholder */
+        .placeholder {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text3);
+            font-size: 14px;
+        }
+
+        .placeholder-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        /* Final Code */
+        .final-code {
+            margin-top: 20px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            display: none;
+            box-shadow: var(--shadow);
+        }
+
+        .final-code-header {
+            padding: 10px 16px;
+            background: var(--accent);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .final-code pre {
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.7;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Activity Feed */
+        .activity { max-height: calc(100vh - 100px); overflow-y: auto; }
+
+        .activity-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            animation: fadeIn 0.2s;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+        .activity-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .activity-agent { font-size: 12px; font-weight: 600; color: var(--text); }
+
+        .activity-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .activity-tag.proposal { background: #dbeafe; color: #1d4ed8; }
+        .activity-tag.critique { background: #fef3c7; color: #92400e; }
+        .activity-tag.revision { background: #d1fae5; color: #065f46; }
+        .activity-tag.vote { background: #ede9fe; color: #5b21b6; }
+
+        .activity-text {
+            font-size: 12px;
+            color: var(--text3);
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 60px;
+            overflow: hidden;
+            line-height: 1.5;
+        }
+
+        /* Phase event in activity */
+        .activity-phase {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text3);
+            text-align: center;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-box {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 28px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .result-box {
+            padding: 20px;
+            background: var(--bg2);
+            text-align: center;
+            border-radius: var(--radius);
+        }
+
+        .result-val {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .result-val.success { color: var(--green); }
+
+        .result-lbl {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text3);
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container { grid-template-columns: 260px 1fr; }
+            .right-panel { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Code Debate <span>v1.0</span></div>
+        <div class="status">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">connecting...</span>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Config Panel -->
+        <div class="panel">
+            <div class="panel-header">Configuration</div>
+            <div class="panel-body">
+                <div class="field">
+                    <div class="field-label">Task</div>
+                    <select id="taskSelect">
+                        <option value="">Select a task...</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <div class="field-label">Max Rounds</div>
+                    <input type="number" id="maxRounds" value="5" min="2" max="10">
+                </div>
+
+                <div class="field">
+                    <div class="field-label">Agents</div>
+                    <div class="agent-cards" id="agentList">
+                        <div class="agent-chip">qwen2.5-coder:7b<span class="x" onclick="removeAgent(this)">&times;</span></div>
+                        <div class="agent-chip">deepseek-coder:6.7b<span class="x" onclick="removeAgent(this)">&times;</span></div>
+                        <div class="agent-chip">codellama:7b<span class="x" onclick="removeAgent(this)">&times;</span></div>
+                    </div>
+                    <select id="addAgent" style="margin-top: 8px;">
+                        <option value="">+ Add agent...</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-start" id="startBtn" onclick="startDebate()">Start Debate</button>
+                <button class="btn btn-stop" id="stopBtn" onclick="stopDebate()" style="display:none;">Stop</button>
+            </div>
+        </div>
+
+        <!-- Arena -->
+        <div class="panel arena-panel">
+            <div class="panel-header">Arena</div>
+            <div class="panel-body">
+                <div class="round-bar">
+                    <div class="round-num" id="roundNum">-</div>
+                    <div class="round-info">
+                        <strong>Round</strong><br>
+                        <span id="roundStatus">Waiting to start...</span>
+                    </div>
+                    <div class="phase-badge" id="phaseBadge">propose</div>
+                </div>
+
+                <div class="timeline" id="timeline">
+                    <div class="placeholder">
+                        <div class="placeholder-icon">&#9672;</div>
+                        Select a task and press Start to begin the debate
+                    </div>
+                </div>
+
+                <div class="final-code" id="finalCode">
+                    <div class="final-code-header">
+                        <span>Final Solution</span>
+                        <span id="finalRate">-</span>
+                    </div>
+                    <pre id="finalCodePre"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="panel right-panel">
+            <div class="panel-header">Activity</div>
+            <div class="panel-body activity" id="activityFeed">
+                <div class="placeholder" style="padding: 40px 20px;">Waiting for events...</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Results Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-box">
+            <div class="modal-title">Debate Complete</div>
+            <div id="modalContent"></div>
+            <button class="btn btn-close" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let currentAgents = ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b'];
+        let agentData = {};
+        let currentRoundEl = null;
+
+        const avatarColors = ['a1','a2','a3','a4'];
+
+        // Connection
+        socket.on('connect', () => {
+            document.getElementById('statusDot').classList.add('connected');
+            document.getElementById('statusText').textContent = 'Online';
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('statusDot').classList.remove('connected');
+            document.getElementById('statusText').textContent = 'Offline';
+        });
+
+        // Phase events
+        socket.on('phase_start', (data) => {
+            const badge = document.getElementById('phaseBadge');
+            badge.className = 'phase-badge active ' + data.phase;
+            badge.textContent = data.phase;
+            document.getElementById('roundNum').textContent = data.round_num;
+
+            // Add phase marker to activity
+            addPhaseToActivity(data.phase, data.round_num);
+
+            // Set agent cards to thinking state
+            document.querySelectorAll('.agent-card').forEach(c => {
+                c.classList.add('thinking');
+                const status = c.querySelector('.agent-status');
+                if (status) {
+                    status.textContent = getPhaseLabel(data.phase);
+                    status.classList.add('active');
+                }
+            });
+        });
+
+        // Debate events
+        socket.on('debate_starting', (data) => {
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'block';
+            document.getElementById('roundStatus').textContent = 'Initializing...';
+            document.getElementById('timeline').innerHTML = '';
+            createRoundBlock(1);
+        });
+
+        socket.on('debate_started', (data) => {
+            document.getElementById('roundStatus').textContent = 'Debate running...';
+        });
+
+        socket.on('round_complete', (data) => {
+            document.getElementById('roundNum').textContent = data.round_num;
+            const bestPct = (data.best_pass_rate * 100).toFixed(0);
+            document.getElementById('roundStatus').textContent = 'Best: ' + bestPct + '%';
+
+            // Update round header pass rate
+            if (currentRoundEl) {
+                const rateEl = currentRoundEl.querySelector('.pass-rate');
+                if (rateEl) rateEl.textContent = bestPct + '% best';
+            }
+
+            // Update agent cards
+            data.solutions.forEach(sol => updateAgentCard(sol));
+
+            // Remove thinking state
+            document.querySelectorAll('.agent-card').forEach(c => {
+                c.classList.remove('thinking');
+                const status = c.querySelector('.agent-status');
+                if (status) { status.textContent = ''; status.classList.remove('active'); }
+            });
+
+            // Prepare next round block
+            if (data.round_num < parseInt(document.getElementById('maxRounds').value)) {
+                createRoundBlock(data.round_num + 1);
+            }
+
+            // Hide phase badge
+            document.getElementById('phaseBadge').classList.remove('active');
+        });
+
+        socket.on('agent_message', (data) => addActivity(data));
+
+        socket.on('debate_complete', (data) => {
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('stopBtn').style.display = 'none';
+            document.getElementById('roundStatus').textContent = 'Done \u2014 ' + data.status;
+            document.getElementById('phaseBadge').classList.remove('active');
+
+            // Remove thinking
+            document.querySelectorAll('.agent-card').forEach(c => {
+                c.classList.remove('thinking');
+                const status = c.querySelector('.agent-status');
+                if (status) { status.textContent = ''; status.classList.remove('active'); }
+            });
+
+            if (data.final_solution) {
+                const fc = document.getElementById('finalCode');
+                fc.style.display = 'block';
+                document.getElementById('finalCodePre').textContent = data.final_solution;
+                document.getElementById('finalRate').textContent =
+                    (data.final_pass_rate * 100).toFixed(1) + '%';
+            }
+
+            if (data.winning_agent) {
+                const c = document.querySelector('[data-agent="' + data.winning_agent + '"]');
+                if (c) c.classList.add('winner');
+            }
+
+            showResults(data);
+        });
+
+        socket.on('debate_stopped', (data) => {
+            document.getElementById('roundStatus').textContent = 'Stopped';
+            document.getElementById('phaseBadge').classList.remove('active');
+            document.querySelectorAll('.agent-card').forEach(c => {
+                c.classList.remove('thinking');
+            });
+        });
+
+        socket.on('debate_error', (data) => {
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('stopBtn').style.display = 'none';
+            document.getElementById('roundStatus').textContent = 'Error: ' + data.message;
+            document.getElementById('phaseBadge').classList.remove('active');
+        });
+
+        // Functions
+        function getPhaseLabel(phase) {
+            const labels = {propose: 'Proposing...', critique: 'Critiquing...', revise: 'Revising...', vote: 'Voting...'};
+            return labels[phase] || phase;
+        }
+
+        function createRoundBlock(roundNum) {
+            const timeline = document.getElementById('timeline');
+            const block = document.createElement('div');
+            block.className = 'timeline-round';
+            block.id = 'round-' + roundNum;
+
+            const icons = ['A','B','C','D','E','F'];
+            let agentsHtml = '';
+            currentAgents.forEach((model, i) => {
+                const id = 'agent_' + (i+1) + '_' + model.split(':')[0];
+                agentsHtml += `
+                    <div class="agent-card" data-agent="${id}">
+                        <div class="agent-top">
+                            <div class="agent-avatar ${avatarColors[i % avatarColors.length]}">${icons[i]}</div>
+                            <div>
+                                <div class="agent-name">Agent ${i+1}</div>
+                                <div class="agent-model">${model}</div>
+                            </div>
+                        </div>
+                        <div class="agent-status"></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+                        <div class="agent-stats">
+                            <div class="stat"><strong id="${id}-r${roundNum}-pass">0%</strong> pass</div>
+                            <div class="stat"><strong id="${id}-r${roundNum}-tests">0/0</strong> tests</div>
+                        </div>
+                    </div>`;
+            });
+
+            block.innerHTML = `
+                <div class="timeline-round-header">
+                    <span>Round ${roundNum}</span>
+                    <span class="pass-rate">-</span>
+                </div>
+                <div class="timeline-agents">${agentsHtml}</div>
+            `;
+
+            timeline.appendChild(block);
+            currentRoundEl = block;
+            block.scrollIntoView({behavior: 'smooth', block: 'end'});
+        }
+
+        function updateAgentCard(sol) {
+            // Update all cards for this agent in the latest round
+            const cards = document.querySelectorAll('[data-agent="' + sol.agent_id + '"]');
+            const card = cards[cards.length - 1]; // latest round
+            if (!card) return;
+
+            const er = sol.execution_result;
+            const rate = er ? (er.tests_passed / Math.max(er.tests_total, 1) * 100) : 0;
+
+            const fill = card.querySelector('.progress-fill');
+            fill.style.width = rate + '%';
+            fill.className = 'progress-fill' + (rate < 30 ? ' low' : rate < 70 ? ' mid' : '');
+
+            // Try to update stats in the round-specific elements
+            const roundNum = currentRoundEl ? currentRoundEl.id.replace('round-','') : '1';
+            const passEl = document.getElementById(sol.agent_id + '-r' + roundNum + '-pass');
+            const testsEl = document.getElementById(sol.agent_id + '-r' + roundNum + '-tests');
+            if (passEl) passEl.textContent = rate.toFixed(0) + '%';
+            if (testsEl && er) testsEl.textContent = er.tests_passed + '/' + er.tests_total;
+        }
+
+        function addPhaseToActivity(phase, roundNum) {
+            const feed = document.getElementById('activityFeed');
+            if (feed.querySelector('.placeholder')) feed.innerHTML = '';
+
+            const item = document.createElement('div');
+            item.className = 'activity-phase';
+            item.textContent = 'Round ' + roundNum + ' \u2014 ' + phase.toUpperCase();
+            feed.insertBefore(item, feed.firstChild);
+        }
+
+        function addActivity(data) {
+            const feed = document.getElementById('activityFeed');
+            if (feed.querySelector('.placeholder')) feed.innerHTML = '';
+
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `
+                <div class="activity-top">
+                    <span class="activity-agent">${esc(data.agent_id)}</span>
+                    <span class="activity-tag ${data.message_type}">${data.message_type}</span>
+                </div>
+                <div class="activity-text">${esc(data.content)}</div>
+            `;
+            feed.insertBefore(item, feed.firstChild);
+            while (feed.children.length > 50) feed.removeChild(feed.lastChild);
+        }
+
+        function loadTasks() {
+            fetch('/api/tasks').then(r => r.json()).then(data => {
+                const sel = document.getElementById('taskSelect');
+                sel.innerHTML = '<option value="">Select a task...</option>';
+                data.tasks.forEach(t => {
+                    const o = document.createElement('option');
+                    o.value = t.path;
+                    o.textContent = '[' + t.difficulty + '] ' + t.name;
+                    sel.appendChild(o);
+                });
+            });
+        }
+
+        function loadModels() {
+            fetch('/api/models').then(r => r.json()).then(data => {
+                const sel = document.getElementById('addAgent');
+                (data.models || []).forEach(m => {
+                    const o = document.createElement('option');
+                    o.value = m; o.textContent = m;
+                    sel.appendChild(o);
+                });
+            }).catch(() => {
+                const models = ['qwen2.5-coder:7b','deepseek-coder:6.7b','codellama:7b','mistral:7b'];
+                const sel = document.getElementById('addAgent');
+                models.forEach(m => {
+                    const o = document.createElement('option');
+                    o.value = m; o.textContent = m;
+                    sel.appendChild(o);
+                });
+            });
+        }
+
+        function removeAgent(el) {
+            const chip = el.parentElement;
+            const model = chip.textContent.replace('\u00d7','').trim();
+            currentAgents = currentAgents.filter(a => a !== model);
+            chip.remove();
+        }
+
+        document.getElementById('addAgent').addEventListener('change', function() {
+            if (this.value && !currentAgents.includes(this.value)) {
+                currentAgents.push(this.value);
+                const chip = document.createElement('div');
+                chip.className = 'agent-chip';
+                chip.innerHTML = this.value + '<span class="x" onclick="removeAgent(this)">&times;</span>';
+                document.getElementById('agentList').appendChild(chip);
+            }
+            this.value = '';
+        });
+
+        function startDebate() {
+            const taskPath = document.getElementById('taskSelect').value;
+            const maxRounds = parseInt(document.getElementById('maxRounds').value);
+
+            if (!taskPath) { alert('Select a task'); return; }
+            if (currentAgents.length < 2) { alert('Add at least 2 agents'); return; }
+
+            document.getElementById('timeline').innerHTML = '';
+            document.getElementById('activityFeed').innerHTML = '';
+            document.getElementById('finalCode').style.display = 'none';
+            agentData = {};
+
+            socket.emit('start_debate', {
+                task_path: taskPath,
+                agents: currentAgents,
+                max_rounds: maxRounds
+            });
+        }
+
+        function stopDebate() { socket.emit('stop_debate'); }
+
+        function showResults(data) {
+            const passRate = (data.final_pass_rate * 100).toFixed(1);
+            const c = document.getElementById('modalContent');
+            c.innerHTML = `
+                <div class="results-grid">
+                    <div class="result-box">
+                        <div class="result-val ${parseFloat(passRate) > 50 ? 'success' : ''}">${passRate}%</div>
+                        <div class="result-lbl">Pass Rate</div>
+                    </div>
+                    <div class="result-box">
+                        <div class="result-val">${data.total_rounds}</div>
+                        <div class="result-lbl">Rounds</div>
+                    </div>
+                    <div class="result-box">
+                        <div class="result-val">${esc(data.winning_agent || '\u2014')}</div>
+                        <div class="result-lbl">Winner</div>
+                    </div>
+                </div>
+                <div class="final-code" style="display:block; margin-top: 0;">
+                    <div class="final-code-header"><span>Solution</span></div>
+                    <pre>${esc(data.final_solution || 'No solution')}</pre>
+                </div>
+            `;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+        function esc(t) {
+            const d = document.createElement('div');
+            d.textContent = t;
+            return d.innerHTML;
+        }
+
+        loadTasks();
+        loadModels();
+    </script>
+</body>
+</html>

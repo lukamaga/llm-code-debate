@@ -1,0 +1,17 @@
+{
+  "id": "binary_tree_serialize",
+  "name": "Serialize and Deserialize Binary Tree",
+  "difficulty": "medium",
+  "description": "Design an algorithm to serialize and deserialize a binary tree. Serialization is the process of converting a data structure into a sequence of bits. Deserialization is the reverse process. There is no restriction on how your serialization/deserialization algorithm should work.",
+  "signature": "class TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\n\nclass Codec:\n    def serialize(self, root: TreeNode) -> str:\n        pass\n    \n    def deserialize(self, data: str) -> TreeNode:\n        pass",
+  "tests": [
+    "def test_basic():\n    codec = Codec()\n    root = TreeNode(1, TreeNode(2), TreeNode(3, TreeNode(4), TreeNode(5)))\n    result = codec.deserialize(codec.serialize(root))\n    assert result.val == 1\n    assert result.left.val == 2\n    assert result.right.val == 3",
+    "def test_empty():\n    codec = Codec()\n    result = codec.deserialize(codec.serialize(None))\n    assert result is None",
+    "def test_single():\n    codec = Codec()\n    root = TreeNode(1)\n    result = codec.deserialize(codec.serialize(root))\n    assert result.val == 1\n    assert result.left is None\n    assert result.right is None",
+    "def test_left_only():\n    codec = Codec()\n    root = TreeNode(1, TreeNode(2, TreeNode(3)))\n    result = codec.deserialize(codec.serialize(root))\n    assert result.left.left.val == 3"
+  ],
+  "constraints": [
+    "The number of nodes is in the range [0, 10^4]",
+    "-1000 <= Node.val <= 1000"
+  ]
+}

@@ -1,0 +1,74 @@
+# LLM Code Debate System Configuration
+
+ollama:
+  base_url: "http://localhost:11434"
+  timeout: 120
+  retry_attempts: 3
+  retry_delay: 2
+
+debate:
+  max_rounds: 5
+  min_rounds: 2
+  consensus_threshold: 0.6  # 60% agents must agree
+  early_stop_on_perfect: true  # Stop if all tests pass
+  temperature_initial: 0.3
+  temperature_critique: 0.5
+  temperature_revision: 0.4
+
+agents:
+  # Default agent configuration
+  default:
+    - name: "qwen2.5-coder:7b"
+      role: "general"
+    - name: "deepseek-coder:6.7b"  
+      role: "general"
+    - name: "codellama:7b"
+      role: "general"
+  
+  # Alternative configurations for experiments
+  homogeneous_qwen:
+    - name: "qwen2.5-coder:7b"
+      role: "proposer"
+      temperature: 0.2
+    - name: "qwen2.5-coder:7b"
+      role: "critic"
+      temperature: 0.5
+    - name: "qwen2.5-coder:7b"
+      role: "optimizer"
+      temperature: 0.4
+      
+  with_judge:
+    - name: "qwen2.5-coder:7b"
+      role: "general"
+    - name: "deepseek-coder:6.7b"
+      role: "general"
+    - name: "codellama:7b"
+      role: "general"
+    - name: "mistral:7b"
+      role: "judge"
+
+execution:
+  timeout: 30  # seconds per test run
+  max_memory_mb: 512
+  sandbox: true
+  python_path: "python3"
+
+database:
+  path: "debate_results.db"
+  echo: false  # SQL logging
+
+web:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+  
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "debate.log"
+
+metrics:
+  collect_pylint: true
+  collect_radon: true
+  collect_timing: true
+  save_intermediate: true  # Save solutions from each round

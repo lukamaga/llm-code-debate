@@ -1,0 +1,18 @@
+{
+  "id": "fibonacci",
+  "name": "Fibonacci Number",
+  "difficulty": "easy",
+  "description": "The Fibonacci numbers form a sequence such that each number is the sum of the two preceding ones, starting from 0 and 1. Given n, calculate F(n).",
+  "signature": "def fibonacci(n: int) -> int:",
+  "tests": [
+    "def test_zero():\n    assert fibonacci(0) == 0",
+    "def test_one():\n    assert fibonacci(1) == 1",
+    "def test_two():\n    assert fibonacci(2) == 1",
+    "def test_small():\n    assert fibonacci(5) == 5",
+    "def test_medium():\n    assert fibonacci(10) == 55",
+    "def test_larger():\n    assert fibonacci(20) == 6765"
+  ],
+  "constraints": [
+    "0 <= n <= 30"
+  ]
+}

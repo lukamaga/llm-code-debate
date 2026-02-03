@@ -1,0 +1,24 @@
+{
+  "id": "regex_matching",
+  "name": "Regular Expression Matching",
+  "difficulty": "hard",
+  "description": "Given an input string s and a pattern p, implement regular expression matching with support for '.' and '*' where: '.' Matches any single character. '*' Matches zero or more of the preceding element. The matching should cover the entire input string (not partial).",
+  "signature": "def is_match(s: str, p: str) -> bool:",
+  "tests": [
+    "def test_no_match():\n    assert is_match('aa', 'a') == False",
+    "def test_star():\n    assert is_match('aa', 'a*') == True",
+    "def test_dot_star():\n    assert is_match('ab', '.*') == True",
+    "def test_complex():\n    assert is_match('aab', 'c*a*b') == True",
+    "def test_empty_pattern():\n    assert is_match('', '') == True",
+    "def test_empty_string():\n    assert is_match('', 'a*') == True",
+    "def test_dot():\n    assert is_match('ab', '.b') == True",
+    "def test_multiple_stars():\n    assert is_match('aaa', 'a*a') == True"
+  ],
+  "constraints": [
+    "1 <= s.length <= 20",
+    "1 <= p.length <= 30",
+    "s contains only lowercase English letters",
+    "p contains only lowercase English letters, '.', and '*'",
+    "It is guaranteed for each '*', there is a preceding character to match"
+  ]
+}

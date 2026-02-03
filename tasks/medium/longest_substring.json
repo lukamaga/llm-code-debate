@@ -1,0 +1,20 @@
+{
+  "id": "longest_substring",
+  "name": "Longest Substring Without Repeating Characters",
+  "difficulty": "medium",
+  "description": "Given a string s, find the length of the longest substring without repeating characters.",
+  "signature": "def length_of_longest_substring(s: str) -> int:",
+  "tests": [
+    "def test_basic():\n    assert length_of_longest_substring('abcabcbb') == 3",
+    "def test_all_same():\n    assert length_of_longest_substring('bbbbb') == 1",
+    "def test_mixed():\n    assert length_of_longest_substring('pwwkew') == 3",
+    "def test_empty():\n    assert length_of_longest_substring('') == 0",
+    "def test_single():\n    assert length_of_longest_substring('a') == 1",
+    "def test_two_chars():\n    assert length_of_longest_substring('au') == 2",
+    "def test_spaces():\n    assert length_of_longest_substring(' ') == 1"
+  ],
+  "constraints": [
+    "0 <= s.length <= 5 * 10^4",
+    "s consists of English letters, digits, symbols and spaces"
+  ]
+}
