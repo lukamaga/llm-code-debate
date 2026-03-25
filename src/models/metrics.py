@@ -59,6 +59,12 @@ class DebateMetrics:
     total_llm_time: float = 0.0
     total_execution_time: float = 0.0
     
+    # === Pass@k ===
+    all_solutions_count: int = 0
+    passing_solutions_count: int = 0
+    pass_at_1: float = 0.0
+    pass_at_3: float = 0.0
+
     # === Comparison (Single-Agent Baseline) ===
     baseline_pass_rate: float | None = None
     improvement_over_baseline: float | None = None
@@ -126,6 +132,10 @@ class DebateMetrics:
             "final_complexity": self.final_complexity,
             "total_duration_seconds": self.total_duration_seconds,
             "avg_round_duration": self.avg_round_duration,
+            "all_solutions_count": self.all_solutions_count,
+            "passing_solutions_count": self.passing_solutions_count,
+            "pass_at_1": self.pass_at_1,
+            "pass_at_3": self.pass_at_3,
             "baseline_pass_rate": self.baseline_pass_rate,
             "improvement_over_baseline": self.improvement_over_baseline,
         }
@@ -154,6 +164,12 @@ class ExperimentSummary:
     avg_rounds_to_consensus: float = 0.0
     consensus_rate: float = 0.0
     
+    # Pass@k
+    pass_at_1: float = 0.0
+    pass_at_3: float = 0.0
+    pass_at_5: float = 0.0
+    pass_at_k_by_difficulty: dict[str, dict[str, float]] = field(default_factory=dict)
+
     # Comparisons
     vs_single_agent_improvement: float = 0.0
     vs_best_single_model: dict[str, float] = field(default_factory=dict)
@@ -175,6 +191,10 @@ class ExperimentSummary:
             "pass_rate_by_difficulty": self.pass_rate_by_difficulty,
             "avg_rounds_to_consensus": self.avg_rounds_to_consensus,
             "consensus_rate": self.consensus_rate,
+            "pass_at_1": self.pass_at_1,
+            "pass_at_3": self.pass_at_3,
+            "pass_at_5": self.pass_at_5,
+            "pass_at_k_by_difficulty": self.pass_at_k_by_difficulty,
             "vs_single_agent_improvement": self.vs_single_agent_improvement,
             "total_duration": self.total_duration,
             "avg_debate_duration": self.avg_debate_duration,

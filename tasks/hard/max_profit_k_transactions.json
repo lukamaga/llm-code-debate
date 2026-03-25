@@ -1,0 +1,25 @@
+{
+  "id": "max_profit_k_transactions",
+  "name": "Best Time to Buy and Sell Stock with K Transactions",
+  "difficulty": "hard",
+  "description": "You are given an array of prices where prices[i] is the price of a stock on the ith day, and an integer k. Find the maximum profit you can achieve with at most k transactions. A transaction consists of buying and then selling one share. You may not hold more than one share at a time (you must sell before you buy again).",
+  "signature": "def max_profit(k: int, prices: list[int]) -> int:",
+  "tests": [
+    "def test_basic_k2():\n    assert max_profit(2, [3, 2, 6, 5, 0, 3]) == 7",
+    "def test_k1():\n    assert max_profit(1, [2, 4, 1]) == 2",
+    "def test_unlimited_transactions():\n    assert max_profit(100, [1, 2, 3, 4, 5]) == 4",
+    "def test_no_profit():\n    assert max_profit(2, [7, 6, 4, 3, 1]) == 0",
+    "def test_single_day():\n    assert max_profit(1, [5]) == 0",
+    "def test_empty_prices():\n    assert max_profit(1, []) == 0",
+    "def test_k_zero():\n    assert max_profit(0, [1, 2, 3]) == 0",
+    "def test_k2_multiple_peaks():\n    assert max_profit(2, [1, 2, 4, 2, 5, 7, 2, 4, 9, 0]) == 13"
+  ],
+  "constraints": [
+    "0 <= k <= 100",
+    "0 <= prices.length <= 1000",
+    "0 <= prices[i] <= 1000",
+    "When k >= n/2, optimize to O(n) unlimited transactions case",
+    "General case uses O(k*n) dynamic programming"
+  ],
+  "tags": ["dynamic-programming", "greedy", "array"]
+}

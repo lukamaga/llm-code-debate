@@ -39,9 +39,11 @@ from .prompts import (
     SYSTEM_PROMPT_JUDGE,
     build_critique_prompt,
     build_proposal_prompt,
+    build_multi_file_proposal_prompt,
     build_revision_prompt,
     build_voting_prompt,
     extract_code_from_response,
+    extract_multi_file_code_from_response,
     parse_critique_response,
     parse_vote_response,
 )
@@ -245,7 +247,9 @@ class DebateOrchestrator:
                 
                 # Analyze quality
                 try:
-                    quality = await self.quality_analyzer.analyze(solution.extract_code_block())
+                    quality = await self.quality_analyzer.analyze(
+                        "\n\n".join(solution.extract_code_files().values()) if solution.code_files else solution.extract_code_block()
+                    )
                     solution.quality_metrics = quality
                 except Exception as e:
                     logger.warning(f"Quality analysis failed: {e}")
@@ -333,7 +337,9 @@ class DebateOrchestrator:
                 solution.execution_result = result
                 
                 try:
-                    quality = await self.quality_analyzer.analyze(solution.extract_code_block())
+                    quality = await self.quality_analyzer.analyze(
+                        "\n\n".join(solution.extract_code_files().values()) if solution.code_files else solution.extract_code_block()
+                    )
                     solution.quality_metrics = quality
                 except Exception:
                     pass
@@ -369,44 +375,62 @@ class DebateOrchestrator:
     
     async def _get_proposal(self, agent: Agent, task: Task) -> Solution | None:
         """Get initial proposal from an agent."""
-        prompt = build_proposal_prompt(task)
-        
+        if task.is_multi_file:
+            prompt = build_multi_file_proposal_prompt(task)
+        else:
+            prompt = build_proposal_prompt(task)
+
         request = LLMRequest(
             prompt=prompt,
             system_prompt=SYSTEM_PROMPT_CODER,
             temperature=self.config.temperature_initial,
         )
-        
+
         try:
             import time
             start = time.time()
             response = await self.llm_client.generate(agent.model, request)
             generation_time = time.time() - start
-            
-            code = extract_code_from_response(response.content)
-            
-            solution = Solution(
-                id=f"sol_{agent.id}_r1",
-                agent_id=agent.id,
-                round_num=1,
-                code=code,
-                generation_time=generation_time,
-            )
-            
+
+            if task.is_multi_file:
+                code_files = extract_multi_file_code_from_response(
+                    response.content, task.required_files
+                )
+                combined = "\n\n".join(
+                    f"# FILE: {fn}\n{fc}" for fn, fc in code_files.items()
+                )
+                solution = Solution(
+                    id=f"sol_{agent.id}_r1",
+                    agent_id=agent.id,
+                    round_num=1,
+                    code=combined,
+                    code_files=code_files,
+                    generation_time=generation_time,
+                )
+            else:
+                code = extract_code_from_response(response.content)
+                solution = Solution(
+                    id=f"sol_{agent.id}_r1",
+                    agent_id=agent.id,
+                    round_num=1,
+                    code=code,
+                    generation_time=generation_time,
+                )
+
             # Record message
             message = AgentMessage(
                 agent_id=agent.id,
                 round_num=1,
                 message_type="proposal",
-                content=code,
+                content=solution.code,
             )
             agent.add_message(message)
-            
+
             if self.on_message:
                 self.on_message(message)
-            
+
             return solution
-            
+
         except Exception as e:
             logger.error(f"Agent {agent.id} failed to propose: {e}")
             return None
@@ -455,13 +479,20 @@ class DebateOrchestrator:
                 bugs = pc.get("bugs", [])
                 total_bugs += len(bugs)
 
+                ratings_parsed = pc.get("ratings_parsed", True)
+                if not ratings_parsed:
+                    logger.warning(
+                        "Ratings not parsed for agent %s critique of %s, using defaults",
+                        agent.id, target_sol.agent_id,
+                    )
+
                 critique = Critique(
                     id=f"crit_{agent.id}_{target_sol.id}",
                     agent_id=agent.id,
                     solution_id=target_sol.id,
                     target_agent_id=target_sol.agent_id,
                     round_num=target_sol.round_num + 1,
-                    overall_assessment=response.content[:500],
+                    overall_assessment=response.content,
                     bugs=[
                         Bug(description=b, severity=BugSeverity.MINOR)
                         for b in bugs
@@ -469,10 +500,8 @@ class DebateOrchestrator:
                     correctness_rating=pc.get("correctness_rating", 5),
                     efficiency_rating=pc.get("efficiency_rating", 5),
                     readability_rating=pc.get("readability_rating", 5),
-                    would_adopt=(
-                        parsed.get("recommendation") == "adopt"
-                        and parsed.get("adopt_solution") == i + 1
-                    ),
+                    would_adopt=pc.get("would_adopt", False),
+                    ratings_parsed=ratings_parsed,
                 )
                 result_critiques.append(critique)
 
@@ -536,41 +565,75 @@ class DebateOrchestrator:
             response = await self.llm_client.generate(agent.model, request)
             generation_time = time.time() - start
 
-            code = extract_code_from_response(response.content)
+            if task.is_multi_file:
+                code_files = extract_multi_file_code_from_response(
+                    response.content, task.required_files
+                )
+                combined = "\n\n".join(
+                    f"# FILE: {fn}\n{fc}" for fn, fc in code_files.items()
+                )
 
-            # Detect: defended, changed mind, or adopted another's solution
-            old_code = own_solution.extract_code_block()
-            if code.strip() == old_code.strip():
-                agent.stats.times_defended += 1
+                # Detect: defended, changed mind, or adopted
+                old_files = own_solution.extract_code_files()
+                if code_files == old_files:
+                    agent.stats.times_defended += 1
+                else:
+                    adopted = False
+                    if all_solutions:
+                        for other_sol in all_solutions:
+                            if other_sol.agent_id != agent.id and other_sol.code_files:
+                                if code_files == other_sol.extract_code_files():
+                                    agent.stats.times_adopted_other += 1
+                                    adopted = True
+                                    break
+                    if not adopted:
+                        agent.stats.times_changed_mind += 1
+
+                solution = Solution(
+                    id=f"sol_{agent.id}_r{round_num}",
+                    agent_id=agent.id,
+                    round_num=round_num,
+                    code=combined,
+                    code_files=code_files,
+                    is_revision=True,
+                    parent_solution_id=own_solution.id,
+                    generation_time=generation_time,
+                )
             else:
-                # Check if adopted another agent's code
-                adopted = False
-                if all_solutions:
-                    for other_sol in all_solutions:
-                        if other_sol.agent_id != agent.id:
-                            if code.strip() == other_sol.extract_code_block().strip():
-                                agent.stats.times_adopted_other += 1
-                                adopted = True
-                                break
-                if not adopted:
-                    agent.stats.times_changed_mind += 1
+                code = extract_code_from_response(response.content)
 
-            solution = Solution(
-                id=f"sol_{agent.id}_r{round_num}",
-                agent_id=agent.id,
-                round_num=round_num,
-                code=code,
-                is_revision=True,
-                parent_solution_id=own_solution.id,
-                generation_time=generation_time,
-            )
+                # Detect: defended, changed mind, or adopted another's solution
+                old_code = own_solution.extract_code_block()
+                if code.strip() == old_code.strip():
+                    agent.stats.times_defended += 1
+                else:
+                    adopted = False
+                    if all_solutions:
+                        for other_sol in all_solutions:
+                            if other_sol.agent_id != agent.id:
+                                if code.strip() == other_sol.extract_code_block().strip():
+                                    agent.stats.times_adopted_other += 1
+                                    adopted = True
+                                    break
+                    if not adopted:
+                        agent.stats.times_changed_mind += 1
+
+                solution = Solution(
+                    id=f"sol_{agent.id}_r{round_num}",
+                    agent_id=agent.id,
+                    round_num=round_num,
+                    code=code,
+                    is_revision=True,
+                    parent_solution_id=own_solution.id,
+                    generation_time=generation_time,
+                )
 
             # Record message
             message = AgentMessage(
                 agent_id=agent.id,
                 round_num=round_num,
                 message_type="revision",
-                content=code,
+                content=solution.code,
             )
             agent.add_message(message)
 
@@ -619,6 +682,13 @@ class DebateOrchestrator:
                     voted_solution_id = own_sol.id
                     voted_agent_id = agent.id
             
+            parse_failed = (vote_type == VoteType.ADOPT and voted_solution_id is None)
+            if parse_failed:
+                logger.warning(
+                    "Agent %s vote parse failed (round %d): %s",
+                    agent.id, round_num, response.content[:200],
+                )
+
             vote = Vote(
                 id=f"vote_{agent.id}_r{round_num}",
                 agent_id=agent.id,
@@ -628,6 +698,8 @@ class DebateOrchestrator:
                 voted_agent_id=voted_agent_id,
                 confidence=parsed.get("confidence", 0.5),
                 reasoning=parsed.get("reasoning", ""),
+                raw_response=response.content,
+                parse_failed=parse_failed,
             )
             
             # Record message

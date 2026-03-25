@@ -1,0 +1,27 @@
+{
+  "id": "task_scheduler",
+  "name": "Priority Task Scheduler",
+  "difficulty": "extreme",
+  "description": "Implement a priority-based task scheduler with two modules. The task_model module defines Task and Priority classes. The scheduler module implements a TaskScheduler that manages tasks with priorities, dependencies, and execution ordering. Tasks can depend on other tasks and cannot run until dependencies are complete.",
+  "signature": "# task_model.py\nfrom enum import Enum\nfrom dataclasses import dataclass, field\n\nclass Priority(Enum):\n    LOW = 1\n    MEDIUM = 2\n    HIGH = 3\n    CRITICAL = 4\n\n@dataclass\nclass Task:\n    id: str\n    name: str\n    priority: Priority\n    dependencies: list[str] = field(default_factory=list)  # list of task IDs\n    completed: bool = False\n\n# scheduler.py\nfrom task_model import Task, Priority\n\nclass TaskScheduler:\n    def __init__(self):\n        ...\n    def add_task(self, task: Task) -> None:\n        ...\n    def complete_task(self, task_id: str) -> None:\n        ...\n    def get_next_task(self) -> Task | None:\n        \"\"\"Return highest-priority task whose dependencies are all completed.\"\"\"\n        ...\n    def get_ready_tasks(self) -> list[Task]:\n        \"\"\"Return all tasks ready to execute, sorted by priority (highest first).\"\"\"\n        ...\n    def is_blocked(self, task_id: str) -> bool:\n        ...\n    def has_circular_dependency(self) -> bool:\n        ...",
+  "required_files": ["task_model.py", "scheduler.py"],
+  "test_imports": ["from task_model import Task, Priority", "from scheduler import TaskScheduler"],
+  "tests": [
+    "def test_add_and_get_next():\n    s = TaskScheduler()\n    s.add_task(Task('t1', 'Low task', Priority.LOW))\n    s.add_task(Task('t2', 'High task', Priority.HIGH))\n    assert s.get_next_task().id == 't2'",
+    "def test_dependencies_block():\n    s = TaskScheduler()\n    s.add_task(Task('t1', 'First', Priority.LOW))\n    s.add_task(Task('t2', 'Second', Priority.HIGH, dependencies=['t1']))\n    assert s.get_next_task().id == 't1'\n    assert s.is_blocked('t2') == True",
+    "def test_complete_unblocks():\n    s = TaskScheduler()\n    s.add_task(Task('t1', 'First', Priority.LOW))\n    s.add_task(Task('t2', 'Second', Priority.HIGH, dependencies=['t1']))\n    s.complete_task('t1')\n    assert s.is_blocked('t2') == False\n    assert s.get_next_task().id == 't2'",
+    "def test_get_ready_tasks_sorted():\n    s = TaskScheduler()\n    s.add_task(Task('t1', 'Low', Priority.LOW))\n    s.add_task(Task('t2', 'Med', Priority.MEDIUM))\n    s.add_task(Task('t3', 'High', Priority.HIGH))\n    ready = s.get_ready_tasks()\n    assert [t.id for t in ready] == ['t3', 't2', 't1']",
+    "def test_completed_not_returned():\n    s = TaskScheduler()\n    s.add_task(Task('t1', 'Task', Priority.HIGH))\n    s.complete_task('t1')\n    assert s.get_next_task() is None",
+    "def test_circular_dependency():\n    s = TaskScheduler()\n    s.add_task(Task('t1', 'A', Priority.LOW, dependencies=['t2']))\n    s.add_task(Task('t2', 'B', Priority.LOW, dependencies=['t1']))\n    assert s.has_circular_dependency() == True",
+    "def test_no_circular_dependency():\n    s = TaskScheduler()\n    s.add_task(Task('t1', 'A', Priority.LOW))\n    s.add_task(Task('t2', 'B', Priority.LOW, dependencies=['t1']))\n    assert s.has_circular_dependency() == False",
+    "def test_empty_scheduler():\n    s = TaskScheduler()\n    assert s.get_next_task() is None\n    assert s.get_ready_tasks() == []"
+  ],
+  "constraints": [
+    "get_next_task returns highest-priority ready task",
+    "Tasks with unmet dependencies are not ready",
+    "complete_task marks task as completed",
+    "has_circular_dependency uses cycle detection"
+  ],
+  "helper_code": {},
+  "tags": ["design", "multi-file", "graph", "priority-queue"]
+}

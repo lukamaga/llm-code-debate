@@ -1,0 +1,20 @@
+{
+  "id": "flatten_list",
+  "name": "Flatten Nested List",
+  "difficulty": "easy",
+  "description": "Given a nested list of integers, flatten it into a single list of integers. The nested list can contain integers and other nested lists at arbitrary depth.",
+  "signature": "def flatten(lst: list) -> list[int]:",
+  "tests": [
+    "def test_basic():\n    assert flatten([1, [2, [3, 4], 5]]) == [1, 2, 3, 4, 5]",
+    "def test_empty():\n    assert flatten([]) == []",
+    "def test_deeply_nested():\n    assert flatten([[[[1]]]]) == [1]",
+    "def test_flat_already():\n    assert flatten([1, 2, 3]) == [1, 2, 3]",
+    "def test_all_nested():\n    assert flatten([[1], [2], [3]]) == [1, 2, 3]",
+    "def test_mixed_depths():\n    assert flatten([1, [2, 3], [[4, 5]], [[[6]]]]) == [1, 2, 3, 4, 5, 6]",
+    "def test_empty_sublists():\n    assert flatten([[], [1], [], [2], []]) == [1, 2]"
+  ],
+  "constraints": [
+    "The list contains only integers and nested lists of integers",
+    "Maximum nesting depth is 100"
+  ]
+}

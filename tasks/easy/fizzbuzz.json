@@ -1,0 +1,19 @@
+{
+  "id": "fizzbuzz",
+  "name": "FizzBuzz",
+  "difficulty": "easy",
+  "description": "Given a positive integer n, return a list of strings representing the FizzBuzz sequence from 1 to n. For each number: if divisible by 3 and 5, use 'FizzBuzz'; if divisible by 3, use 'Fizz'; if divisible by 5, use 'Buzz'; otherwise use the string representation of the number.",
+  "signature": "def fizzbuzz(n: int) -> list[str]:",
+  "tests": [
+    "def test_fifteen():\n    result = fizzbuzz(15)\n    assert result[0] == '1'\n    assert result[2] == 'Fizz'\n    assert result[4] == 'Buzz'\n    assert result[14] == 'FizzBuzz'",
+    "def test_one():\n    assert fizzbuzz(1) == ['1']",
+    "def test_zero():\n    assert fizzbuzz(0) == []",
+    "def test_five():\n    assert fizzbuzz(5) == ['1', '2', 'Fizz', '4', 'Buzz']",
+    "def test_three():\n    assert fizzbuzz(3) == ['1', '2', 'Fizz']",
+    "def test_length():\n    assert len(fizzbuzz(15)) == 15",
+    "def test_fizzbuzz_at_30():\n    result = fizzbuzz(30)\n    assert result[29] == 'FizzBuzz'"
+  ],
+  "constraints": [
+    "0 <= n <= 1000"
+  ]
+}

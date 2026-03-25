@@ -1,0 +1,33 @@
+{
+  "id": "expression_evaluator",
+  "name": "Mathematical Expression Evaluator",
+  "difficulty": "extreme",
+  "description": "Implement a mathematical expression evaluator with variables and functions across two modules. Module ast_nodes.py must define AST node dataclasses: NumberNode(value: float), BinaryOpNode(op: str, left, right) for +,-,*,/,**,%, UnaryOpNode(op: str, operand) for unary minus, VariableNode(name: str), FunctionCallNode(name: str, args: list), AssignmentNode(name: str, expression). Module interpreter.py imports from ast_nodes.py and implements Interpreter class with: evaluate(expression_string) -> float that parses and evaluates mathematical expressions; supports operator precedence (** > unary - > *,/,% > +,-); supports parentheses; supports variable assignment via 'x = expr' syntax, stored in environment; built-in functions: sin, cos, abs, sqrt, max, min; variables persist across evaluate() calls; raises ValueError on undefined variable access.",
+  "required_files": ["ast_nodes.py", "interpreter.py"],
+  "test_imports": ["from ast_nodes import NumberNode, BinaryOpNode, UnaryOpNode, VariableNode, FunctionCallNode, AssignmentNode", "from interpreter import Interpreter"],
+  "signature": "# ast_nodes.py\nfrom dataclasses import dataclass, field\nfrom typing import Any\n\n@dataclass\nclass NumberNode:\n    value: float\n\n@dataclass\nclass BinaryOpNode:\n    op: str\n    left: Any\n    right: Any\n\n@dataclass\nclass UnaryOpNode:\n    op: str\n    operand: Any\n\n@dataclass\nclass VariableNode:\n    name: str\n\n@dataclass\nclass FunctionCallNode:\n    name: str\n    args: list = field(default_factory=list)\n\n@dataclass\nclass AssignmentNode:\n    name: str\n    expression: Any = None\n\n# interpreter.py\nfrom ast_nodes import NumberNode, BinaryOpNode, UnaryOpNode, VariableNode, FunctionCallNode, AssignmentNode\n\nclass Interpreter:\n    def __init__(self): ...\n    def evaluate(self, expression: str) -> float: ...",
+  "tests": [
+    "def test_basic_arithmetic():\n    interp = Interpreter()\n    assert interp.evaluate('2 + 3') == 5\n    assert interp.evaluate('10 - 4') == 6\n    assert interp.evaluate('3 * 7') == 21\n    assert interp.evaluate('15 / 4') == 3.75",
+    "def test_operator_precedence():\n    interp = Interpreter()\n    assert interp.evaluate('2 + 3 * 4') == 14\n    assert interp.evaluate('(2 + 3) * 4') == 20",
+    "def test_exponentiation():\n    interp = Interpreter()\n    assert interp.evaluate('2 ** 3') == 8\n    assert interp.evaluate('2 ** 3 ** 2') == 512  # right-associative",
+    "def test_unary_minus():\n    interp = Interpreter()\n    assert interp.evaluate('-5') == -5\n    assert interp.evaluate('-3 + 7') == 4\n    assert interp.evaluate('-(2 + 3)') == -5",
+    "def test_variable_assignment():\n    interp = Interpreter()\n    interp.evaluate('x = 10')\n    assert interp.evaluate('x + 5') == 15\n    interp.evaluate('y = x * 2')\n    assert interp.evaluate('y') == 20",
+    "def test_builtin_functions():\n    import math\n    interp = Interpreter()\n    assert interp.evaluate('abs(-42)') == 42\n    assert abs(interp.evaluate('sqrt(16)') - 4.0) < 1e-9\n    assert abs(interp.evaluate('sin(0)') - 0.0) < 1e-9\n    assert abs(interp.evaluate('cos(0)') - 1.0) < 1e-9",
+    "def test_max_min():\n    interp = Interpreter()\n    assert interp.evaluate('max(3, 7, 1)') == 7\n    assert interp.evaluate('min(3, 7, 1)') == 1",
+    "def test_undefined_variable():\n    interp = Interpreter()\n    try:\n        interp.evaluate('undefined_var + 1')\n        assert False, 'Should have raised ValueError'\n    except ValueError:\n        pass",
+    "def test_nested_expressions():\n    interp = Interpreter()\n    assert interp.evaluate('sqrt(abs(-16))') == 4.0\n    assert interp.evaluate('max(1 + 2, 2 * 3, 10 - 5)') == 6\n    interp.evaluate('a = 3')\n    interp.evaluate('b = 4')\n    assert interp.evaluate('sqrt(a ** 2 + b ** 2)') == 5.0"
+  ],
+  "constraints": [
+    "Operator precedence: ** > unary - > *, /, % > +, -",
+    "Exponentiation (**) is right-associative",
+    "Parentheses override precedence",
+    "Variables persist in interpreter environment across evaluate() calls",
+    "Built-in functions: sin, cos, abs, sqrt, max, min (use math module)",
+    "max and min accept variable number of arguments",
+    "Raises ValueError for undefined variable access",
+    "ast_nodes.py exports all node classes",
+    "interpreter.py imports from ast_nodes.py and exports Interpreter"
+  ],
+  "helper_code": {},
+  "tags": ["parser", "interpreter", "math", "multi-file"]
+}

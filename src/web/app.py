@@ -99,7 +99,7 @@ def list_tasks():
     tasks_dir = Path(__file__).parent.parent.parent / 'tasks'
     tasks = []
     
-    for difficulty in ['easy', 'medium', 'hard']:
+    for difficulty in ['easy', 'medium', 'hard', 'extreme']:
         diff_dir = tasks_dir / difficulty
         if diff_dir.exists():
             for task_file in diff_dir.glob('*.json'):
@@ -114,7 +114,7 @@ def list_tasks():
                         })
                 except Exception:
                     pass
-    
+
     return jsonify({"tasks": tasks})
 
 
@@ -123,7 +123,7 @@ def get_task(task_id: str):
     """Get a specific task by ID."""
     tasks_dir = Path(__file__).parent.parent.parent / 'tasks'
     
-    for difficulty in ['easy', 'medium', 'hard']:
+    for difficulty in ['easy', 'medium', 'hard', 'extreme']:
         diff_dir = tasks_dir / difficulty
         if diff_dir.exists():
             for task_file in diff_dir.glob('*.json'):
@@ -134,7 +134,7 @@ def get_task(task_id: str):
                             return jsonify(task_data)
                 except Exception:
                     pass
-    
+
     return jsonify({"error": "Task not found"}), 404
 
 

@@ -1,0 +1,20 @@
+{
+  "id": "merge_sorted_arrays",
+  "name": "Merge Two Sorted Arrays",
+  "difficulty": "easy",
+  "description": "Given two sorted integer arrays, merge them into a single sorted array and return it.",
+  "signature": "def merge_sorted(nums1: list[int], nums2: list[int]) -> list[int]:",
+  "tests": [
+    "def test_basic():\n    assert merge_sorted([1, 3, 5], [2, 4, 6]) == [1, 2, 3, 4, 5, 6]",
+    "def test_first_empty():\n    assert merge_sorted([], [1, 2, 3]) == [1, 2, 3]",
+    "def test_second_empty():\n    assert merge_sorted([1, 2, 3], []) == [1, 2, 3]",
+    "def test_both_empty():\n    assert merge_sorted([], []) == []",
+    "def test_duplicates():\n    assert merge_sorted([1, 2, 2], [2, 3, 3]) == [1, 2, 2, 2, 3, 3]",
+    "def test_different_lengths():\n    assert merge_sorted([1], [2, 3, 4, 5]) == [1, 2, 3, 4, 5]",
+    "def test_negative_numbers():\n    assert merge_sorted([-3, -1, 0], [-2, 1, 2]) == [-3, -2, -1, 0, 1, 2]"
+  ],
+  "constraints": [
+    "Both input arrays are sorted in ascending order",
+    "0 <= len(nums1), len(nums2) <= 10000"
+  ]
+}

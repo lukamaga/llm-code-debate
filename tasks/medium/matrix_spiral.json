@@ -1,0 +1,22 @@
+{
+  "id": "matrix_spiral",
+  "name": "Spiral Matrix",
+  "difficulty": "medium",
+  "description": "Given an m x n matrix, return all elements of the matrix in spiral order. Start from the top-left corner and go right, then down, then left, then up, repeating until all elements are visited.",
+  "signature": "def spiral_order(matrix: list[list[int]]) -> list[int]:",
+  "tests": [
+    "def test_3x3():\n    assert spiral_order([[1,2,3],[4,5,6],[7,8,9]]) == [1,2,3,6,9,8,7,4,5]",
+    "def test_3x4():\n    assert spiral_order([[1,2,3,4],[5,6,7,8],[9,10,11,12]]) == [1,2,3,4,8,12,11,10,9,5,6,7]",
+    "def test_1x1():\n    assert spiral_order([[1]]) == [1]",
+    "def test_single_row():\n    assert spiral_order([[1,2,3,4]]) == [1,2,3,4]",
+    "def test_single_col():\n    assert spiral_order([[1],[2],[3]]) == [1,2,3]",
+    "def test_2x2():\n    assert spiral_order([[1,2],[3,4]]) == [1,2,4,3]"
+  ],
+  "constraints": [
+    "m == matrix.length",
+    "n == matrix[i].length",
+    "1 <= m, n <= 10",
+    "-100 <= matrix[i][j] <= 100"
+  ],
+  "tags": ["array", "matrix", "simulation"]
+}

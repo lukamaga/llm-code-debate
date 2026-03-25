@@ -101,6 +101,7 @@ class Critique:
     readability_rating: int = 5  # 1-10
     would_adopt: bool = False
     adoption_reason: str | None = None
+    ratings_parsed: bool = True  # False if ratings fell back to defaults
     created_at: datetime = field(default_factory=datetime.now)
 
     @property
@@ -133,6 +134,7 @@ class Critique:
             "readability_rating": self.readability_rating,
             "would_adopt": self.would_adopt,
             "adoption_reason": self.adoption_reason,
+            "ratings_parsed": self.ratings_parsed,
             "created_at": self.created_at.isoformat(),
         }
 
@@ -152,6 +154,7 @@ class Critique:
             readability_rating=data.get("readability_rating", 5),
             would_adopt=data.get("would_adopt", False),
             adoption_reason=data.get("adoption_reason"),
+            ratings_parsed=data.get("ratings_parsed", True),
             created_at=datetime.fromisoformat(data["created_at"]) if "created_at" in data else datetime.now(),
         )
 
@@ -169,6 +172,8 @@ class Vote:
     voted_agent_id: str | None = None
     confidence: float = 0.5  # 0-1, how confident in the vote
     reasoning: str = ""
+    raw_response: str = ""  # Full LLM response for debugging
+    parse_failed: bool = False  # True if voted_solution could not be parsed
     created_at: datetime = field(default_factory=datetime.now)
 
     def to_dict(self) -> dict[str, Any]:
@@ -181,6 +186,8 @@ class Vote:
             "voted_agent_id": self.voted_agent_id,
             "confidence": self.confidence,
             "reasoning": self.reasoning,
+            "raw_response": self.raw_response,
+            "parse_failed": self.parse_failed,
             "created_at": self.created_at.isoformat(),
         }
 
@@ -195,6 +202,8 @@ class Vote:
             voted_agent_id=data.get("voted_agent_id"),
             confidence=data.get("confidence", 0.5),
             reasoning=data.get("reasoning", ""),
+            raw_response=data.get("raw_response", ""),
+            parse_failed=data.get("parse_failed", False),
             created_at=datetime.fromisoformat(data["created_at"]) if "created_at" in data else datetime.now(),
         )
 

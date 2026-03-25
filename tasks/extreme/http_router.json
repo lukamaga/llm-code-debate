@@ -1,0 +1,29 @@
+{
+  "id": "http_router",
+  "name": "HTTP Router with Middleware",
+  "difficulty": "extreme",
+  "description": "Implement an HTTP router with path parameter extraction and middleware chain support across two modules. Module route_types.py must define: Request dataclass with fields method (str), path (str), headers (dict, default empty), body (any, default None), params (dict, default empty); Response dataclass with fields status_code (int), body (any), headers (dict, default empty); Route dataclass with fields method (str), pattern (str), handler (callable); Middleware as an abstract base class with abstract method process(request, next_handler) -> Response. Module router.py must import from route_types.py and implement Router class with methods: add_route(method, pattern, handler) supporting path params like /users/:id, use(middleware) to add middleware, handle(request) -> Response that matches routes, extracts path params into request.params, runs middleware chain, and returns 404 Response if no route matches. Middleware executes in the order added, each calling next_handler to continue the chain.",
+  "required_files": ["route_types.py", "router.py"],
+  "test_imports": ["from route_types import Request, Response, Route, Middleware", "from router import Router"],
+  "signature": "# route_types.py\nfrom dataclasses import dataclass, field\nfrom typing import Any, Callable\nfrom abc import ABC, abstractmethod\n\n@dataclass\nclass Request:\n    method: str\n    path: str\n    headers: dict[str, str] = field(default_factory=dict)\n    body: Any = None\n    params: dict[str, str] = field(default_factory=dict)\n\n@dataclass\nclass Response:\n    status_code: int\n    body: Any = None\n    headers: dict[str, str] = field(default_factory=dict)\n\n@dataclass\nclass Route:\n    method: str\n    pattern: str\n    handler: Callable\n\nclass Middleware(ABC):\n    @abstractmethod\n    def process(self, request: Request, next_handler: Callable) -> Response: ...\n\n# router.py\nfrom route_types import Request, Response, Middleware\n\nclass Router:\n    def __init__(self): ...\n    def add_route(self, method: str, pattern: str, handler: Callable) -> None: ...\n    def use(self, middleware: Middleware) -> None: ...\n    def handle(self, request: Request) -> Response: ...",
+  "tests": [
+    "def test_basic_route():\n    router = Router()\n    router.add_route('GET', '/hello', lambda req: Response(200, 'Hello World'))\n    resp = router.handle(Request('GET', '/hello'))\n    assert resp.status_code == 200\n    assert resp.body == 'Hello World'",
+    "def test_path_params():\n    router = Router()\n    router.add_route('GET', '/users/:id', lambda req: Response(200, f\"User {req.params['id']}\"))\n    resp = router.handle(Request('GET', '/users/42'))\n    assert resp.status_code == 200\n    assert resp.body == 'User 42'",
+    "def test_multiple_path_params():\n    router = Router()\n    router.add_route('GET', '/users/:user_id/posts/:post_id', lambda req: Response(200, req.params))\n    resp = router.handle(Request('GET', '/users/5/posts/10'))\n    assert resp.body == {'user_id': '5', 'post_id': '10'}",
+    "def test_404_not_found():\n    router = Router()\n    router.add_route('GET', '/exists', lambda req: Response(200, 'ok'))\n    resp = router.handle(Request('GET', '/not-here'))\n    assert resp.status_code == 404",
+    "def test_method_matching():\n    router = Router()\n    router.add_route('GET', '/item', lambda req: Response(200, 'get'))\n    router.add_route('POST', '/item', lambda req: Response(201, 'post'))\n    assert router.handle(Request('GET', '/item')).body == 'get'\n    assert router.handle(Request('POST', '/item')).body == 'post'",
+    "def test_middleware_execution():\n    router = Router()\n    log = []\n    class LogMiddleware(Middleware):\n        def process(self, request, next_handler):\n            log.append('before')\n            resp = next_handler(request)\n            log.append('after')\n            return resp\n    router.use(LogMiddleware())\n    router.add_route('GET', '/test', lambda req: Response(200, 'ok'))\n    router.handle(Request('GET', '/test'))\n    assert log == ['before', 'after']",
+    "def test_middleware_order():\n    router = Router()\n    order = []\n    class MW1(Middleware):\n        def process(self, request, next_handler):\n            order.append('mw1_before')\n            resp = next_handler(request)\n            order.append('mw1_after')\n            return resp\n    class MW2(Middleware):\n        def process(self, request, next_handler):\n            order.append('mw2_before')\n            resp = next_handler(request)\n            order.append('mw2_after')\n            return resp\n    router.use(MW1())\n    router.use(MW2())\n    router.add_route('GET', '/x', lambda req: Response(200, 'ok'))\n    router.handle(Request('GET', '/x'))\n    assert order == ['mw1_before', 'mw2_before', 'mw2_after', 'mw1_after']",
+    "def test_middleware_modifies_request():\n    router = Router()\n    class AuthMiddleware(Middleware):\n        def process(self, request, next_handler):\n            request.headers['user'] = 'admin'\n            return next_handler(request)\n    router.use(AuthMiddleware())\n    router.add_route('GET', '/secure', lambda req: Response(200, req.headers.get('user')))\n    resp = router.handle(Request('GET', '/secure'))\n    assert resp.body == 'admin'"
+  ],
+  "constraints": [
+    "Path params use :name syntax (e.g. /users/:id)",
+    "Middleware process() receives request and next_handler callable",
+    "Middleware chain executes in order added, wrapping like an onion",
+    "Unmatched routes return Response with status_code 404",
+    "route_types.py exports Request, Response, Route, Middleware",
+    "router.py imports from route_types.py and exports Router"
+  ],
+  "helper_code": {},
+  "tags": ["web", "routing", "middleware", "multi-file"]
+}

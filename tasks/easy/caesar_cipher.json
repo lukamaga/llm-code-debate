@@ -1,0 +1,21 @@
+{
+  "id": "caesar_cipher",
+  "name": "Caesar Cipher",
+  "difficulty": "easy",
+  "description": "Implement Caesar cipher encryption and decryption. The encrypt function shifts each letter forward by the given amount, wrapping around from z to a. The decrypt function reverses the process. Non-alphabetic characters are preserved unchanged. Both uppercase and lowercase letters should be handled, preserving their case.",
+  "signature": "def caesar_encrypt(text: str, shift: int) -> str:\ndef caesar_decrypt(text: str, shift: int) -> str:",
+  "tests": [
+    "def test_encrypt_basic():\n    assert caesar_encrypt('abc', 1) == 'bcd'",
+    "def test_encrypt_wrap():\n    assert caesar_encrypt('xyz', 3) == 'abc'",
+    "def test_encrypt_preserves_non_alpha():\n    assert caesar_encrypt('hello, world!', 5) == 'mjqqt, btwqi!'",
+    "def test_encrypt_uppercase():\n    assert caesar_encrypt('ABC', 1) == 'BCD'",
+    "def test_decrypt_basic():\n    assert caesar_decrypt('bcd', 1) == 'abc'",
+    "def test_decrypt_reverses_encrypt():\n    assert caesar_decrypt(caesar_encrypt('Hello World', 7), 7) == 'Hello World'",
+    "def test_encrypt_zero_shift():\n    assert caesar_encrypt('hello', 0) == 'hello'",
+    "def test_encrypt_full_rotation():\n    assert caesar_encrypt('hello', 26) == 'hello'"
+  ],
+  "constraints": [
+    "0 <= shift <= 26",
+    "text contains only ASCII characters"
+  ]
+}

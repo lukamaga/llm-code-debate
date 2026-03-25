@@ -1,0 +1,22 @@
+{
+  "id": "valid_sudoku",
+  "name": "Valid Sudoku",
+  "difficulty": "medium",
+  "description": "Determine if a 9x9 Sudoku board is valid. Only the filled cells need to be validated according to the following rules: Each row must contain the digits 1-9 without repetition. Each column must contain the digits 1-9 without repetition. Each of the nine 3x3 sub-boxes of the grid must contain the digits 1-9 without repetition. The board is represented as a list of lists of strings. Empty cells are indicated by the character '.'.",
+  "signature": "def is_valid_sudoku(board: list[list[str]]) -> bool:",
+  "tests": [
+    "def test_valid_board():\n    board = [\n        ['5','3','.','.','7','.','.','.','.'],\n        ['6','.','.','1','9','5','.','.','.'],\n        ['.','9','8','.','.','.','.','6','.'],\n        ['8','.','.','.','6','.','.','.','3'],\n        ['4','.','.','8','.','3','.','.','1'],\n        ['7','.','.','.','2','.','.','.','6'],\n        ['.','6','.','.','.','.','2','8','.'],\n        ['.','.','.','4','1','9','.','.','5'],\n        ['.','.','.','.','8','.','.','7','9']\n    ]\n    assert is_valid_sudoku(board) == True",
+    "def test_invalid_row():\n    board = [\n        ['5','3','.','.','7','.','.','.','.'],\n        ['6','.','.','1','9','5','.','.','.'],\n        ['.','9','8','.','.','.','.','6','.'],\n        ['8','.','.','.','6','.','.','.','3'],\n        ['4','.','.','8','.','3','.','.','1'],\n        ['7','.','.','.','2','.','.','.','6'],\n        ['.','6','.','.','.','.','2','8','.'],\n        ['.','.','.','4','1','9','.','.','5'],\n        ['.','.','.','.','8','.','.','7','7']\n    ]\n    assert is_valid_sudoku(board) == False",
+    "def test_invalid_column():\n    board = [\n        ['5','3','.','.','7','.','.','.','.'],\n        ['6','.','.','1','9','5','.','.','.'],\n        ['.','9','8','.','.','.','.','6','.'],\n        ['8','.','.','.','6','.','.','.','3'],\n        ['4','.','.','8','.','3','.','.','1'],\n        ['5','.','.','.','2','.','.','.','6'],\n        ['.','6','.','.','.','.','2','8','.'],\n        ['.','.','.','4','1','9','.','.','5'],\n        ['.','.','.','.','8','.','.','7','9']\n    ]\n    assert is_valid_sudoku(board) == False",
+    "def test_invalid_box():\n    board = [\n        ['5','3','.','.','7','.','.','.','.'],\n        ['6','.','.','1','9','5','.','.','.'],\n        ['.','5','8','.','.','.','.','6','.'],\n        ['8','.','.','.','6','.','.','.','3'],\n        ['4','.','.','8','.','3','.','.','1'],\n        ['7','.','.','.','2','.','.','.','6'],\n        ['.','6','.','.','.','.','2','8','.'],\n        ['.','.','.','4','1','9','.','.','5'],\n        ['.','.','.','.','8','.','.','7','9']\n    ]\n    assert is_valid_sudoku(board) == False",
+    "def test_empty_board():\n    board = [['.' for _ in range(9)] for _ in range(9)]\n    assert is_valid_sudoku(board) == True",
+    "def test_single_value():\n    board = [['.' for _ in range(9)] for _ in range(9)]\n    board[0][0] = '1'\n    assert is_valid_sudoku(board) == True",
+    "def test_duplicate_in_same_box():\n    board = [['.' for _ in range(9)] for _ in range(9)]\n    board[0][0] = '1'\n    board[1][1] = '1'\n    assert is_valid_sudoku(board) == False"
+  ],
+  "constraints": [
+    "board is always 9x9",
+    "Each cell contains a digit '1'-'9' or '.'",
+    "Only filled cells need to be validated",
+    "A valid board is not necessarily solvable"
+  ]
+}

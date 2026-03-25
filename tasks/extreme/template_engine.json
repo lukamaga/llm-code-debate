@@ -1,0 +1,30 @@
+{
+  "id": "template_engine",
+  "name": "Template Rendering Engine",
+  "difficulty": "extreme",
+  "description": "Implement a template rendering engine across two modules. Module lexer.py must define: TokenType enum with values TEXT, VAR, IF, ELSE, ENDIF, FOR, ENDFOR; Token dataclass with fields type (TokenType), value (str); tokenize(template) -> list[Token] function that parses templates with {{ var }} for variables, {% if condition %}, {% else %}, {% endif %} for conditionals, and {% for item in collection %}, {% endfor %} for loops. Module renderer.py must import from lexer.py and implement TemplateEngine class with method render(template, context) -> str that tokenizes then renders the template. Variable lookup supports dot notation (e.g. user.name). Missing variables render as empty string. For loops iterate over lists in context. If blocks evaluate truthiness of context variable.",
+  "required_files": ["lexer.py", "renderer.py"],
+  "test_imports": ["from lexer import tokenize, Token, TokenType", "from renderer import TemplateEngine"],
+  "signature": "# lexer.py\nfrom dataclasses import dataclass\nfrom enum import Enum\n\nclass TokenType(Enum):\n    TEXT = 'TEXT'\n    VAR = 'VAR'\n    IF = 'IF'\n    ELSE = 'ELSE'\n    ENDIF = 'ENDIF'\n    FOR = 'FOR'\n    ENDFOR = 'ENDFOR'\n\n@dataclass\nclass Token:\n    type: TokenType\n    value: str\n\ndef tokenize(template: str) -> list[Token]: ...\n\n# renderer.py\nfrom lexer import tokenize, Token, TokenType\n\nclass TemplateEngine:\n    def render(self, template: str, context: dict) -> str: ...",
+  "tests": [
+    "def test_plain_text():\n    engine = TemplateEngine()\n    assert engine.render('Hello World', {}) == 'Hello World'",
+    "def test_variable_substitution():\n    engine = TemplateEngine()\n    result = engine.render('Hello {{ name }}!', {'name': 'Alice'})\n    assert result == 'Hello Alice!'",
+    "def test_dot_notation():\n    engine = TemplateEngine()\n    result = engine.render('{{ user.name }}', {'user': {'name': 'Bob'}})\n    assert result == 'Bob'",
+    "def test_missing_variable():\n    engine = TemplateEngine()\n    result = engine.render('Hi {{ name }}!', {})\n    assert result == 'Hi !'",
+    "def test_if_true():\n    engine = TemplateEngine()\n    result = engine.render('{% if show %}Visible{% endif %}', {'show': True})\n    assert result == 'Visible'",
+    "def test_if_false_with_else():\n    engine = TemplateEngine()\n    result = engine.render('{% if logged_in %}Welcome{% else %}Please login{% endif %}', {'logged_in': False})\n    assert result == 'Please login'",
+    "def test_for_loop():\n    engine = TemplateEngine()\n    result = engine.render('{% for item in items %}{{ item }} {% endfor %}', {'items': ['a', 'b', 'c']})\n    assert result == 'a b c '",
+    "def test_nested_for_with_objects():\n    engine = TemplateEngine()\n    ctx = {'users': [{'name': 'Alice'}, {'name': 'Bob'}]}\n    result = engine.render('{% for user in users %}{{ user.name }},{% endfor %}', ctx)\n    assert result == 'Alice,Bob,'"
+  ],
+  "constraints": [
+    "{{ var }} substitutes variable from context, supports dot notation",
+    "{% if var %} evaluates truthiness of context variable",
+    "{% for item in collection %} iterates over list, binding each element",
+    "Missing variables render as empty string, no errors",
+    "Tokenizer handles arbitrary text between template tags",
+    "lexer.py exports tokenize, Token, TokenType",
+    "renderer.py imports from lexer.py and exports TemplateEngine"
+  ],
+  "helper_code": {},
+  "tags": ["template", "parser", "rendering", "multi-file"]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "three_sum",
+  "name": "Three Sum",
+  "difficulty": "medium",
+  "description": "Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i != j, i != k, and j != k, and nums[i] + nums[j] + nums[k] == 0. The solution set must not contain duplicate triplets. Return the triplets in any order, but each triplet should be sorted in non-decreasing order.",
+  "signature": "def three_sum(nums: list[int]) -> list[list[int]]:",
+  "tests": [
+    "def test_basic():\n    result = three_sum([-1, 0, 1, 2, -1, -4])\n    result = [sorted(t) for t in result]\n    result.sort()\n    assert result == [[-1, -1, 2], [-1, 0, 1]]",
+    "def test_no_solution():\n    assert three_sum([1, 2, 3]) == []",
+    "def test_all_zeros():\n    result = three_sum([0, 0, 0])\n    assert result == [[0, 0, 0]]",
+    "def test_empty():\n    assert three_sum([]) == []",
+    "def test_two_elements():\n    assert three_sum([1, -1]) == []",
+    "def test_duplicates_handled():\n    result = three_sum([-2, 0, 1, 1, 2])\n    result = [sorted(t) for t in result]\n    result.sort()\n    assert result == [[-2, 0, 2], [-2, 1, 1]]",
+    "def test_all_negative():\n    assert three_sum([-1, -2, -3]) == []",
+    "def test_large_set():\n    result = three_sum([-1, 0, 1, 2, -1, -4, -2, -3, 3, 0, 4])\n    result = [sorted(t) for t in result]\n    result.sort()\n    assert [-4, 0, 4] in result\n    assert [-4, 1, 3] in result\n    assert [-1, 0, 1] in result"
+  ],
+  "constraints": [
+    "0 <= len(nums) <= 3000",
+    "-10^5 <= nums[i] <= 10^5",
+    "Solution set must not contain duplicate triplets",
+    "Each triplet should be sorted in non-decreasing order"
+  ]
+}

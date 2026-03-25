@@ -1,0 +1,31 @@
+{
+  "id": "schema_validator",
+  "name": "JSON Schema Validator",
+  "difficulty": "extreme",
+  "description": "Implement a JSON Schema validator across two modules. Module schema_types.py must define: SchemaType enum with values STRING, NUMBER, INTEGER, BOOLEAN, OBJECT, ARRAY, NULL; Schema dataclass with fields type (SchemaType), required (list[str], default empty, for OBJECT), properties (dict[str, Schema], default empty, for OBJECT), items (Schema or None, default None, for ARRAY), minimum (float or None), maximum (float or None), min_length (int or None), max_length (int or None); ValidationError dataclass with fields path (str), message (str); ValidationResult dataclass with fields valid (bool), errors (list[ValidationError]). Module validator.py imports from schema_types.py and implements SchemaValidator class with method validate(data, schema) -> ValidationResult. Validation checks type, required fields in objects, recursively validates nested properties and array items, and enforces min/max for numbers and minLength/maxLength for strings.",
+  "required_files": ["schema_types.py", "validator.py"],
+  "test_imports": ["from schema_types import Schema, SchemaType, ValidationResult, ValidationError", "from validator import SchemaValidator"],
+  "signature": "# schema_types.py\nfrom dataclasses import dataclass, field\nfrom enum import Enum\nfrom typing import Optional\n\nclass SchemaType(Enum):\n    STRING = 'string'\n    NUMBER = 'number'\n    INTEGER = 'integer'\n    BOOLEAN = 'boolean'\n    OBJECT = 'object'\n    ARRAY = 'array'\n    NULL = 'null'\n\n@dataclass\nclass Schema:\n    type: SchemaType\n    required: list[str] = field(default_factory=list)\n    properties: dict = field(default_factory=dict)  # dict[str, Schema]\n    items: Optional['Schema'] = None\n    minimum: Optional[float] = None\n    maximum: Optional[float] = None\n    min_length: Optional[int] = None\n    max_length: Optional[int] = None\n\n@dataclass\nclass ValidationError:\n    path: str\n    message: str\n\n@dataclass\nclass ValidationResult:\n    valid: bool\n    errors: list[ValidationError] = field(default_factory=list)\n\n# validator.py\nfrom schema_types import Schema, SchemaType, ValidationResult, ValidationError\n\nclass SchemaValidator:\n    def validate(self, data: any, schema: Schema) -> ValidationResult: ...",
+  "tests": [
+    "def test_valid_string():\n    v = SchemaValidator()\n    schema = Schema(type=SchemaType.STRING)\n    result = v.validate('hello', schema)\n    assert result.valid == True\n    assert result.errors == []",
+    "def test_wrong_type():\n    v = SchemaValidator()\n    schema = Schema(type=SchemaType.STRING)\n    result = v.validate(42, schema)\n    assert result.valid == False\n    assert len(result.errors) >= 1",
+    "def test_required_fields():\n    v = SchemaValidator()\n    schema = Schema(type=SchemaType.OBJECT, required=['name', 'age'], properties={\n        'name': Schema(type=SchemaType.STRING),\n        'age': Schema(type=SchemaType.INTEGER)\n    })\n    result = v.validate({'name': 'Alice'}, schema)\n    assert result.valid == False\n    assert any('age' in e.message or 'age' in e.path for e in result.errors)",
+    "def test_valid_object():\n    v = SchemaValidator()\n    schema = Schema(type=SchemaType.OBJECT, required=['name'], properties={\n        'name': Schema(type=SchemaType.STRING)\n    })\n    result = v.validate({'name': 'Alice'}, schema)\n    assert result.valid == True",
+    "def test_nested_object_validation():\n    v = SchemaValidator()\n    address_schema = Schema(type=SchemaType.OBJECT, required=['city'], properties={\n        'city': Schema(type=SchemaType.STRING)\n    })\n    schema = Schema(type=SchemaType.OBJECT, required=['address'], properties={\n        'address': address_schema\n    })\n    result = v.validate({'address': {'city': 123}}, schema)\n    assert result.valid == False",
+    "def test_array_items():\n    v = SchemaValidator()\n    schema = Schema(type=SchemaType.ARRAY, items=Schema(type=SchemaType.INTEGER))\n    assert v.validate([1, 2, 3], schema).valid == True\n    result = v.validate([1, 'two', 3], schema)\n    assert result.valid == False",
+    "def test_number_range():\n    v = SchemaValidator()\n    schema = Schema(type=SchemaType.NUMBER, minimum=0, maximum=100)\n    assert v.validate(50, schema).valid == True\n    assert v.validate(-1, schema).valid == False\n    assert v.validate(101, schema).valid == False",
+    "def test_string_length():\n    v = SchemaValidator()\n    schema = Schema(type=SchemaType.STRING, min_length=2, max_length=5)\n    assert v.validate('ab', schema).valid == True\n    assert v.validate('a', schema).valid == False\n    assert v.validate('abcdef', schema).valid == False",
+    "def test_complex_nested():\n    v = SchemaValidator()\n    schema = Schema(type=SchemaType.OBJECT, required=['users'], properties={\n        'users': Schema(type=SchemaType.ARRAY, items=Schema(\n            type=SchemaType.OBJECT, required=['name', 'score'], properties={\n                'name': Schema(type=SchemaType.STRING, min_length=1),\n                'score': Schema(type=SchemaType.NUMBER, minimum=0, maximum=100)\n            }\n        ))\n    })\n    valid_data = {'users': [{'name': 'Alice', 'score': 95}, {'name': 'Bob', 'score': 80}]}\n    assert v.validate(valid_data, schema).valid == True\n    invalid_data = {'users': [{'name': '', 'score': 150}]}\n    result = v.validate(invalid_data, schema)\n    assert result.valid == False\n    assert len(result.errors) >= 2"
+  ],
+  "constraints": [
+    "Type checking maps: STRING->str, NUMBER->int|float, INTEGER->int, BOOLEAN->bool, OBJECT->dict, ARRAY->list, NULL->NoneType",
+    "Required field checking only applies to OBJECT schemas",
+    "Nested objects and array items are validated recursively",
+    "ValidationResult.errors contains path info for locating errors (e.g. 'address.city')",
+    "min/max apply to numbers, min_length/max_length apply to strings",
+    "schema_types.py exports Schema, SchemaType, ValidationResult, ValidationError",
+    "validator.py imports from schema_types.py and exports SchemaValidator"
+  ],
+  "helper_code": {},
+  "tags": ["validation", "schema", "recursive", "multi-file"]
+}

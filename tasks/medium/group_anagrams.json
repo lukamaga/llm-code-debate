@@ -1,0 +1,20 @@
+{
+  "id": "group_anagrams",
+  "name": "Group Anagrams",
+  "difficulty": "medium",
+  "description": "Given an array of strings strs, group the anagrams together. You can return the answer in any order. An Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.",
+  "signature": "def group_anagrams(strs: list[str]) -> list[list[str]]:",
+  "tests": [
+    "def test_basic():\n    result = group_anagrams(['eat', 'tea', 'tan', 'ate', 'nat', 'bat'])\n    result = [sorted(g) for g in result]\n    result.sort()\n    assert result == [['ate', 'eat', 'tea'], ['bat'], ['nat', 'tan']]",
+    "def test_empty_string():\n    result = group_anagrams([''])\n    assert result == [['']]",
+    "def test_single():\n    result = group_anagrams(['a'])\n    assert result == [['a']]",
+    "def test_no_anagrams():\n    result = group_anagrams(['abc', 'def', 'ghi'])\n    result = [sorted(g) for g in result]\n    result.sort()\n    assert len(result) == 3",
+    "def test_all_same():\n    result = group_anagrams(['ab', 'ba', 'ab'])\n    result = [sorted(g) for g in result]\n    assert result == [['ab', 'ab', 'ba']]"
+  ],
+  "constraints": [
+    "1 <= strs.length <= 10^4",
+    "0 <= strs[i].length <= 100",
+    "strs[i] consists of lowercase English letters"
+  ],
+  "tags": ["hash-table", "string", "sorting"]
+}

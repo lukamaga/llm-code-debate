@@ -129,6 +129,9 @@ class Solution:
     generation_time: float = 0.0
     timestamp: datetime = field(default_factory=datetime.now)
     
+    # Multi-file support
+    code_files: dict[str, str] = field(default_factory=dict)  # filename → code for multi-file solutions
+
     # Voting
     votes_received: int = 0
     
@@ -146,6 +149,20 @@ class Solution:
             return 0.0
         return self.execution_result.pass_rate
     
+    def extract_code_files(self) -> dict[str, str]:
+        """Extract code files, stripping markdown markers from each."""
+        result = {}
+        for filename, file_code in self.code_files.items():
+            code = file_code.strip()
+            if code.startswith("```python"):
+                code = code[9:]
+            elif code.startswith("```"):
+                code = code[3:]
+            if code.endswith("```"):
+                code = code[:-3]
+            result[filename] = code.strip()
+        return result
+
     def extract_code_block(self) -> str:
         """Extract code from markdown code block if present."""
         code = self.code.strip()
@@ -162,7 +179,7 @@ class Solution:
         return code.strip()
     
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d = {
             "id": self.id,
             "agent_id": self.agent_id,
             "round_num": self.round_num,
@@ -175,6 +192,9 @@ class Solution:
             "execution_result": self.execution_result.to_dict() if self.execution_result else None,
             "quality_metrics": self.quality_metrics.to_dict() if self.quality_metrics else None,
         }
+        if self.code_files:
+            d["code_files"] = self.code_files
+        return d
 
 
 @dataclass
@@ -194,6 +214,14 @@ class Task:
     hints: list[str] = field(default_factory=list)
     expected_complexity: str | None = None
     tags: list[str] = field(default_factory=list)
+    helper_code: dict[str, str] = field(default_factory=dict)  # filename → code for multi-file tasks
+    required_files: list[str] = field(default_factory=list)    # files LLM must write for multi-file tasks
+    test_imports: list[str] = field(default_factory=list)      # custom imports for test file
+
+    @property
+    def is_multi_file(self) -> bool:
+        """True when the LLM must produce multiple files."""
+        return len(self.required_files) > 0
     
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Task:
@@ -209,10 +237,13 @@ class Task:
             hints=data.get("hints", []),
             expected_complexity=data.get("expected_complexity"),
             tags=data.get("tags", []),
+            helper_code=data.get("helper_code", {}),
+            required_files=data.get("required_files", []),
+            test_imports=data.get("test_imports", []),
         )
     
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d = {
             "id": self.id,
             "name": self.name,
             "difficulty": self.difficulty,
@@ -224,6 +255,13 @@ class Task:
             "expected_complexity": self.expected_complexity,
             "tags": self.tags,
         }
+        if self.helper_code:
+            d["helper_code"] = self.helper_code
+        if self.required_files:
+            d["required_files"] = self.required_files
+        if self.test_imports:
+            d["test_imports"] = self.test_imports
+        return d
     
     def get_test_code(self) -> str:
         """Get all tests as a single code block."""

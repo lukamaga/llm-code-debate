@@ -1,0 +1,25 @@
+{
+  "id": "count_inversions",
+  "name": "Count Inversions",
+  "difficulty": "hard",
+  "description": "Given an array of integers, count the number of inversions. An inversion is a pair of indices (i, j) where i < j but arr[i] > arr[j]. Use a modified merge sort to achieve O(n log n) time complexity. A brute force O(n^2) approach is not acceptable for large inputs.",
+  "signature": "def count_inversions(arr: list[int]) -> int:",
+  "tests": [
+    "def test_basic():\n    assert count_inversions([2, 4, 1, 3, 5]) == 3",
+    "def test_sorted_array():\n    assert count_inversions([1, 2, 3, 4, 5]) == 0",
+    "def test_reverse_sorted():\n    assert count_inversions([5, 4, 3, 2, 1]) == 10",
+    "def test_single_element():\n    assert count_inversions([42]) == 0",
+    "def test_empty():\n    assert count_inversions([]) == 0",
+    "def test_duplicates():\n    assert count_inversions([3, 1, 2, 3, 1]) == 6",
+    "def test_two_elements_inverted():\n    assert count_inversions([2, 1]) == 1",
+    "def test_two_elements_sorted():\n    assert count_inversions([1, 2]) == 0",
+    "def test_all_same():\n    assert count_inversions([5, 5, 5, 5]) == 0"
+  ],
+  "constraints": [
+    "0 <= len(arr) <= 10^5",
+    "Array elements can be any integer including negatives",
+    "Expected O(n log n) time complexity",
+    "Do not modify the original array"
+  ],
+  "tags": ["divide-and-conquer", "merge-sort", "sorting"]
+}

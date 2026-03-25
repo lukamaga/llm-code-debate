@@ -1,0 +1,23 @@
+{
+  "id": "task_scheduler_simple",
+  "name": "Task Scheduler",
+  "difficulty": "medium",
+  "description": "Given a list of tasks represented by characters and a non-negative integer n representing the cooldown interval between two same tasks, return the least number of intervals the CPU will take to finish all the given tasks. Each task takes one unit of time. During the cooldown interval, the CPU can either execute a different task or remain idle. Tasks can be executed in any order.",
+  "signature": "def least_interval(tasks: list[str], n: int) -> int:",
+  "tests": [
+    "def test_basic():\n    assert least_interval(['A','A','A','B','B','B'], 2) == 8",
+    "def test_no_cooldown():\n    assert least_interval(['A','A','A','B','B','B'], 0) == 6",
+    "def test_single_task_type():\n    assert least_interval(['A','A','A'], 2) == 7",
+    "def test_many_types():\n    assert least_interval(['A','A','A','B','B','B','C','C','C','D','D','E'], 2) == 12",
+    "def test_single_task():\n    assert least_interval(['A'], 5) == 1",
+    "def test_cooldown_one():\n    assert least_interval(['A','A','A','B','B','B'], 1) == 6",
+    "def test_all_different():\n    assert least_interval(['A','B','C','D'], 3) == 4",
+    "def test_dominant_task():\n    assert least_interval(['A','A','A','A','B','C'], 2) == 10"
+  ],
+  "constraints": [
+    "1 <= len(tasks) <= 10^4",
+    "tasks[i] is an uppercase English letter",
+    "0 <= n <= 100",
+    "Tasks can be executed in any order"
+  ]
+}

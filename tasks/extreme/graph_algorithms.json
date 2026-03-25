@@ -1,0 +1,34 @@
+{
+  "id": "graph_algorithms",
+  "name": "Graph Library with Algorithms",
+  "difficulty": "extreme",
+  "description": "Implement a comprehensive graph library across three modules. Module graph_types.py defines: EdgeType enum (DIRECTED, UNDIRECTED, WEIGHTED); Vertex dataclass with field id (str); Edge dataclass with fields source (str), target (str), weight (float, default 1.0). Module graph.py imports from graph_types.py and implements Graph class with methods: add_vertex(id), add_edge(source, target, weight=1.0), neighbors(vertex_id) -> list[tuple[str, float]], has_vertex(id) -> bool, has_edge(source, target) -> bool, vertices() -> list[str], is_directed property. Constructor takes directed=False parameter. For undirected graphs, add_edge adds in both directions. Module algorithms.py imports from graph.py and graph_types.py and implements: bfs(graph, start) -> list[str] returning visit order, dfs(graph, start) -> list[str] returning visit order, dijkstra(graph, start, end) -> tuple[list[str], float] returning (path, distance), has_cycle(graph) -> bool, topological_sort(graph) -> list[str] for directed acyclic graphs.",
+  "required_files": ["graph_types.py", "graph.py", "algorithms.py"],
+  "test_imports": ["from graph_types import Vertex, Edge, EdgeType", "from graph import Graph", "from algorithms import bfs, dfs, dijkstra, has_cycle, topological_sort"],
+  "signature": "# graph_types.py\nfrom dataclasses import dataclass\nfrom enum import Enum\n\nclass EdgeType(Enum):\n    DIRECTED = 'directed'\n    UNDIRECTED = 'undirected'\n    WEIGHTED = 'weighted'\n\n@dataclass\nclass Vertex:\n    id: str\n\n@dataclass\nclass Edge:\n    source: str\n    target: str\n    weight: float = 1.0\n\n# graph.py\nfrom graph_types import Vertex, Edge\n\nclass Graph:\n    def __init__(self, directed: bool = False): ...\n    @property\n    def is_directed(self) -> bool: ...\n    def add_vertex(self, id: str) -> None: ...\n    def add_edge(self, source: str, target: str, weight: float = 1.0) -> None: ...\n    def neighbors(self, vertex_id: str) -> list[tuple[str, float]]: ...\n    def has_vertex(self, id: str) -> bool: ...\n    def has_edge(self, source: str, target: str) -> bool: ...\n    def vertices(self) -> list[str]: ...\n\n# algorithms.py\nfrom graph import Graph\n\ndef bfs(graph: Graph, start: str) -> list[str]: ...\ndef dfs(graph: Graph, start: str) -> list[str]: ...\ndef dijkstra(graph: Graph, start: str, end: str) -> tuple[list[str], float]: ...\ndef has_cycle(graph: Graph) -> bool: ...\ndef topological_sort(graph: Graph) -> list[str]: ...",
+  "tests": [
+    "def test_graph_construction():\n    g = Graph(directed=True)\n    g.add_vertex('a')\n    g.add_vertex('b')\n    g.add_edge('a', 'b')\n    assert g.has_vertex('a')\n    assert g.has_edge('a', 'b')\n    assert not g.has_edge('b', 'a')",
+    "def test_undirected_graph():\n    g = Graph(directed=False)\n    g.add_vertex('a')\n    g.add_vertex('b')\n    g.add_edge('a', 'b')\n    assert g.has_edge('a', 'b')\n    assert g.has_edge('b', 'a')",
+    "def test_bfs_order():\n    g = Graph()\n    for v in ['a', 'b', 'c', 'd']:\n        g.add_vertex(v)\n    g.add_edge('a', 'b')\n    g.add_edge('a', 'c')\n    g.add_edge('b', 'd')\n    result = bfs(g, 'a')\n    assert result[0] == 'a'\n    assert set(result) == {'a', 'b', 'c', 'd'}\n    assert result.index('a') < result.index('b')\n    assert result.index('a') < result.index('c')\n    assert result.index('b') < result.index('d')",
+    "def test_dfs_visits_all():\n    g = Graph()\n    for v in ['a', 'b', 'c', 'd']:\n        g.add_vertex(v)\n    g.add_edge('a', 'b')\n    g.add_edge('b', 'c')\n    g.add_edge('a', 'd')\n    result = dfs(g, 'a')\n    assert result[0] == 'a'\n    assert set(result) == {'a', 'b', 'c', 'd'}",
+    "def test_dijkstra_shortest_path():\n    g = Graph()\n    for v in ['a', 'b', 'c', 'd']:\n        g.add_vertex(v)\n    g.add_edge('a', 'b', 1)\n    g.add_edge('b', 'd', 2)\n    g.add_edge('a', 'c', 4)\n    g.add_edge('c', 'd', 1)\n    path, dist = dijkstra(g, 'a', 'd')\n    assert path == ['a', 'b', 'd']\n    assert dist == 3",
+    "def test_dijkstra_no_path():\n    g = Graph(directed=True)\n    g.add_vertex('a')\n    g.add_vertex('b')\n    path, dist = dijkstra(g, 'a', 'b')\n    assert path == []\n    assert dist == float('inf')",
+    "def test_has_cycle_true():\n    g = Graph(directed=True)\n    for v in ['a', 'b', 'c']:\n        g.add_vertex(v)\n    g.add_edge('a', 'b')\n    g.add_edge('b', 'c')\n    g.add_edge('c', 'a')\n    assert has_cycle(g) == True",
+    "def test_has_cycle_false():\n    g = Graph(directed=True)\n    for v in ['a', 'b', 'c']:\n        g.add_vertex(v)\n    g.add_edge('a', 'b')\n    g.add_edge('a', 'c')\n    assert has_cycle(g) == False",
+    "def test_topological_sort():\n    g = Graph(directed=True)\n    for v in ['a', 'b', 'c', 'd']:\n        g.add_vertex(v)\n    g.add_edge('a', 'b')\n    g.add_edge('a', 'c')\n    g.add_edge('b', 'd')\n    g.add_edge('c', 'd')\n    result = topological_sort(g)\n    assert result.index('a') < result.index('b')\n    assert result.index('a') < result.index('c')\n    assert result.index('b') < result.index('d')\n    assert result.index('c') < result.index('d')",
+    "def test_neighbors_with_weights():\n    g = Graph()\n    g.add_vertex('a')\n    g.add_vertex('b')\n    g.add_vertex('c')\n    g.add_edge('a', 'b', 5.0)\n    g.add_edge('a', 'c', 3.0)\n    nbrs = g.neighbors('a')\n    nbr_dict = {n: w for n, w in nbrs}\n    assert nbr_dict['b'] == 5.0\n    assert nbr_dict['c'] == 3.0"
+  ],
+  "constraints": [
+    "Undirected graphs store edges in both directions",
+    "neighbors() returns list of (vertex_id, weight) tuples",
+    "BFS uses queue, DFS uses stack (or recursion)",
+    "Dijkstra returns (path, distance); empty path and inf distance if unreachable",
+    "topological_sort only works on directed acyclic graphs",
+    "has_cycle detects back edges in directed graphs",
+    "graph_types.py exports Vertex, Edge, EdgeType",
+    "graph.py imports from graph_types.py and exports Graph",
+    "algorithms.py imports from graph.py and exports bfs, dfs, dijkstra, has_cycle, topological_sort"
+  ],
+  "helper_code": {},
+  "tags": ["graph", "algorithms", "multi-file", "three-files"]
+}

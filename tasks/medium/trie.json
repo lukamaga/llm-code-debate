@@ -1,0 +1,21 @@
+{
+  "id": "trie",
+  "name": "Trie (Prefix Tree)",
+  "difficulty": "medium",
+  "description": "Implement a Trie (prefix tree) that supports insert, search, startsWith, and delete operations. The delete operation should only remove a word if it exists and should not affect other words that share a common prefix.",
+  "signature": "class Trie:\n    def __init__(self):\n        pass\n    def insert(self, word: str) -> None:\n        pass\n    def search(self, word: str) -> bool:\n        pass\n    def starts_with(self, prefix: str) -> bool:\n        pass\n    def delete(self, word: str) -> bool:\n        pass\n    def count_prefix(self, prefix: str) -> int:\n        pass",
+  "tests": [
+    "def test_insert_and_search():\n    t = Trie()\n    t.insert('apple')\n    assert t.search('apple') == True\n    assert t.search('app') == False",
+    "def test_starts_with():\n    t = Trie()\n    t.insert('apple')\n    assert t.starts_with('app') == True\n    assert t.starts_with('apx') == False",
+    "def test_delete():\n    t = Trie()\n    t.insert('apple')\n    t.insert('app')\n    assert t.delete('apple') == True\n    assert t.search('apple') == False\n    assert t.search('app') == True",
+    "def test_delete_nonexistent():\n    t = Trie()\n    t.insert('apple')\n    assert t.delete('app') == False\n    assert t.search('apple') == True",
+    "def test_count_prefix():\n    t = Trie()\n    t.insert('apple')\n    t.insert('app')\n    t.insert('application')\n    t.insert('banana')\n    assert t.count_prefix('app') == 3\n    assert t.count_prefix('ban') == 1\n    assert t.count_prefix('xyz') == 0",
+    "def test_empty_string():\n    t = Trie()\n    t.insert('')\n    assert t.search('') == True\n    assert t.starts_with('') == True"
+  ],
+  "constraints": [
+    "Words consist of lowercase English letters",
+    "All operations should be O(m) where m is word length",
+    "delete should return True if word existed, False otherwise"
+  ],
+  "tags": ["trie", "design", "string"]
+}

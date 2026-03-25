@@ -1,0 +1,31 @@
+{
+  "id": "query_engine",
+  "name": "SQL-like Query Engine",
+  "difficulty": "extreme",
+  "description": "Implement a simple SQL-like query engine across two modules. Module query_parser.py must define: SelectQuery dataclass with fields columns (list of str, '*' for all), table (str), where (list of Condition or None), order_by (str or None), order_dir (str 'ASC'/'DESC', default 'ASC'), limit (int or None); Condition dataclass with fields column (str), operator (str: '=', '!=', '<', '>', '<=', '>='), value (any); parse(query_string) -> SelectQuery function that parses SQL-like strings. Module executor.py must import from query_parser.py and implement QueryEngine class with methods: create_table(name, columns) to define table schema, insert(table, row_dict) to add rows, execute(query_string) -> list[dict] that parses then runs the query. Supports SELECT columns FROM table WHERE conditions ORDER BY column ASC/DESC LIMIT n.",
+  "required_files": ["query_parser.py", "executor.py"],
+  "test_imports": ["from query_parser import parse, SelectQuery, Condition", "from executor import QueryEngine"],
+  "signature": "# query_parser.py\nfrom dataclasses import dataclass, field\nfrom typing import Any\n\n@dataclass\nclass Condition:\n    column: str\n    operator: str\n    value: Any\n\n@dataclass\nclass SelectQuery:\n    columns: list[str]\n    table: str\n    where: list[Condition] = field(default_factory=list)\n    order_by: str | None = None\n    order_dir: str = 'ASC'\n    limit: int | None = None\n\ndef parse(query_string: str) -> SelectQuery: ...\n\n# executor.py\nfrom query_parser import parse, SelectQuery\n\nclass QueryEngine:\n    def __init__(self): ...\n    def create_table(self, name: str, columns: list[str]) -> None: ...\n    def insert(self, table: str, row: dict) -> None: ...\n    def execute(self, query: str) -> list[dict]: ...",
+  "tests": [
+    "def test_parse_basic_select():\n    q = parse('SELECT name, age FROM users')\n    assert q.columns == ['name', 'age']\n    assert q.table == 'users'\n    assert q.where == []",
+    "def test_basic_select():\n    engine = QueryEngine()\n    engine.create_table('users', ['name', 'age'])\n    engine.insert('users', {'name': 'Alice', 'age': 30})\n    engine.insert('users', {'name': 'Bob', 'age': 25})\n    result = engine.execute('SELECT name FROM users')\n    assert [r['name'] for r in result] == ['Alice', 'Bob']",
+    "def test_select_star():\n    engine = QueryEngine()\n    engine.create_table('items', ['id', 'value'])\n    engine.insert('items', {'id': 1, 'value': 'x'})\n    result = engine.execute('SELECT * FROM items')\n    assert result == [{'id': 1, 'value': 'x'}]",
+    "def test_where_equals():\n    engine = QueryEngine()\n    engine.create_table('users', ['name', 'age'])\n    engine.insert('users', {'name': 'Alice', 'age': 30})\n    engine.insert('users', {'name': 'Bob', 'age': 25})\n    result = engine.execute('SELECT name FROM users WHERE age = 30')\n    assert len(result) == 1\n    assert result[0]['name'] == 'Alice'",
+    "def test_where_comparison():\n    engine = QueryEngine()\n    engine.create_table('products', ['name', 'price'])\n    engine.insert('products', {'name': 'A', 'price': 10})\n    engine.insert('products', {'name': 'B', 'price': 20})\n    engine.insert('products', {'name': 'C', 'price': 30})\n    result = engine.execute('SELECT name FROM products WHERE price > 15')\n    names = [r['name'] for r in result]\n    assert 'B' in names and 'C' in names and 'A' not in names",
+    "def test_order_by_asc():\n    engine = QueryEngine()\n    engine.create_table('nums', ['val'])\n    engine.insert('nums', {'val': 3})\n    engine.insert('nums', {'val': 1})\n    engine.insert('nums', {'val': 2})\n    result = engine.execute('SELECT val FROM nums ORDER BY val ASC')\n    assert [r['val'] for r in result] == [1, 2, 3]",
+    "def test_order_by_desc():\n    engine = QueryEngine()\n    engine.create_table('nums', ['val'])\n    engine.insert('nums', {'val': 3})\n    engine.insert('nums', {'val': 1})\n    engine.insert('nums', {'val': 2})\n    result = engine.execute('SELECT val FROM nums ORDER BY val DESC')\n    assert [r['val'] for r in result] == [3, 2, 1]",
+    "def test_limit():\n    engine = QueryEngine()\n    engine.create_table('data', ['x'])\n    for i in range(10):\n        engine.insert('data', {'x': i})\n    result = engine.execute('SELECT x FROM data LIMIT 3')\n    assert len(result) == 3",
+    "def test_combined_query():\n    engine = QueryEngine()\n    engine.create_table('scores', ['name', 'score'])\n    engine.insert('scores', {'name': 'Alice', 'score': 85})\n    engine.insert('scores', {'name': 'Bob', 'score': 92})\n    engine.insert('scores', {'name': 'Carol', 'score': 78})\n    engine.insert('scores', {'name': 'Dave', 'score': 95})\n    result = engine.execute('SELECT name FROM scores WHERE score > 80 ORDER BY score DESC LIMIT 2')\n    assert [r['name'] for r in result] == ['Dave', 'Bob']"
+  ],
+  "constraints": [
+    "Parser handles SELECT columns FROM table with optional WHERE, ORDER BY, LIMIT",
+    "WHERE supports operators: =, !=, <, >, <=, >=",
+    "Numeric values in WHERE clauses are parsed as numbers for comparison",
+    "SELECT * returns all columns",
+    "ORDER BY defaults to ASC if direction not specified",
+    "query_parser.py exports parse, SelectQuery, Condition",
+    "executor.py imports from query_parser.py and exports QueryEngine"
+  ],
+  "helper_code": {},
+  "tags": ["database", "parser", "query", "multi-file"]
+}

@@ -4,8 +4,11 @@ Prompts for LLM agents and response parsing.
 from __future__ import annotations
 
 import ast
+import logging
 import re
 from typing import TYPE_CHECKING
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from ..models import Task, Solution, Critique
@@ -104,16 +107,17 @@ def build_critique_prompt(
     for i, sol in enumerate(solutions, 1):
         if sol.agent_id == agent_id:
             continue  # Skip own solution
-        code = sol.extract_code_block()
         test_info = ""
         if sol.execution_result:
             er = sol.execution_result
             test_info = f"\nTest Results: {er.tests_passed}/{er.tests_total} passed ({sol.pass_rate:.0%})"
+        if sol.code_files:
+            code_display = format_multi_file_code_display(sol)
+        else:
+            code_display = f"```python\n{sol.extract_code_block()}\n```"
         solutions_text += f"""
 ### Solution {i} (by {sol.agent_id}){test_info}
-```python
-{code}
-```
+{code_display}
 """
 
     return f"""## Task: {task.name}
@@ -159,7 +163,10 @@ def build_revision_prompt(
     all_critiques: list["Critique"] | None = None,
 ) -> str:
     """Build prompt for revising solution based on critiques."""
-    own_code = own_solution.extract_code_block()
+    if own_solution.code_files:
+        own_code_display = format_multi_file_code_display(own_solution)
+    else:
+        own_code_display = f"```python\n{own_solution.extract_code_block()}\n```"
 
     # Test results for own solution
     own_test_info = ""
@@ -186,16 +193,17 @@ From {crit.agent_id}:
     if all_solutions:
         for sol in all_solutions:
             if sol.agent_id != own_solution.agent_id:
-                code = sol.extract_code_block()
                 test_info = ""
                 if sol.execution_result:
                     er = sol.execution_result
                     test_info = f" ({er.tests_passed}/{er.tests_total} tests, {sol.pass_rate:.0%})"
+                if sol.code_files:
+                    code_display = format_multi_file_code_display(sol)
+                else:
+                    code_display = f"```python\n{sol.extract_code_block()}\n```"
                 other_solutions_text += f"""
 ### {sol.agent_id}'s Solution{test_info}
-```python
-{code}
-```
+{code_display}
 """
 
     # Discussion summary (critiques of other solutions)
@@ -213,9 +221,7 @@ From {crit.agent_id}:
 
 ## Your Current Solution
 {own_test_info}
-```python
-{own_code}
-```
+{own_code_display}
 
 ## Critiques Received
 {critiques_text if critiques_text else "No critiques received."}
@@ -241,8 +247,17 @@ Based on the critiques and other solutions:
 2. **Adopt another solution** - If another solution is clearly better, you can adopt it
 3. **Create a hybrid** - Combine the best parts of multiple solutions
 
-Provide your revised (or adopted) solution wrapped in ```python and ``` markers.
-"""
+Provide your revised (or adopted) solution wrapped in ```python and ``` markers."""
+
+    if task.is_multi_file:
+        prompt += f"""
+
+**Multi-file format:** Your solution must include ALL required files.
+Use the # FILE: filename.py format for each file:
+
+""" + "\n".join(f"# FILE: {f}" for f in task.required_files)
+
+    prompt += "\n"
 
     return prompt
 
@@ -255,18 +270,19 @@ def build_voting_prompt(
     """Build prompt for voting on best solution."""
     solutions_text = ""
     for i, sol in enumerate(solutions, 1):
-        code = sol.extract_code_block()
         test_info = ""
         if sol.execution_result:
             er = sol.execution_result
             test_info = f" - {er.tests_passed}/{er.tests_total} tests passed ({sol.pass_rate:.0%})"
         is_own = " (YOUR SOLUTION)" if sol.agent_id == agent_id else ""
+        if sol.code_files:
+            code_display = format_multi_file_code_display(sol)
+        else:
+            code_display = f"```python\n{sol.extract_code_block()}\n```"
         solutions_text += f"""
 ### Solution {i}{is_own}{test_info}
 By: {sol.agent_id}
-```python
-{code}
-```
+{code_display}
 """
 
     return f"""## Task: {task.name}
@@ -408,24 +424,39 @@ def parse_critique_response(response: str) -> dict:
                 result["critiques"].append(current_critique)
             current_critique = {"solution_num": int(section), "bugs": []}
         elif current_critique and section.strip():
-            # Parse bugs
-            bug_patterns = [
-                r"(?:bug|error|issue|problem)[:\s]*(.+?)(?:\n|$)",
-                r"[-*]\s*(.+?)(?:\n|$)",
-            ]
-            for pattern in bug_patterns:
-                bugs = re.findall(pattern, section, re.IGNORECASE)
-                for bug in bugs:
+            # Parse bugs — scoped to "Bugs Found" section only
+            bugs_section_match = re.search(
+                r"\*?\*?bugs?\s*found\*?\*?[:\s]*(.*?)(?=\*\*(?:rating|improvement|would)|###|$)",
+                section,
+                re.IGNORECASE | re.DOTALL,
+            )
+            if bugs_section_match:
+                # Extract bullets only from the bugs section
+                bugs_text = bugs_section_match.group(1)
+                bug_bullets = re.findall(r"[-*]\s*(.+?)(?:\n|$)", bugs_text)
+                for bug in bug_bullets:
+                    bug_text = bug.strip()
+                    if len(bug_text) > 10 and "none" not in bug_text.lower():
+                        current_critique["bugs"].append(bug_text)
+            else:
+                # Fallback: only keyword-based bug detection (no generic bullets)
+                keyword_bugs = re.findall(
+                    r"(?:bug|error|issue|problem)[:\s]*(.+?)(?:\n|$)",
+                    section,
+                    re.IGNORECASE,
+                )
+                for bug in keyword_bugs:
                     bug_text = bug.strip()
                     if len(bug_text) > 10 and "rating" not in bug_text.lower():
                         current_critique["bugs"].append(bug_text)
 
             # Parse ratings
-            ratings = _parse_ratings(section)
+            ratings, ratings_found = _parse_ratings(section)
             current_critique.update(ratings)
+            current_critique["ratings_parsed"] = ratings_found
 
             # Parse would adopt
-            adopt_match = re.search(r"would\s*adopt[:\s]*(yes|no)", section, re.IGNORECASE)
+            adopt_match = re.search(r"would\s*adopt[*:\s]*(yes|no)", section, re.IGNORECASE)
             if adopt_match:
                 current_critique["would_adopt"] = adopt_match.group(1).lower() == "yes"
 
@@ -434,19 +465,21 @@ def parse_critique_response(response: str) -> dict:
 
     # If no structured critiques found, create default
     if not result["critiques"]:
+        logger.warning("No structured critiques parsed from response: %s", response[:200])
         result["critiques"] = [{
             "solution_num": 1,
             "bugs": [],
             "correctness_rating": 5,
             "efficiency_rating": 5,
             "readability_rating": 5,
+            "ratings_parsed": False,
         }]
 
     return result
 
 
-def _parse_ratings(text: str) -> dict:
-    """Extract ratings from text."""
+def _parse_ratings(text: str) -> tuple[dict, bool]:
+    """Extract ratings from text. Returns (ratings_dict, all_found)."""
     ratings = {}
 
     patterns = [
@@ -463,12 +496,15 @@ def _parse_ratings(text: str) -> dict:
             except ValueError:
                 ratings[key] = 5
 
+    # Check if all ratings were actually found before setting defaults
+    all_found = len(ratings) == len(patterns)
+
     # Set defaults if not found
     for _, key in patterns:
         if key not in ratings:
             ratings[key] = 5
 
-    return ratings
+    return ratings, all_found
 
 
 def parse_vote_response(response: str) -> dict:
@@ -488,10 +524,30 @@ def parse_vote_response(response: str) -> dict:
         "reasoning": "",
     }
 
-    # Parse VOTE line
+    # Parse VOTE line — primary pattern
     vote_match = re.search(r"VOTE[:\s]*(\d+)", response, re.IGNORECASE)
     if vote_match:
         result["voted_solution"] = int(vote_match.group(1))
+    else:
+        # Fallback patterns for natural language vote expressions
+        fallback_vote_patterns = [
+            r"(?:I\s+)?vote\s+(?:for\s+)?solution\s*(\d+)",
+            r"(?:choose|select|prefer)\s+solution\s*(\d+)",
+            r"solution\s*(\d+)\s+is\s+(?:the\s+)?(?:best|winner|my\s+(?:choice|pick|vote))",
+            r"(?:best|winning)\s+solution[:\s]*(\d+)",
+            r"(?:my\s+)?(?:choice|pick)\s+(?:is\s+)?(?:solution\s*)?(\d+)",
+        ]
+        for pattern in fallback_vote_patterns:
+            match = re.search(pattern, response, re.IGNORECASE)
+            if match:
+                result["voted_solution"] = int(match.group(1))
+                logger.warning(
+                    "Vote parsed via fallback pattern '%s': %s",
+                    pattern, response[:200],
+                )
+                break
+        else:
+            logger.warning("Failed to parse vote from response: %s", response[:200])
 
     # Parse CONFIDENCE line
     conf_match = re.search(r"CONFIDENCE[:\s]*([\d.]+)", response, re.IGNORECASE)
@@ -500,6 +556,11 @@ def parse_vote_response(response: str) -> dict:
             result["confidence"] = min(1.0, max(0.0, float(conf_match.group(1))))
         except ValueError:
             pass
+    else:
+        # Fallback: look for percentage
+        pct_match = re.search(r"(\d+)\s*%", response)
+        if pct_match:
+            result["confidence"] = min(1.0, max(0.0, int(pct_match.group(1)) / 100))
 
     # Parse REASONING line
     reason_match = re.search(r"REASONING[:\s]*(.+?)(?:\n|$)", response, re.IGNORECASE | re.DOTALL)
@@ -515,3 +576,104 @@ def parse_vote_response(response: str) -> dict:
         result["vote_type"] = "defend"
 
     return result
+
+
+# =============================================================================
+# Multi-File Support
+# =============================================================================
+
+def build_multi_file_proposal_prompt(task: "Task") -> str:
+    """Build prompt for multi-file solution proposal."""
+    files_list = "\n".join(f"- `{f}`" for f in task.required_files)
+
+    constraints_text = chr(10).join(f'- {c}' for c in task.constraints)
+
+    return f"""## Task: {task.name}
+
+### Description
+{task.description}
+
+### Required Files
+You must implement the following files:
+{files_list}
+
+### Signatures / Interfaces
+```
+{task.signature}
+```
+
+### Constraints
+{constraints_text}
+
+### Instructions
+Write complete Python implementations for ALL required files listed above.
+Each file must be a separate, complete Python module with correct imports between modules.
+
+**IMPORTANT: Format your response with labeled code blocks like this:**
+
+# FILE: filename1.py
+```python
+# your code for filename1.py
+```
+
+# FILE: filename2.py
+```python
+# your code for filename2.py
+```
+
+Every required file MUST be included. Make sure imports between your modules are correct."""
+
+
+def extract_multi_file_code_from_response(
+    response: str,
+    required_files: list[str],
+) -> dict[str, str]:
+    """
+    Extract multiple labeled code blocks from LLM response.
+
+    Supports formats:
+    1. # FILE: filename.py  followed by ```python block
+    2. ### filename.py  followed by ```python block
+    3. Fallback: assign unnamed blocks to required_files in order
+
+    Returns dict of filename -> code.
+    """
+    code_files: dict[str, str] = {}
+
+    # Strategy 1: # FILE: filename.py pattern
+    file_pattern = r'#\s*FILE:\s*(\S+\.py)\s*\n\s*```(?:python)?\s*\n(.*?)```'
+    matches = re.findall(file_pattern, response, re.DOTALL)
+    if matches:
+        for filename, code in matches:
+            code_files[filename] = code.strip()
+
+    # Strategy 2: ### filename.py or ## filename.py pattern
+    if not all(f in code_files for f in required_files):
+        alt_pattern = r'#{1,3}\s*`?(\S+\.py)`?\s*\n\s*```(?:python)?\s*\n(.*?)```'
+        alt_matches = re.findall(alt_pattern, response, re.DOTALL)
+        for filename, code in alt_matches:
+            if filename not in code_files:
+                code_files[filename] = code.strip()
+
+    # Strategy 3: Fallback — assign unnamed ```python blocks to required_files in order
+    if not all(f in code_files for f in required_files):
+        python_pattern = r'```python\s*\n(.*?)```'
+        blocks = re.findall(python_pattern, response, re.DOTALL)
+        missing = [f for f in required_files if f not in code_files]
+        unassigned = [b.strip() for b in blocks if b.strip() not in code_files.values()]
+        for fname, block in zip(missing, unassigned):
+            code_files[fname] = block
+
+    return code_files
+
+
+def format_multi_file_code_display(solution: "Solution") -> str:
+    """Format multi-file solution for display in prompts."""
+    if solution.code_files:
+        parts = []
+        files = solution.extract_code_files()
+        for fname, fcode in files.items():
+            parts.append(f"# FILE: {fname}\n```python\n{fcode}\n```")
+        return "\n\n".join(parts)
+    else:
+        return f"```python\n{solution.extract_code_block()}\n```"

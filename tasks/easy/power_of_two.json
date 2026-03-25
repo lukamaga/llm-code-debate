@@ -1,0 +1,20 @@
+{
+  "id": "power_of_two",
+  "name": "Power of Two",
+  "difficulty": "easy",
+  "description": "Given an integer n, return True if it is a power of two, and False otherwise. A power of two is a number of the form 2^k where k is a non-negative integer (1, 2, 4, 8, 16, ...).",
+  "signature": "def is_power_of_two(n: int) -> bool:",
+  "tests": [
+    "def test_one():\n    assert is_power_of_two(1) == True",
+    "def test_two():\n    assert is_power_of_two(2) == True",
+    "def test_three():\n    assert is_power_of_two(3) == False",
+    "def test_sixteen():\n    assert is_power_of_two(16) == True",
+    "def test_zero():\n    assert is_power_of_two(0) == False",
+    "def test_negative():\n    assert is_power_of_two(-1) == False",
+    "def test_1024():\n    assert is_power_of_two(1024) == True",
+    "def test_six():\n    assert is_power_of_two(6) == False"
+  ],
+  "constraints": [
+    "-2^31 <= n <= 2^31 - 1"
+  ]
+}

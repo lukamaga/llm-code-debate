@@ -1,0 +1,23 @@
+{
+  "id": "decode_ways",
+  "name": "Decode Ways",
+  "difficulty": "medium",
+  "description": "A message containing letters from A-Z can be encoded into numbers using the mapping: 'A' -> '1', 'B' -> '2', ..., 'Z' -> '26'. Given a string s containing only digits, return the number of ways to decode it. For example, '11106' can be decoded as 'AAJF' (1 1 10 6) or 'KJF' (11 10 6), so the answer is 2. Note that groupings like (1 11 06) are invalid because '06' is not a valid code. A string with leading zero in any group is invalid. Return 0 for an empty string.",
+  "signature": "def num_decodings(s: str) -> int:",
+  "tests": [
+    "def test_two_ways():\n    assert num_decodings('12') == 2",
+    "def test_three_ways():\n    assert num_decodings('226') == 3",
+    "def test_leading_zero():\n    assert num_decodings('06') == 0",
+    "def test_ten():\n    assert num_decodings('10') == 1",
+    "def test_complex_with_zero():\n    assert num_decodings('2101') == 1",
+    "def test_longer_string():\n    assert num_decodings('11106') == 2",
+    "def test_empty_string():\n    assert num_decodings('') == 0",
+    "def test_single_digit():\n    assert num_decodings('7') == 1"
+  ],
+  "constraints": [
+    "0 <= len(s) <= 100",
+    "s contains only digits",
+    "Leading zeros make a grouping invalid",
+    "Return 0 for empty string"
+  ]
+}

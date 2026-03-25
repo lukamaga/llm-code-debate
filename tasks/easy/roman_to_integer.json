@@ -1,0 +1,21 @@
+{
+  "id": "roman_to_integer",
+  "name": "Roman to Integer",
+  "difficulty": "easy",
+  "description": "Given a Roman numeral string, convert it to an integer. Roman numerals use I=1, V=5, X=10, L=50, C=100, D=500, M=1000. When a smaller value appears before a larger value, it is subtracted (e.g., IV=4, IX=9).",
+  "signature": "def roman_to_int(s: str) -> int:",
+  "tests": [
+    "def test_three():\n    assert roman_to_int('III') == 3",
+    "def test_four():\n    assert roman_to_int('IV') == 4",
+    "def test_nine():\n    assert roman_to_int('IX') == 9",
+    "def test_forty_two():\n    assert roman_to_int('XLII') == 42",
+    "def test_1994():\n    assert roman_to_int('MCMXCIV') == 1994",
+    "def test_fifty_eight():\n    assert roman_to_int('LVIII') == 58",
+    "def test_one():\n    assert roman_to_int('I') == 1",
+    "def test_thousand():\n    assert roman_to_int('M') == 1000"
+  ],
+  "constraints": [
+    "s contains only characters I, V, X, L, C, D, M",
+    "1 <= value <= 3999"
+  ]
+}

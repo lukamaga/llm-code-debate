@@ -6,13 +6,16 @@
   <component name="ChangeListManager">
     <list default="true" id="9b54595d-a693-41f0-9500-300bba269ea5" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/debate_results.db" beforeDir="false" afterPath="$PROJECT_DIR$/debate_results.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/core/consensus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/consensus.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/analysis/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/analysis/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/analysis/metrics_collector.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/analysis/metrics_collector.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/core/executor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/executor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/core/orchestrator.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/orchestrator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/core/prompts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/prompts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/critique.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/critique.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/metrics.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/models/solution.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/solution.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/web/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/web/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/web/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/web/app.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,6 +72,10 @@
       <workItem from="1770119634059" duration="46000" />
       <workItem from="1770119719533" duration="754000" />
       <workItem from="1770152948696" duration="2220000" />
+      <workItem from="1770944119091" duration="4000" />
+      <workItem from="1771280207409" duration="77000" />
+      <workItem from="1774439364387" duration="264000" />
+      <workItem from="1774439705333" duration="269000" />
     </task>
     <servers />
   </component>

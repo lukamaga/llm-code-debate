@@ -1,0 +1,20 @@
+{
+  "id": "count_vowels",
+  "name": "Count Vowels",
+  "difficulty": "easy",
+  "description": "Given a string, return the number of vowels (a, e, i, o, u) in it. The count should be case-insensitive.",
+  "signature": "def count_vowels(s: str) -> int:",
+  "tests": [
+    "def test_hello():\n    assert count_vowels('hello') == 2",
+    "def test_empty():\n    assert count_vowels('') == 0",
+    "def test_all_upper_vowels():\n    assert count_vowels('AEIOU') == 5",
+    "def test_no_vowels():\n    assert count_vowels('bcdfg') == 0",
+    "def test_mixed_case():\n    assert count_vowels('aAbBcC') == 2",
+    "def test_all_vowels_lower():\n    assert count_vowels('aeiou') == 5",
+    "def test_sentence():\n    assert count_vowels('The quick brown fox') == 5"
+  ],
+  "constraints": [
+    "0 <= len(s) <= 10000",
+    "s contains only ASCII characters"
+  ]
+}

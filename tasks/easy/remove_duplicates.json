@@ -1,0 +1,21 @@
+{
+  "id": "remove_duplicates",
+  "name": "Remove Duplicates from Sorted Array",
+  "difficulty": "easy",
+  "description": "Given a sorted integer array nums, remove the duplicates in-place such that each element appears only once. Return the number of unique elements. The first k elements of nums should contain the unique elements in their original order.",
+  "signature": "def remove_duplicates(nums: list[int]) -> int:",
+  "tests": [
+    "def test_basic():\n    nums = [1, 1, 2]\n    k = remove_duplicates(nums)\n    assert k == 2\n    assert nums[:k] == [1, 2]",
+    "def test_empty():\n    nums = []\n    assert remove_duplicates(nums) == 0",
+    "def test_all_same():\n    nums = [1, 1, 1]\n    k = remove_duplicates(nums)\n    assert k == 1\n    assert nums[:k] == [1]",
+    "def test_no_duplicates():\n    nums = [1, 2, 3]\n    k = remove_duplicates(nums)\n    assert k == 3\n    assert nums[:k] == [1, 2, 3]",
+    "def test_longer():\n    nums = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4]\n    k = remove_duplicates(nums)\n    assert k == 5\n    assert nums[:k] == [0, 1, 2, 3, 4]",
+    "def test_single():\n    nums = [7]\n    k = remove_duplicates(nums)\n    assert k == 1\n    assert nums[:k] == [7]",
+    "def test_two_unique():\n    nums = [1, 1, 2, 2, 3, 3]\n    k = remove_duplicates(nums)\n    assert k == 3\n    assert nums[:k] == [1, 2, 3]"
+  ],
+  "constraints": [
+    "0 <= len(nums) <= 10000",
+    "nums is sorted in ascending order",
+    "Must modify nums in-place"
+  ]
+}

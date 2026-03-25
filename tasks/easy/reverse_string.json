@@ -1,0 +1,20 @@
+{
+  "id": "reverse_string",
+  "name": "Reverse String",
+  "difficulty": "easy",
+  "description": "Write a function that reverses a string in-place. The input is given as a list of characters. You must do this by modifying the input list, not by creating a new string.",
+  "signature": "def reverse_string(s: list[str]) -> None:",
+  "tests": [
+    "def test_basic():\n    s = ['h', 'e', 'l', 'l', 'o']\n    reverse_string(s)\n    assert s == ['o', 'l', 'l', 'e', 'h']",
+    "def test_even():\n    s = ['H', 'a', 'n', 'n', 'a', 'h']\n    reverse_string(s)\n    assert s == ['h', 'a', 'n', 'n', 'a', 'H']",
+    "def test_single():\n    s = ['A']\n    reverse_string(s)\n    assert s == ['A']",
+    "def test_empty():\n    s = []\n    reverse_string(s)\n    assert s == []",
+    "def test_two():\n    s = ['a', 'b']\n    reverse_string(s)\n    assert s == ['b', 'a']"
+  ],
+  "constraints": [
+    "1 <= s.length <= 10^5",
+    "s[i] is a printable ASCII character",
+    "Must modify list in-place"
+  ],
+  "tags": ["string", "two-pointers"]
+}

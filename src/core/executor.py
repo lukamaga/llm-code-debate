@@ -50,11 +50,21 @@ class CodeExecutor:
             ExecutionResult with test outcomes
         """
         from ..models import ExecutionResult, SolutionStatus, TestResult
+        import json as _json
+
+        # Determine if multi-file
+        is_multi_file = getattr(task, 'is_multi_file', False) and solution.code_files
 
         # Check cache
-        code = solution.extract_code_block()
+        if is_multi_file:
+            code_for_hash = _json.dumps(
+                {k: v for k, v in sorted(solution.code_files.items())},
+                sort_keys=True,
+            )
+        else:
+            code_for_hash = solution.extract_code_block()
         test_code = "\n".join(task.tests)
-        cache_key = hashlib.md5((code + test_code).encode()).hexdigest()
+        cache_key = hashlib.md5((code_for_hash + test_code).encode()).hexdigest()
 
         if cache_key in self._cache:
             logger.debug(f"Cache hit for solution {solution.id}")
@@ -62,12 +72,46 @@ class CodeExecutor:
 
         # Create temp directory for execution
         with tempfile.TemporaryDirectory() as tmpdir:
-            # Write solution code
-            solution_path = Path(tmpdir) / "solution.py"
-            solution_path.write_text(code)
+            if is_multi_file:
+                # Multi-file: write each file the LLM produced
+                extracted = solution.extract_code_files()
+                for filename, file_code in extracted.items():
+                    (Path(tmpdir) / filename).write_text(file_code)
 
-            # Write test file
-            test_content = f"""
+                # Write helper stubs if provided (don't overwrite LLM files)
+                if hasattr(task, 'helper_code') and task.helper_code:
+                    for filename, stub_code in task.helper_code.items():
+                        stub_path = Path(tmpdir) / filename
+                        if not stub_path.exists():
+                            stub_path.write_text(stub_code)
+
+                # Build test file with custom imports
+                import_lines = "\n".join(
+                    getattr(task, 'test_imports', [])
+                ) if getattr(task, 'test_imports', []) else ""
+                test_content = f"""
+import sys
+sys.path.insert(0, "{tmpdir}")
+{import_lines}
+
+{test_code}
+"""
+            else:
+                # Single-file path (unchanged)
+                code = solution.extract_code_block()
+
+                # Write helper files for legacy helper_code support
+                if hasattr(task, 'helper_code') and task.helper_code:
+                    for filename, file_code in task.helper_code.items():
+                        helper_path = Path(tmpdir) / filename
+                        helper_path.write_text(file_code)
+
+                # Write solution code
+                solution_path = Path(tmpdir) / "solution.py"
+                solution_path.write_text(code)
+
+                # Write test file
+                test_content = f"""
 import sys
 sys.path.insert(0, "{tmpdir}")
 from solution import *

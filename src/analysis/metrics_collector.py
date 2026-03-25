@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
+from math import comb
 from typing import Any
 
 from ..models import (
@@ -15,6 +16,7 @@ from ..models import (
     ExperimentSummary,
     Solution,
 )
+from ..models.solution import SolutionStatus
 
 
 class MetricsCollector:
@@ -45,6 +47,19 @@ class MetricsCollector:
                 metrics.final_tests_passed = debate.final_solution.execution_result.tests_passed
                 metrics.final_tests_total = debate.final_solution.execution_result.tests_total
         
+        # Pass@k: count all solutions across rounds
+        n, c = 0, 0
+        for round_data in debate.rounds:
+            for sol in round_data.solutions:
+                n += 1
+                if sol.execution_result and sol.execution_result.all_passed:
+                    c += 1
+        metrics.all_solutions_count = n
+        metrics.passing_solutions_count = c
+        if n > 0:
+            metrics.pass_at_1 = compute_pass_at_k(n, c, min(1, n))
+            metrics.pass_at_3 = compute_pass_at_k(n, c, min(3, n))
+
         # Improvement over initial
         if debate.rounds:
             initial_solutions = debate.rounds[0].solutions
@@ -183,7 +198,51 @@ class MetricsCollector:
         # Pass rate by difficulty
         for diff, rates in pass_by_diff.items():
             summary.pass_rate_by_difficulty[diff] = sum(rates) / len(rates)
-        
+
+        # Pass@k computation
+        debates_by_task: dict[str, list[Debate]] = defaultdict(list)
+        for debate in debates:
+            debates_by_task[debate.task.id].append(debate)
+
+        total_pass_1: list[float] = []
+        total_pass_3: list[float] = []
+        total_pass_5: list[float] = []
+        pass_k_by_diff: dict[str, dict[str, list[float]]] = defaultdict(
+            lambda: defaultdict(list)
+        )
+
+        for task_id, task_debates in debates_by_task.items():
+            n = 0
+            c = 0
+            difficulty = task_debates[0].task.difficulty
+
+            for td in task_debates:
+                for round_data in td.rounds:
+                    for sol in round_data.solutions:
+                        n += 1
+                        if sol.execution_result and sol.execution_result.all_passed:
+                            c += 1
+
+            if n > 0:
+                p1 = compute_pass_at_k(n, c, min(1, n))
+                p3 = compute_pass_at_k(n, c, min(3, n))
+                p5 = compute_pass_at_k(n, c, min(5, n))
+                total_pass_1.append(p1)
+                total_pass_3.append(p3)
+                total_pass_5.append(p5)
+                pass_k_by_diff[difficulty]["pass@1"].append(p1)
+                pass_k_by_diff[difficulty]["pass@3"].append(p3)
+                pass_k_by_diff[difficulty]["pass@5"].append(p5)
+
+        summary.pass_at_1 = sum(total_pass_1) / len(total_pass_1) if total_pass_1 else 0.0
+        summary.pass_at_3 = sum(total_pass_3) / len(total_pass_3) if total_pass_3 else 0.0
+        summary.pass_at_5 = sum(total_pass_5) / len(total_pass_5) if total_pass_5 else 0.0
+
+        for diff, metrics_dict in pass_k_by_diff.items():
+            summary.pass_at_k_by_difficulty[diff] = {
+                k_name: sum(v) / len(v) for k_name, v in metrics_dict.items()
+            }
+
         # Timing
         summary.total_duration = sum(d.duration_seconds for d in debates)
         summary.avg_debate_duration = summary.total_duration / len(debates)
@@ -240,6 +299,29 @@ class MetricsCollector:
         profile.classify_personality()
         
         return profile
+
+
+def compute_pass_at_k(n: int, c: int, k: int) -> float:
+    """
+    Compute pass@k metric (Chen et al., 2021).
+
+    Calculates the probability that at least one of k randomly selected
+    solutions from n total solutions passes all tests, given that c solutions
+    pass all tests.
+
+    Args:
+        n: Total number of generated solutions.
+        c: Number of solutions that pass all tests.
+        k: Number of attempts (samples).
+
+    Returns:
+        Probability that at least 1 of k solutions passes all tests.
+    """
+    if n <= 0 or k <= 0:
+        return 0.0
+    if c >= n or n - c < k:
+        return 1.0
+    return 1.0 - comb(n - c, k) / comb(n, k)
 
 
 def compare_single_vs_multi(

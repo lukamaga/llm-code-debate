@@ -1,0 +1,27 @@
+{
+  "id": "calculator",
+  "name": "Expression Calculator",
+  "difficulty": "extreme",
+  "description": "Build an expression calculator as two separate modules. Module tokenizer.py must implement: TokenType enum (NUMBER, PLUS, MINUS, MULTIPLY, DIVIDE, LPAREN, RPAREN, EOF), Token dataclass (type, value), and Tokenizer class that takes a string and produces a list of Tokens via tokenize() method. Module evaluator.py must import from tokenizer.py and implement ExpressionCalculator class with evaluate(expr: str) -> int method. The calculator must support: addition (+), subtraction (-), multiplication (*), integer division (//), parentheses for grouping, and unary minus. Operator precedence must be respected: parentheses > unary minus > multiplication/division > addition/subtraction.",
+  "required_files": ["tokenizer.py", "evaluator.py"],
+  "test_imports": ["from evaluator import ExpressionCalculator"],
+  "signature": "# tokenizer.py\nfrom enum import Enum\nfrom dataclasses import dataclass\n\nclass TokenType(Enum):\n    NUMBER = 'NUMBER'\n    PLUS = 'PLUS'\n    MINUS = 'MINUS'\n    MULTIPLY = 'MULTIPLY'\n    DIVIDE = 'DIVIDE'\n    LPAREN = 'LPAREN'\n    RPAREN = 'RPAREN'\n    EOF = 'EOF'\n\n@dataclass\nclass Token:\n    type: TokenType\n    value: str | int\n\nclass Tokenizer:\n    def __init__(self, text: str): ...\n    def tokenize(self) -> list[Token]: ...\n\n# evaluator.py\nfrom tokenizer import Tokenizer, Token, TokenType\n\nclass ExpressionCalculator:\n    def evaluate(self, expr: str) -> int: ...",
+  "tests": [
+    "def test_simple_add():\n    calc = ExpressionCalculator()\n    assert calc.evaluate('2 + 3') == 5",
+    "def test_precedence():\n    calc = ExpressionCalculator()\n    assert calc.evaluate('2 + 3 * 4') == 14",
+    "def test_parentheses():\n    calc = ExpressionCalculator()\n    assert calc.evaluate('(2 + 3) * 4') == 20",
+    "def test_nested_parens():\n    calc = ExpressionCalculator()\n    assert calc.evaluate('((2 + 3) * (4 - 1))') == 15",
+    "def test_unary_minus():\n    calc = ExpressionCalculator()\n    assert calc.evaluate('-5 + 3') == -2",
+    "def test_division():\n    calc = ExpressionCalculator()\n    assert calc.evaluate('10 // 3') == 3",
+    "def test_complex():\n    calc = ExpressionCalculator()\n    assert calc.evaluate('2 * (3 + 4) - 8 // 2') == 10",
+    "def test_single_number():\n    calc = ExpressionCalculator()\n    assert calc.evaluate('42') == 42"
+  ],
+  "constraints": [
+    "Expression contains only digits, +, -, *, //, (, ), and spaces",
+    "All intermediate and final results fit in a 64-bit integer",
+    "Division is integer division (truncated toward zero)",
+    "tokenizer.py must export Tokenizer, Token, and TokenType",
+    "evaluator.py must import from tokenizer.py and export ExpressionCalculator"
+  ],
+  "tags": ["parser", "recursion", "multi-file", "design"]
+}

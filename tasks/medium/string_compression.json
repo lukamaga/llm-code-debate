@@ -1,0 +1,23 @@
+{
+  "id": "string_compression",
+  "name": "String Compression",
+  "difficulty": "medium",
+  "description": "Implement a method to perform basic string compression using the counts of repeated characters. For example, the string 'aabcccccaaa' would become 'a2b1c5a3'. If the compressed string would not become smaller than the original string, return the original string. The function should handle uppercase and lowercase letters. Consecutive runs of the same character are compressed, but non-consecutive occurrences are treated as separate runs.",
+  "signature": "def compress(s: str) -> str:",
+  "tests": [
+    "def test_basic_compression():\n    assert compress('aabcccccaaa') == 'a2b1c5a3'",
+    "def test_no_compression_shorter():\n    assert compress('abc') == 'abc'",
+    "def test_empty_string():\n    assert compress('') == ''",
+    "def test_single_char():\n    assert compress('a') == 'a'",
+    "def test_all_same_chars():\n    assert compress('aaaaa') == 'a5'",
+    "def test_two_chars():\n    assert compress('aa') == 'aa'",
+    "def test_alternating():\n    assert compress('ababab') == 'ababab'",
+    "def test_long_run():\n    assert compress('aaaaaaaaaaab') == 'a11b1'"
+  ],
+  "constraints": [
+    "Input string contains only ASCII letters",
+    "Return original string if compressed version is not shorter",
+    "Empty string returns empty string",
+    "Consecutive runs of the same character are compressed independently"
+  ]
+}

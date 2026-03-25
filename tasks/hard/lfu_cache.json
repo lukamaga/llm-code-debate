@@ -1,0 +1,23 @@
+{
+  "id": "lfu_cache",
+  "name": "LFU Cache",
+  "difficulty": "hard",
+  "description": "Implement a Least Frequently Used (LFU) cache. When the cache reaches capacity, the least frequently used key is evicted. If there are multiple keys with the same frequency, the least recently used one is evicted. Both get and put operations must be O(1) time complexity.",
+  "signature": "class LFUCache:\n    def __init__(self, capacity: int):\n        pass\n    def get(self, key: int) -> int:\n        pass\n    def put(self, key: int, value: int) -> None:\n        pass",
+  "tests": [
+    "def test_basic():\n    cache = LFUCache(2)\n    cache.put(1, 1)\n    cache.put(2, 2)\n    assert cache.get(1) == 1\n    cache.put(3, 3)\n    assert cache.get(2) == -1\n    assert cache.get(3) == 3",
+    "def test_frequency_ordering():\n    cache = LFUCache(2)\n    cache.put(1, 1)\n    cache.put(2, 2)\n    cache.get(1)\n    cache.get(1)\n    cache.get(2)\n    cache.put(3, 3)\n    assert cache.get(2) == -1\n    assert cache.get(1) == 1",
+    "def test_update_value():\n    cache = LFUCache(2)\n    cache.put(1, 1)\n    cache.put(1, 10)\n    assert cache.get(1) == 10",
+    "def test_get_missing():\n    cache = LFUCache(2)\n    assert cache.get(1) == -1",
+    "def test_capacity_one():\n    cache = LFUCache(1)\n    cache.put(1, 1)\n    cache.put(2, 2)\n    assert cache.get(1) == -1\n    assert cache.get(2) == 2",
+    "def test_tie_breaking_by_recency():\n    cache = LFUCache(3)\n    cache.put(1, 1)\n    cache.put(2, 2)\n    cache.put(3, 3)\n    cache.get(1)\n    cache.get(2)\n    cache.get(3)\n    cache.put(4, 4)\n    assert cache.get(1) == -1\n    assert cache.get(2) == 2",
+    "def test_zero_capacity():\n    cache = LFUCache(0)\n    cache.put(1, 1)\n    assert cache.get(1) == -1"
+  ],
+  "constraints": [
+    "0 <= capacity <= 10000",
+    "get returns -1 if key not found",
+    "Both get and put must be O(1) average time",
+    "put updates value if key already exists"
+  ],
+  "tags": ["design", "hash-map", "linked-list"]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "word_pattern",
+  "name": "Word Pattern",
+  "difficulty": "medium",
+  "description": "Given a pattern and a string s, find if s follows the same pattern. Here 'follows' means a full match, such that there is a bijection between a letter in pattern and a non-empty word in s. For example, pattern='abba' and s='dog cat cat dog' returns True because 'a' maps to 'dog' and 'b' maps to 'cat' (and vice versa). The string s contains words separated by single spaces with no leading or trailing spaces.",
+  "signature": "def word_pattern(pattern: str, s: str) -> bool:",
+  "tests": [
+    "def test_matching():\n    assert word_pattern('abba', 'dog cat cat dog') == True",
+    "def test_not_matching():\n    assert word_pattern('abba', 'dog cat cat fish') == False",
+    "def test_not_bijection():\n    assert word_pattern('abba', 'dog dog dog dog') == False",
+    "def test_different_lengths():\n    assert word_pattern('abc', 'dog cat') == False",
+    "def test_single_char():\n    assert word_pattern('a', 'dog') == True",
+    "def test_all_same_pattern():\n    assert word_pattern('aaa', 'dog dog dog') == True",
+    "def test_all_different():\n    assert word_pattern('abcd', 'one two three four') == True",
+    "def test_reverse_mismatch():\n    assert word_pattern('ab', 'dog dog') == False"
+  ],
+  "constraints": [
+    "1 <= len(pattern) <= 300",
+    "pattern contains only lowercase English letters",
+    "1 <= len(s) <= 3000",
+    "s contains only lowercase English letters and spaces",
+    "s has no leading or trailing spaces",
+    "Words in s are separated by a single space"
+  ]
+}
