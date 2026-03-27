@@ -73,7 +73,7 @@ async def main():
     parser = argparse.ArgumentParser(description="Run batch experiments")
     parser.add_argument("--tasks-dir", type=str, required=True, help="Directory with task JSON files")
     parser.add_argument("--output", type=str, default="results", help="Output directory")
-    parser.add_argument("--models", nargs="+", default=["qwen2.5-coder:7b", "deepseek-coder:6.7b", "codellama:7b"])
+    parser.add_argument("--models", nargs="+", default=["qwen2.5-coder:7b", "deepseek-coder:6.7b", "codellama:7b-instruct"])
     parser.add_argument("--max-rounds", type=int, default=5)
     parser.add_argument("--difficulty", type=str, choices=["easy", "medium", "hard", "all"], default="all")
     args = parser.parse_args()
