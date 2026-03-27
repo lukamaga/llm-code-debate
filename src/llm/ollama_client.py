@@ -20,9 +20,10 @@ class OllamaClient(BaseLLMClient):
     Supports all Ollama models including:
     - qwen2.5-coder:7b
     - deepseek-coder:6.7b
-    - codellama:7b
+    - codellama:7b-instruct
+    - starcoder2:7b
+    - llama3:latest
     - mistral:7b
-    - llama3:8b
     """
     
     def __init__(
