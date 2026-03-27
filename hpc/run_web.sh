@@ -29,7 +29,7 @@ VENV_DIR="${PROJECT_DIR}/venv_hpc"
 WEB_PORT=5050
 
 # ── Config ────────────────────────────────────────────────────────────────
-MODELS="codellama:7b deepseek-coder:6.7b qwen2.5-coder:7b"
+MODELS="qwen2.5-coder:7b deepseek-coder:6.7b codellama:7b-instruct"
 
 # ── Setup ─────────────────────────────────────────────────────────────────
 cd "${PROJECT_DIR}"
@@ -74,6 +74,7 @@ fi
 echo "Starting Ollama server..."
 # Singularity runs as current user (not root), so we use OLLAMA_MODELS env var
 export OLLAMA_MODELS="${OLLAMA_DATA}"
+export OLLAMA_MAX_LOADED_MODELS=5
 singularity run --nv \
     --bind "${OLLAMA_DATA}:${OLLAMA_DATA}" \
     "${OLLAMA_SIF}" serve &
