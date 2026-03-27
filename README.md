@@ -85,7 +85,7 @@ pip install -r requirements.txt
 # Pull LLM models (choose any combination)
 ollama pull qwen2.5-coder:7b
 ollama pull deepseek-coder:6.7b
-ollama pull codellama:7b
+ollama pull codellama:7b-instruct
 ```
 
 ### Running a Debate
@@ -97,7 +97,7 @@ python scripts/quick_run.py --task tasks/medium/lru_cache.json
 # Specify models and rounds
 python scripts/quick_run.py \
     --task tasks/hard/word_ladder.json \
-    --models qwen2.5-coder:7b deepseek-coder:6.7b codellama:7b \
+    --models qwen2.5-coder:7b deepseek-coder:6.7b codellama:7b-instruct \
     --rounds 5
 ```
 
@@ -217,7 +217,7 @@ agents:
   default:
     - qwen2.5-coder:7b
     - deepseek-coder:6.7b
-    - codellama:7b
+    - codellama:7b-instruct
 
 execution:
   timeout: 30
