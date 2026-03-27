@@ -56,7 +56,10 @@ class DebateRecord(Base):
     duration_seconds = Column(Float)
     start_time = Column(DateTime, default=datetime.utcnow)
     end_time = Column(DateTime)
-    
+
+    # Mode
+    is_solo = Column(Boolean, default=False)
+
     # Full data (JSON)
     full_debate_data = Column(JSON)
     
@@ -79,6 +82,7 @@ class DebateRecord(Base):
             "consensus_reached": self.consensus_reached,
             "total_rounds": self.total_rounds,
             "duration_seconds": self.duration_seconds,
+            "is_solo": self.is_solo or False,
         }
 
 
