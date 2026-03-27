@@ -225,6 +225,29 @@
 
         .btn-close:hover { background: var(--bg3); }
 
+        .btn-secondary {
+            background: var(--bg2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            font-size: 13px;
+            padding: 10px 12px;
+            width: 100%;
+            margin-bottom: 6px;
+            transition: all 0.15s;
+        }
+        .btn-secondary:hover {
+            background: var(--bg3);
+            border-color: var(--accent);
+        }
+
+        .modal-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .modal-footer .btn { margin-top: 0; width: 100%; }
+
         /* Arena */
         .round-bar {
             display: flex;
@@ -516,9 +539,9 @@
             background: var(--bg);
             border-radius: 12px;
             padding: 28px;
-            max-width: 700px;
-            width: 90%;
-            max-height: 80vh;
+            max-width: 900px;
+            width: 95%;
+            max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0,0,0,0.15);
         }
@@ -561,6 +584,204 @@
             font-weight: 600;
         }
 
+        /* Metrics Tabs */
+        .metrics-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .metrics-tab {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text3);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .metrics-tab:hover { color: var(--text); }
+        .metrics-tab.active {
+            color: var(--text);
+            border-bottom-color: var(--text);
+        }
+        .metrics-panel { display: none; }
+        .metrics-panel.active { display: block; }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .metric-row:last-child { border-bottom: none; }
+        .metric-name {
+            font-size: 13px;
+            color: var(--text2);
+            font-weight: 500;
+        }
+        .metric-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .metric-bar-wrap {
+            flex: 1;
+            margin: 0 16px;
+            height: 6px;
+            background: var(--bg2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .metric-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .metric-bar.green { background: var(--green); }
+        .metric-bar.yellow { background: var(--yellow); }
+        .metric-bar.red { background: #ef4444; }
+        .metric-bar.blue { background: #3b82f6; }
+
+        .metric-card {
+            background: var(--bg2);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .metric-card-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text3);
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .improvement-arrow {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .improvement-arrow.up { color: #16a34a; background: #dcfce7; }
+        .improvement-arrow.down { color: #dc2626; background: #fee2e2; }
+        .improvement-arrow.same { color: #737373; background: #f5f5f5; }
+
+        .agent-behavior-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .round-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 120px;
+            padding: 12px 0;
+        }
+        .round-chart-bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            height: 100%;
+            justify-content: flex-end;
+        }
+        .round-chart-bars {
+            display: flex;
+            gap: 2px;
+            align-items: flex-end;
+            width: 100%;
+            height: calc(100% - 20px);
+        }
+        .round-chart-bar {
+            flex: 1;
+            border-radius: 3px 3px 0 0;
+            min-width: 16px;
+            transition: height 0.3s;
+        }
+        .round-chart-label {
+            font-size: 10px;
+            color: var(--text3);
+            font-weight: 600;
+        }
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .chart-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--text2);
+        }
+        .chart-legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .mode-btn {
+            background: var(--bg2);
+            color: var(--text3);
+            border: 1px solid var(--border);
+            font-weight: 600;
+        }
+        .mode-btn.active {
+            background: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .comparison-table th {
+            text-align: left;
+            padding: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text3);
+            border-bottom: 2px solid var(--border);
+        }
+        .comparison-table td {
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .comparison-table .improvement-cell {
+            font-weight: 700;
+        }
+        .improvement-positive { color: #16a34a; }
+        .improvement-negative { color: #dc2626; }
+        .improvement-zero { color: #737373; }
+
+        .comparison-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .comparison-stat {
+            text-align: center;
+            padding: 12px;
+            background: var(--bg2);
+            border-radius: var(--radius);
+        }
+        .comparison-stat-val { font-size: 24px; font-weight: 700; }
+        .comparison-stat-lbl { font-size: 10px; text-transform: uppercase; color: var(--text3); margin-top: 4px; }
+
         /* Responsive */
         @media (max-width: 1200px) {
             .container { grid-template-columns: 260px 1fr; }
@@ -593,13 +814,21 @@
             <div class="panel-header">Configuration</div>
             <div class="panel-body">
                 <div class="field">
+                    <div class="field-label">Mode</div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn mode-btn active" id="modeDebate" onclick="setMode('debate')" style="flex:1; padding:6px 0; font-size:11px;">Debate</button>
+                        <button class="btn mode-btn" id="modeSolo" onclick="setMode('solo')" style="flex:1; padding:6px 0; font-size:11px;">Solo</button>
+                    </div>
+                </div>
+
+                <div class="field">
                     <div class="field-label">Task</div>
                     <select id="taskSelect">
                         <option value="">Select a task...</option>
                     </select>
                 </div>
 
-                <div class="field">
+                <div class="field" id="roundsField">
                     <div class="field-label">Max Rounds</div>
                     <input type="number" id="maxRounds" value="5" min="2" max="10">
                 </div>
@@ -616,8 +845,15 @@
                     </select>
                 </div>
 
-                <button class="btn btn-start" id="startBtn" onclick="startDebate()">Start Debate</button>
+                <button class="btn btn-start" id="startBtn" onclick="startRun()">Start Debate</button>
                 <button class="btn btn-stop" id="stopBtn" onclick="stopDebate()" style="display:none;">Stop</button>
+
+                <div style="margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px;">
+                    <button class="btn btn-secondary" onclick="showBatchModal()">Batch Experiment</button>
+                    <button class="btn btn-secondary" onclick="showComparison()">Compare Solo vs Debate</button>
+                    <a href="/api/export/csv" class="btn btn-secondary" style="display:block; text-align:center; text-decoration:none;">Export CSV</a>
+                    <button class="btn btn-secondary" onclick="showClearConfirm()" style="margin-top:6px; color:var(--red); border-color:var(--red);">Clear All Data</button>
+                </div>
             </div>
         </div>
 
@@ -663,9 +899,67 @@
     <!-- Results Modal -->
     <div class="modal" id="modal">
         <div class="modal-box">
-            <div class="modal-title">Debate Complete</div>
+            <div class="modal-title" id="modalTitle">Debate Complete</div>
             <div id="modalContent"></div>
             <button class="btn btn-close" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <div class="modal" id="comparisonModal">
+        <div class="modal-box">
+            <div class="modal-title">Solo vs Debate Comparison</div>
+            <div id="comparisonContent"><p>Loading...</p></div>
+            <button class="btn btn-close" onclick="document.getElementById('comparisonModal').classList.remove('active')">Close</button>
+        </div>
+    </div>
+
+    <div class="modal" id="batchModal">
+        <div class="modal-box">
+            <div class="modal-title">Batch Experiment</div>
+            <div id="batchContent">
+                <div class="field">
+                    <div class="field-label">Mode</div>
+                    <select id="batchMode">
+                        <option value="debate">Debate</option>
+                        <option value="solo">Solo</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <div class="field-label">Select Tasks</div>
+                    <div id="batchTaskList" style="max-height:200px; overflow-y:auto; background:var(--bg2); border-radius:var(--radius); padding:8px;"></div>
+                    <div style="margin-top:6px; display:flex; gap:4px;">
+                        <button class="btn" onclick="batchSelectAll(true)" style="font-size:10px; padding:4px 8px;">Select All</button>
+                        <button class="btn" onclick="batchSelectAll(false)" style="font-size:10px; padding:4px 8px;">Deselect All</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="field-label">Agents (from main config)</div>
+                    <div id="batchAgentInfo" style="font-size:12px; color:var(--text2);"></div>
+                </div>
+                <div id="batchProgress" style="display:none; margin:12px 0;">
+                    <div style="font-size:12px; margin-bottom:6px;"><span id="batchProgressText">0/0</span></div>
+                    <div style="height:6px; background:var(--bg2); border-radius:3px; overflow:hidden;">
+                        <div id="batchProgressBar" style="height:100%; background:var(--green); width:0%; transition:width 0.3s;"></div>
+                    </div>
+                    <div id="batchLog" style="margin-top:8px; max-height:150px; overflow-y:auto; font-size:11px; color:var(--text2);"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-start" id="batchStartBtn" onclick="startBatch()">Run Batch</button>
+                <button class="btn btn-close" onclick="document.getElementById('batchModal').classList.remove('active')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="clearModal">
+        <div class="modal-box" style="max-width:420px;">
+            <h3 style="margin:0 0 12px; color:var(--red);">Clear All Data</h3>
+            <p style="margin:0 0 8px; font-size:14px; color:var(--text2);">This will permanently delete <strong>all debate results</strong> from the database. This action cannot be undone.</p>
+            <p style="margin:0 0 20px; font-size:13px; color:var(--text2);">Export CSV first if you need the data.</p>
+            <div class="modal-footer">
+                <button class="btn" onclick="confirmClearData()" style="background:var(--red); color:white; border:none;">Yes, Delete All Data</button>
+                <button class="btn btn-close" onclick="document.getElementById('clearModal').classList.remove('active')">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -674,8 +968,113 @@
         let currentAgents = ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b'];
         let agentData = {};
         let currentRoundEl = null;
+        let currentMode = 'debate';
 
         const avatarColors = ['a1','a2','a3','a4'];
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('modeDebate').classList.toggle('active', mode === 'debate');
+            document.getElementById('modeSolo').classList.toggle('active', mode === 'solo');
+            document.getElementById('roundsField').style.display = mode === 'solo' ? 'none' : 'block';
+            document.getElementById('startBtn').textContent = mode === 'solo' ? 'Run Solo' : 'Start Debate';
+        }
+
+        function startRun() {
+            if (currentMode === 'solo') {
+                startSolo();
+            } else {
+                startDebate();
+            }
+        }
+
+        function startSolo() {
+            const taskPath = document.getElementById('taskSelect').value;
+            if (!taskPath) { alert('Select a task'); return; }
+            if (currentAgents.length < 1) { alert('Add at least 1 agent'); return; }
+
+            document.getElementById('timeline').innerHTML = '';
+            document.getElementById('activityFeed').innerHTML = '';
+            document.getElementById('finalCode').style.display = 'none';
+            document.getElementById('roundNum').textContent = '-';
+            document.getElementById('roundStatus').textContent = 'Starting solo run...';
+            document.getElementById('phaseBadge').classList.remove('active');
+            document.getElementById('modalContent').innerHTML = '';
+            currentRoundEl = null;
+            agentData = {};
+
+            socket.emit('start_solo', {
+                task_path: taskPath,
+                agent: currentAgents[0],
+            });
+        }
+
+        function showComparison() {
+            document.getElementById('comparisonContent').innerHTML = '<p>Loading...</p>';
+            document.getElementById('comparisonModal').classList.add('active');
+
+            fetch('/api/comparison')
+                .then(r => r.json())
+                .then(data => {
+                    const agg = data.aggregate || {};
+                    const tasks = data.tasks || [];
+
+                    if (tasks.length === 0) {
+                        document.getElementById('comparisonContent').innerHTML = '<p>No data yet. Run some Solo and Debate experiments first.</p>';
+                        return;
+                    }
+
+                    let html = `
+                        <div class="comparison-summary">
+                            <div class="comparison-stat">
+                                <div class="comparison-stat-val">${agg.total_compared || 0}</div>
+                                <div class="comparison-stat-lbl">Tasks Compared</div>
+                            </div>
+                            <div class="comparison-stat">
+                                <div class="comparison-stat-val improvement-positive">${agg.improved_count || 0}</div>
+                                <div class="comparison-stat-lbl">Improved</div>
+                            </div>
+                            <div class="comparison-stat">
+                                <div class="comparison-stat-val improvement-negative">${agg.worse_count || 0}</div>
+                                <div class="comparison-stat-lbl">Worse</div>
+                            </div>
+                            <div class="comparison-stat">
+                                <div class="comparison-stat-val">${((agg.avg_improvement || 0) * 100).toFixed(1)}%</div>
+                                <div class="comparison-stat-lbl">Avg Improvement</div>
+                            </div>
+                        </div>
+                        <table class="comparison-table">
+                            <thead><tr>
+                                <th>Task</th><th>Difficulty</th><th>Solo %</th><th>Debate %</th><th>Change</th>
+                            </tr></thead><tbody>`;
+
+                    tasks.forEach(t => {
+                        const solo = t.solo_pass_rate != null ? (t.solo_pass_rate * 100).toFixed(0) + '%' : '—';
+                        const debate = t.debate_pass_rate != null ? (t.debate_pass_rate * 100).toFixed(0) + '%' : '—';
+                        let change = '—';
+                        let cls = 'improvement-zero';
+                        if (t.improvement != null) {
+                            const v = (t.improvement * 100).toFixed(1);
+                            if (t.improvement > 0) { change = '+' + v + '%'; cls = 'improvement-positive'; }
+                            else if (t.improvement < 0) { change = v + '%'; cls = 'improvement-negative'; }
+                            else { change = '0%'; }
+                        }
+                        html += `<tr>
+                            <td>${esc(t.task_name || t.task_id)}</td>
+                            <td>${esc(t.difficulty)}</td>
+                            <td>${solo} <small style="color:var(--text3)">(${t.solo_count})</small></td>
+                            <td>${debate} <small style="color:var(--text3)">(${t.debate_count})</small></td>
+                            <td class="improvement-cell ${cls}">${change}</td>
+                        </tr>`;
+                    });
+
+                    html += '</tbody></table>';
+                    document.getElementById('comparisonContent').innerHTML = html;
+                })
+                .catch(err => {
+                    document.getElementById('comparisonContent').innerHTML = '<p>Error loading comparison data.</p>';
+                });
+        }
 
         // Connection
         socket.on('connect', () => {
@@ -784,6 +1183,7 @@
                 }
             }
 
+            document.getElementById('modalTitle').textContent = data.is_solo ? 'Solo Run Complete' : 'Debate Complete';
             showResults(data);
         });
 
@@ -912,9 +1312,10 @@
 
         function loadTasks() {
             fetch('/api/tasks').then(r => r.json()).then(data => {
+                allTasks = data.tasks || [];
                 const sel = document.getElementById('taskSelect');
                 sel.innerHTML = '<option value="">Select a task...</option>';
-                data.tasks.forEach(t => {
+                allTasks.forEach(t => {
                     const o = document.createElement('option');
                     o.value = t.path;
                     o.textContent = '[' + t.difficulty + '] ' + t.name;
@@ -970,6 +1371,13 @@
             document.getElementById('timeline').innerHTML = '';
             document.getElementById('activityFeed').innerHTML = '';
             document.getElementById('finalCode').style.display = 'none';
+            document.getElementById('roundNum').textContent = '-';
+            document.getElementById('roundStatus').textContent = 'Starting...';
+            document.getElementById('phaseBadge').classList.remove('active');
+            document.getElementById('phaseBadge').textContent = 'propose';
+            document.getElementById('modalContent').innerHTML = '';
+            document.querySelectorAll('.agent-card.winner').forEach(c => c.classList.remove('winner'));
+            currentRoundEl = null;
             agentData = {};
 
             socket.emit('start_debate', {
@@ -983,7 +1391,77 @@
 
         function showResults(data) {
             const passRate = (data.final_pass_rate * 100).toFixed(1);
+            const m = data.metrics || {};
+            const rh = data.round_history || [];
+            const crits = data.critiques || [];
+            const agentStats = m.agent_stats || [];
             const c = document.getElementById('modalContent');
+
+            // Helpers
+            const pct = v => v != null ? (v * 100).toFixed(1) + '%' : '—';
+            const num = v => v != null ? (typeof v === 'number' ? (v % 1 === 0 ? v : v.toFixed(1)) : v) : '—';
+            const barColor = v => v >= 0.7 ? 'green' : v >= 0.3 ? 'yellow' : 'red';
+            const improvementBadge = v => {
+                if (v == null || v === 0) return '<span class="improvement-arrow same">—</span>';
+                return v > 0
+                    ? `<span class="improvement-arrow up">+${(v*100).toFixed(1)}%</span>`
+                    : `<span class="improvement-arrow down">${(v*100).toFixed(1)}%</span>`;
+            };
+
+            // Agent colors for chart
+            const chartColors = ['#171717', '#4f46e5', '#06b6d4', '#ec4899'];
+            const agentIds = [...new Set(rh.flatMap(r => Object.keys(r.agents)))];
+
+            // === Build round chart ===
+            let chartHTML = '<div class="round-chart">';
+            rh.forEach(r => {
+                chartHTML += `<div class="round-chart-bar-group"><div class="round-chart-bars">`;
+                agentIds.forEach((aid, i) => {
+                    const pr = r.agents[aid] ? r.agents[aid].pass_rate : 0;
+                    const h = Math.max(pr * 100, 2);
+                    chartHTML += `<div class="round-chart-bar" style="height:${h}%;background:${chartColors[i % 4]}" title="${aid}: ${(pr*100).toFixed(0)}%"></div>`;
+                });
+                chartHTML += `</div><div class="round-chart-label">R${r.round_num}</div></div>`;
+            });
+            chartHTML += '</div>';
+            chartHTML += '<div class="chart-legend">';
+            agentIds.forEach((aid, i) => {
+                const label = aid.replace('agent_', '').replace(/_/g, ' ');
+                chartHTML += `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:${chartColors[i%4]}"></div>${esc(label)}</div>`;
+            });
+            chartHTML += '</div>';
+
+            // === Build critique ratings ===
+            const validCrits = crits.filter(c => c.ratings_parsed !== false);
+            const avgCorr = validCrits.length ? validCrits.reduce((s,c) => s + c.correctness_rating, 0) / validCrits.length : 0;
+            const avgEff = validCrits.length ? validCrits.reduce((s,c) => s + c.efficiency_rating, 0) / validCrits.length : 0;
+            const avgRead = validCrits.length ? validCrits.reduce((s,c) => s + c.readability_rating, 0) / validCrits.length : 0;
+
+            const ratingBar = (label, val) => `
+                <div class="metric-row">
+                    <div class="metric-name">${label}</div>
+                    <div class="metric-bar-wrap"><div class="metric-bar ${val >= 7 ? 'green' : val >= 4 ? 'yellow' : 'red'}" style="width:${val*10}%"></div></div>
+                    <div class="metric-value">${val.toFixed(1)}/10</div>
+                </div>`;
+
+            // === Build agent behavior ===
+            let behaviorHTML = '<div class="agent-behavior-grid">';
+            agentStats.forEach(a => {
+                const label = a.agent_id.replace('agent_', '').replace(/_/g, ' ');
+                behaviorHTML += `
+                    <div class="metric-card">
+                        <div class="metric-card-title">${esc(label)}</div>
+                        <div class="metric-row"><div class="metric-name">Solutions</div><div class="metric-value">${a.solutions_proposed + a.solutions_revised}</div></div>
+                        <div class="metric-row"><div class="metric-name">Critiques Given</div><div class="metric-value">${a.critiques_given}</div></div>
+                        <div class="metric-row"><div class="metric-name">Bugs Found</div><div class="metric-value">${a.bugs_found}</div></div>
+                        <div class="metric-row"><div class="metric-name">Defended</div><div class="metric-value">${a.times_defended}</div></div>
+                        <div class="metric-row"><div class="metric-name">Changed Mind</div><div class="metric-value">${a.times_changed_mind}</div></div>
+                        <div class="metric-row"><div class="metric-name">Adopted Other</div><div class="metric-value">${a.times_adopted_other}</div></div>
+                        <div class="metric-row"><div class="metric-name">Votes Received</div><div class="metric-value">${a.final_votes_received}</div></div>
+                    </div>`;
+            });
+            behaviorHTML += '</div>';
+
             c.innerHTML = `
                 <div class="results-grid">
                     <div class="result-box">
@@ -999,12 +1477,93 @@
                         <div class="result-lbl">Winner</div>
                     </div>
                 </div>
-                <div class="final-code" style="display:block; margin-top: 0;">
-                    <div class="final-code-header"><span>Solution</span></div>
-                    <pre>${esc(data.final_solution || 'No solution')}</pre>
+
+                <div class="metrics-tabs">
+                    <div class="metrics-tab active" onclick="switchTab(this, 'tab-progress')">Progress</div>
+                    <div class="metrics-tab" onclick="switchTab(this, 'tab-quality')">Code Quality</div>
+                    <div class="metrics-tab" onclick="switchTab(this, 'tab-critique')">Critiques</div>
+                    <div class="metrics-tab" onclick="switchTab(this, 'tab-behavior')">Agent Behavior</div>
+                    <div class="metrics-tab" onclick="switchTab(this, 'tab-stats')">Statistics</div>
+                    <div class="metrics-tab" onclick="switchTab(this, 'tab-solution')">Solution</div>
+                </div>
+
+                <div class="metrics-panel active" id="tab-progress">
+                    <div class="metric-card">
+                        <div class="metric-card-title">Pass Rate by Round</div>
+                        ${chartHTML}
+                    </div>
+                    <div class="metric-row"><div class="metric-name">Improvement (vs best initial)</div><div class="metric-value">${improvementBadge(m.improvement_over_best_initial)}</div></div>
+                    <div class="metric-row"><div class="metric-name">Improvement (vs avg initial)</div><div class="metric-value">${improvementBadge(m.improvement_over_avg_initial)}</div></div>
+                    <div class="metric-row"><div class="metric-name">Consensus Reached</div><div class="metric-value">${m.consensus_reached ? 'Yes' : 'No'}</div></div>
+                    <div class="metric-row"><div class="metric-name">Consensus Ratio</div><div class="metric-value">${pct(m.consensus_ratio)}</div></div>
+                </div>
+
+                <div class="metrics-panel" id="tab-quality">
+                    <div class="metric-card">
+                        <div class="metric-card-title">Pylint Score</div>
+                        <div class="metric-row">
+                            <div class="metric-name">Initial (avg)</div>
+                            <div class="metric-bar-wrap"><div class="metric-bar blue" style="width:${(m.initial_avg_pylint||0)*10}%"></div></div>
+                            <div class="metric-value">${num(m.initial_avg_pylint)}/10</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">Final</div>
+                            <div class="metric-bar-wrap"><div class="metric-bar green" style="width:${(m.final_pylint||0)*10}%"></div></div>
+                            <div class="metric-value">${num(m.final_pylint)}/10</div>
+                        </div>
+                    </div>
+                    <div class="metric-row"><div class="metric-name">Cyclomatic Complexity (initial avg)</div><div class="metric-value">${num(m.initial_avg_complexity)}</div></div>
+                    <div class="metric-row"><div class="metric-name">Cyclomatic Complexity (final)</div><div class="metric-value">${num(m.final_complexity)}</div></div>
+                </div>
+
+                <div class="metrics-panel" id="tab-critique">
+                    <div class="metric-card">
+                        <div class="metric-card-title">Average Ratings (from critiques)</div>
+                        ${ratingBar('Correctness', avgCorr)}
+                        ${ratingBar('Efficiency', avgEff)}
+                        ${ratingBar('Readability', avgRead)}
+                    </div>
+                    <div class="metric-row"><div class="metric-name">Total Critiques</div><div class="metric-value">${num(m.total_critiques)}</div></div>
+                    <div class="metric-row"><div class="metric-name">Bugs Found</div><div class="metric-value">${num(m.total_bugs_found)}</div></div>
+                    <div class="metric-row"><div class="metric-name">Bugs Fixed</div><div class="metric-value">${num(m.total_bugs_fixed)}</div></div>
+                    <div class="metric-row"><div class="metric-name">Bug Fix Rate</div><div class="metric-value">${pct(m.bug_fix_rate)}</div></div>
+                    <div class="metric-row"><div class="metric-name">Improvements Suggested</div><div class="metric-value">${num(m.total_improvements_suggested)}</div></div>
+                    ${m.most_bugs_found_by ? `<div class="metric-row"><div class="metric-name">Most Bugs Found By</div><div class="metric-value">${esc(m.most_bugs_found_by)}</div></div>` : ''}
+                </div>
+
+                <div class="metrics-panel" id="tab-behavior">
+                    ${behaviorHTML}
+                </div>
+
+                <div class="metrics-panel" id="tab-stats">
+                    <div class="metric-row"><div class="metric-name">Total Solutions Generated</div><div class="metric-value">${num(m.all_solutions_count)}</div></div>
+                    <div class="metric-row"><div class="metric-name">Passing Solutions</div><div class="metric-value">${num(m.passing_solutions_count)}</div></div>
+                    <div class="metric-row"><div class="metric-name">Pass@1</div><div class="metric-value">${pct(m.pass_at_1)}</div></div>
+                    <div class="metric-row"><div class="metric-name">Pass@3</div><div class="metric-value">${pct(m.pass_at_3)}</div></div>
+                    <div class="metric-row"><div class="metric-name">Duration</div><div class="metric-value">${num(m.total_duration_seconds)}s</div></div>
+                    <div class="metric-row"><div class="metric-name">Avg Round Duration</div><div class="metric-value">${num(m.avg_round_duration)}s</div></div>
+                    <div class="metric-row"><div class="metric-name">LLM Generation Time</div><div class="metric-value">${num(m.total_llm_time)}s</div></div>
+                    <div class="metric-row"><div class="metric-name">Improvement over Best Initial</div><div class="metric-value">${num(m.improvement_over_best_initial)}%</div></div>
+                    <div class="metric-row"><div class="metric-name">Improvement over Avg Initial</div><div class="metric-value">${num(m.improvement_over_avg_initial)}%</div></div>
+                    ${m.baseline_pass_rate != null ? `<div class="metric-row"><div class="metric-name">Baseline Pass Rate (Solo)</div><div class="metric-value">${pct(m.baseline_pass_rate)}</div></div>` : ''}
+                    ${m.improvement_over_baseline != null ? `<div class="metric-row"><div class="metric-name">Improvement over Baseline</div><div class="metric-value">${pct(m.improvement_over_baseline)}</div></div>` : ''}
+                </div>
+
+                <div class="metrics-panel" id="tab-solution">
+                    <div class="final-code" style="display:block; margin-top: 0;">
+                        <div class="final-code-header"><span>Winning Solution</span></div>
+                        <pre>${esc(data.final_solution || 'No solution')}</pre>
+                    </div>
                 </div>
             `;
             document.getElementById('modal').classList.add('active');
+        }
+
+        function switchTab(el, tabId) {
+            el.parentElement.querySelectorAll('.metrics-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            el.closest('.modal-box').querySelectorAll('.metrics-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
         }
 
         function closeModal() { document.getElementById('modal').classList.remove('active'); }
@@ -1014,6 +1573,95 @@
             d.textContent = t;
             return d.innerHTML;
         }
+
+        let allTasks = [];
+
+        function showClearConfirm() {
+            document.getElementById('clearModal').classList.add('active');
+        }
+
+        function confirmClearData() {
+            document.getElementById('clearModal').classList.remove('active');
+            fetch('/api/clear-data', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        addActivity('system', 'All data cleared', 'CLEAR');
+                    } else {
+                        addActivity('system', 'Failed to clear: ' + (data.error || 'unknown'), 'ERROR');
+                    }
+                })
+                .catch(e => addActivity('system', 'Clear failed: ' + e, 'ERROR'));
+        }
+
+        function showBatchModal() {
+            const list = document.getElementById('batchTaskList');
+            list.innerHTML = '';
+            allTasks.forEach(t => {
+                const label = document.createElement('label');
+                label.style.cssText = 'display:block; padding:4px 0; font-size:12px; cursor:pointer;';
+                label.innerHTML = `<input type="checkbox" value="${esc(t.path)}" checked style="margin-right:6px;">[${esc(t.difficulty)}] ${esc(t.name)}`;
+                list.appendChild(label);
+            });
+            document.getElementById('batchAgentInfo').textContent = currentAgents.join(', ') || 'No agents selected';
+            document.getElementById('batchProgress').style.display = 'none';
+            document.getElementById('batchLog').innerHTML = '';
+            document.getElementById('batchStartBtn').disabled = false;
+            document.getElementById('batchModal').classList.add('active');
+        }
+
+        function batchSelectAll(checked) {
+            document.querySelectorAll('#batchTaskList input[type=checkbox]').forEach(cb => cb.checked = checked);
+        }
+
+        function startBatch() {
+            const checkboxes = document.querySelectorAll('#batchTaskList input[type=checkbox]:checked');
+            const taskPaths = Array.from(checkboxes).map(cb => cb.value);
+            const mode = document.getElementById('batchMode').value;
+
+            if (taskPaths.length === 0) { alert('Select at least one task'); return; }
+            if (currentAgents.length === 0) { alert('Add agents in main config first'); return; }
+
+            document.getElementById('batchProgress').style.display = 'block';
+            document.getElementById('batchProgressText').textContent = '0/' + taskPaths.length;
+            document.getElementById('batchProgressBar').style.width = '0%';
+            document.getElementById('batchLog').innerHTML = '';
+            document.getElementById('batchStartBtn').disabled = true;
+
+            socket.emit('start_batch', {
+                task_paths: taskPaths,
+                agents: currentAgents,
+                max_rounds: parseInt(document.getElementById('maxRounds').value),
+                mode: mode,
+            });
+        }
+
+        socket.on('batch_progress', (data) => {
+            const pct = (data.current / data.total * 100).toFixed(0);
+            document.getElementById('batchProgressText').textContent = data.current + '/' + data.total;
+            document.getElementById('batchProgressBar').style.width = pct + '%';
+
+            const log = document.getElementById('batchLog');
+            const statusIcon = data.status === 'done' ? '\u2713' : '\u2717';
+            const passInfo = data.pass_rate != null ? ' (' + (data.pass_rate * 100).toFixed(0) + '%)' : '';
+            const entry = document.createElement('div');
+            entry.textContent = statusIcon + ' ' + data.task_name + passInfo;
+            entry.style.color = data.status === 'done' ? 'var(--green)' : '#ef4444';
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        });
+
+        socket.on('batch_complete', (data) => {
+            document.getElementById('batchStartBtn').disabled = false;
+            const log = document.getElementById('batchLog');
+            const summary = document.createElement('div');
+            summary.style.cssText = 'margin-top:8px; font-weight:700; color:var(--text);';
+            const avgRate = data.results.length
+                ? (data.results.reduce((s, r) => s + (r.pass_rate || 0), 0) / data.results.length * 100).toFixed(1)
+                : 0;
+            summary.textContent = 'Done! ' + data.results.length + '/' + data.total + ' completed. Avg pass rate: ' + avgRate + '%';
+            log.appendChild(summary);
+        });
 
         loadTasks();
         loadModels();
