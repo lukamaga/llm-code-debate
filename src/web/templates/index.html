@@ -838,7 +838,7 @@
                     <div class="agent-cards" id="agentList">
                         <div class="agent-chip">qwen2.5-coder:7b<span class="x" onclick="removeAgent(this)">&times;</span></div>
                         <div class="agent-chip">deepseek-coder:6.7b<span class="x" onclick="removeAgent(this)">&times;</span></div>
-                        <div class="agent-chip">codellama:7b<span class="x" onclick="removeAgent(this)">&times;</span></div>
+                        <div class="agent-chip">codellama:7b-instruct<span class="x" onclick="removeAgent(this)">&times;</span></div>
                     </div>
                     <select id="addAgent" style="margin-top: 8px;">
                         <option value="">+ Add agent...</option>
@@ -965,7 +965,7 @@
 
     <script>
         const socket = io();
-        let currentAgents = ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b'];
+        let currentAgents = ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b-instruct'];
         let agentData = {};
         let currentRoundEl = null;
         let currentMode = 'debate';
@@ -1333,7 +1333,7 @@
                     sel.appendChild(o);
                 });
             }).catch(() => {
-                const models = ['qwen2.5-coder:7b','deepseek-coder:6.7b','codellama:7b','mistral:7b'];
+                const models = ['qwen2.5-coder:7b','deepseek-coder:6.7b','codellama:7b-instruct','starcoder2:7b','llama3:latest','mistral:7b'];
                 const sel = document.getElementById('addAgent');
                 models.forEach(m => {
                     const o = document.createElement('option');
@@ -1603,7 +1603,9 @@
                 label.innerHTML = `<input type="checkbox" value="${esc(t.path)}" checked style="margin-right:6px;">[${esc(t.difficulty)}] ${esc(t.name)}`;
                 list.appendChild(label);
             });
-            document.getElementById('batchAgentInfo').textContent = currentAgents.join(', ') || 'No agents selected';
+            const rounds = document.getElementById('maxRounds').value;
+            document.getElementById('batchAgentInfo').textContent =
+                (currentAgents.join(', ') || 'No agents selected') + '  |  Max rounds: ' + rounds;
             document.getElementById('batchProgress').style.display = 'none';
             document.getElementById('batchLog').innerHTML = '';
             document.getElementById('batchStartBtn').disabled = false;
