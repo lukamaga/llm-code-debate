@@ -92,7 +92,7 @@ def agent_configs_3():
     return [
         AgentConfig(name="agent_1", model="qwen2.5-coder:7b"),
         AgentConfig(name="agent_2", model="deepseek-coder:6.7b"),
-        AgentConfig(name="agent_3", model="codellama:7b"),
+        AgentConfig(name="agent_3", model="codellama:7b-instruct"),
     ]
 
 
