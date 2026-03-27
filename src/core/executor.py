@@ -34,6 +34,57 @@ class CodeExecutor:
         self.max_memory_mb = max_memory_mb
         self._cache: dict[str, "ExecutionResult"] = {}
 
+    @staticmethod
+    def _strip_test_functions(code: str) -> str:
+        """Remove top-level test_ functions from solution code.
+
+        LLMs sometimes include test functions in their solutions.
+        These get discovered by pytest and inflate test counts.
+        """
+        import ast as _ast
+        import re as _re
+
+        try:
+            tree = _ast.parse(code)
+            # Find line ranges of top-level def test_*() functions
+            lines = code.split("\n")
+            remove_ranges: list[tuple[int, int]] = []
+
+            for node in tree.body:
+                if isinstance(node, _ast.FunctionDef) and node.name.startswith("test_"):
+                    start = node.lineno - 1  # 0-indexed
+                    end = node.end_lineno  # end_lineno is 1-indexed, exclusive after slicing
+                    remove_ranges.append((start, end))
+
+            if not remove_ranges:
+                return code
+
+            # Remove lines in reverse order to preserve indices
+            for start, end in reversed(remove_ranges):
+                lines[start:end] = []
+
+            result = "\n".join(lines).strip()
+            logger.debug(f"Stripped {len(remove_ranges)} test function(s) from solution code")
+            return result
+
+        except SyntaxError:
+            # AST failed — fallback to regex removal
+            cleaned_lines = []
+            skip = False
+            for line in code.split("\n"):
+                if _re.match(r"^def test_\w+\s*\(", line):
+                    skip = True
+                    continue
+                if skip:
+                    if line and not line[0].isspace():
+                        skip = False
+                    else:
+                        continue
+                if not skip:
+                    cleaned_lines.append(line)
+
+            return "\n".join(cleaned_lines).strip()
+
     async def execute(
         self,
         solution: "Solution",
@@ -76,6 +127,7 @@ class CodeExecutor:
                 # Multi-file: write each file the LLM produced
                 extracted = solution.extract_code_files()
                 for filename, file_code in extracted.items():
+                    file_code = self._strip_test_functions(file_code)
                     (Path(tmpdir) / filename).write_text(file_code)
 
                 # Write helper stubs if provided (don't overwrite LLM files)
@@ -106,7 +158,8 @@ sys.path.insert(0, "{tmpdir}")
                         helper_path = Path(tmpdir) / filename
                         helper_path.write_text(file_code)
 
-                # Write solution code
+                # Write solution code (strip any test_ functions LLMs may have added)
+                code = self._strip_test_functions(code)
                 solution_path = Path(tmpdir) / "solution.py"
                 solution_path.write_text(code)
 
@@ -162,6 +215,7 @@ from solution import *
         # Run pytest with JSON output
         proc = await asyncio.create_subprocess_exec(
             "python3", "-m", "pytest", str(test_path), "-v", "--tb=short",
+            "-o", "python_files=test_solution.py",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             cwd=working_dir,
