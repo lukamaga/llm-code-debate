@@ -65,6 +65,7 @@ class DebateRepository:
                 duration_seconds=debate.duration_seconds,
                 start_time=debate.start_time,
                 end_time=debate.end_time,
+                is_solo=debate.id.startswith("solo_"),
                 full_debate_data=debate.to_dict(),
             )
             
@@ -263,5 +264,65 @@ class DebateRepository:
                 experiment.debate_ids = debate_ids
                 experiment.total_debates = len(debate_ids)
                 session.commit()
+        finally:
+            session.close()
+
+    def get_comparison_data(self) -> dict[str, Any]:
+        """Get comparison data between solo and debate runs."""
+        session = self._get_session()
+        try:
+            all_records = session.query(DebateRecord).all()
+
+            solo_by_task: dict[str, list[float]] = {}
+            debate_by_task: dict[str, list[float]] = {}
+            task_names: dict[str, str] = {}
+            task_diffs: dict[str, str] = {}
+
+            for d in all_records:
+                tid = d.task_id
+                pr = d.final_pass_rate or 0.0
+                task_names[tid] = d.task_name or tid
+                task_diffs[tid] = d.task_difficulty or "unknown"
+
+                if d.is_solo:
+                    solo_by_task.setdefault(tid, []).append(pr)
+                else:
+                    debate_by_task.setdefault(tid, []).append(pr)
+
+            tasks = []
+            all_task_ids = set(solo_by_task) | set(debate_by_task)
+            for tid in sorted(all_task_ids):
+                solo_rates = solo_by_task.get(tid, [])
+                debate_rates = debate_by_task.get(tid, [])
+                solo_avg = sum(solo_rates) / len(solo_rates) if solo_rates else None
+                debate_avg = sum(debate_rates) / len(debate_rates) if debate_rates else None
+
+                improvement = None
+                if solo_avg is not None and debate_avg is not None:
+                    improvement = debate_avg - solo_avg
+
+                tasks.append({
+                    "task_id": tid,
+                    "task_name": task_names.get(tid, tid),
+                    "difficulty": task_diffs.get(tid, "unknown"),
+                    "solo_pass_rate": solo_avg,
+                    "debate_pass_rate": debate_avg,
+                    "solo_count": len(solo_rates),
+                    "debate_count": len(debate_rates),
+                    "improvement": improvement,
+                })
+
+            # Aggregates
+            improvements = [t["improvement"] for t in tasks if t["improvement"] is not None]
+            return {
+                "tasks": tasks,
+                "aggregate": {
+                    "avg_improvement": sum(improvements) / len(improvements) if improvements else 0,
+                    "improved_count": sum(1 for i in improvements if i > 0),
+                    "same_count": sum(1 for i in improvements if i == 0),
+                    "worse_count": sum(1 for i in improvements if i < 0),
+                    "total_compared": len(improvements),
+                },
+            }
         finally:
             session.close()
