@@ -65,7 +65,7 @@ After `sbatch hpc/run_web.sh`:
 Edit variables at the top of `run_experiment.sh`:
 
 ```bash
-MODELS="codellama:7b deepseek-coder:6.7b qwen2.5-coder:7b"
+MODELS="qwen2.5-coder:7b deepseek-coder:6.7b codellama:7b-instruct"
 MAX_ROUNDS=3
 TASK_DIRS="tasks/easy tasks/medium tasks/hard"
 ```
