@@ -172,6 +172,8 @@ class DebateOrchestrator:
                         round_summary.solutions,
                         round_summary.consensus_result.winning_solution_id
                     )
+                    if not winning_solution:
+                        winning_solution = self._find_best_solution(round_summary.solutions)
                     debate.finalize(
                         status=DebateStatus.CONSENSUS_REACHED,
                         final_solution=winning_solution,
@@ -214,7 +216,92 @@ class DebateOrchestrator:
             )
         
         return debate
-    
+
+    async def run_solo(
+        self,
+        task: Task,
+        agent_config: AgentConfig,
+    ) -> Debate:
+        """
+        Run a single agent solving a task with no debate (baseline mode).
+
+        One agent, one round, no critique/revision/voting.
+        Returns a Debate object for compatibility with DB and metrics.
+        """
+        debate_id = f"solo_{str(uuid.uuid4())[:8]}"
+        agents = self._create_agents([agent_config])
+        agent = agents[0]
+
+        debate = Debate(
+            id=debate_id,
+            task=task,
+            agents=agents,
+            max_rounds=1,
+            consensus_threshold=1.0,
+        )
+        debate.status = DebateStatus.RUNNING
+
+        logger.info(f"Starting solo run {debate_id} on task '{task.name}' with {agent_config.model}")
+
+        if self.on_phase:
+            self.on_phase("propose", 1)
+
+        try:
+            solution = await self._get_proposal(agent, task)
+
+            round_summary = RoundSummary(round_num=1, solutions=[], critiques=[], votes=[])
+
+            if solution:
+                result = await self.executor.execute(solution, task)
+                solution.execution_result = result
+
+                try:
+                    quality = await self.quality_analyzer.analyze(
+                        "\n\n".join(solution.extract_code_files().values()) if solution.code_files else solution.extract_code_block()
+                    )
+                    solution.quality_metrics = quality
+                except Exception as e:
+                    logger.warning(f"Quality analysis failed: {e}")
+
+                round_summary.solutions.append(solution)
+                logger.info(
+                    f"Solo agent {solution.agent_id}: "
+                    f"{result.tests_passed}/{result.tests_total} tests passed"
+                )
+
+                if self.on_message:
+                    self.on_message(AgentMessage(
+                        agent_id=agent.id,
+                        round_num=1,
+                        message_type="proposal",
+                        content=solution.code[:500],
+                    ))
+
+            round_summary.end_time = datetime.now()
+            round_summary.compute_stats()
+            debate.add_round(round_summary)
+
+            if self.on_round_complete:
+                self.on_round_complete(round_summary)
+
+            debate.finalize(
+                status=DebateStatus.EARLY_STOP,
+                final_solution=solution,
+                consensus=ConsensusResult(
+                    reached=True,
+                    winning_solution_id=solution.id if solution else "",
+                    winning_agent_id=agent.id,
+                    consensus_ratio=1.0,
+                    round_num=1,
+                ) if solution else None,
+            )
+
+        except Exception as e:
+            logger.exception(f"Solo run failed: {e}")
+            debate.finalize(status=DebateStatus.ERROR, error_message=str(e))
+
+        return debate
+
     def _create_agents(self, configs: list[AgentConfig]) -> list[Agent]:
         """Create agent instances from configurations."""
         agents = []
