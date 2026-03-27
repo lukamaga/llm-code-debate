@@ -26,9 +26,10 @@ from src.llm import OllamaClient, MultiModelClient
 RECOMMENDED_MODELS = [
     "qwen2.5-coder:7b",     # Best overall for code
     "deepseek-coder:6.7b",  # Strong code generation
-    "codellama:7b",         # Meta's code model
+    "codellama:7b-instruct", # Meta's code model (instruct)
+    "starcoder2:7b",        # StarCoder v2
+    "llama3:latest",        # Meta's general model
     "mistral:7b",           # Good general model
-    # "llama3:8b",          # Newer, but larger
 ]
 
 # Minimum models needed
