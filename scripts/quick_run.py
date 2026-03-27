@@ -65,7 +65,7 @@ async def main():
         return
     
     # Agent configuration
-    model_list = args.models or ["qwen2.5-coder:7b", "deepseek-coder:6.7b", "codellama:7b"]
+    model_list = args.models or ["qwen2.5-coder:7b", "deepseek-coder:6.7b", "codellama:7b-instruct"]
     agent_configs = [
         AgentConfig(name=f"agent_{i+1}", model=model)
         for i, model in enumerate(model_list)
