@@ -220,7 +220,7 @@ def handle_start_debate(data: dict):
 
     # Parse request
     task_path = data.get('task_path')
-    agent_models = data.get('agents', ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b'])
+    agent_models = data.get('agents', ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b-instruct'])
     max_rounds = data.get('max_rounds', 5)
 
     print(f"[DEBUG] task_path={task_path}, agents={agent_models}, max_rounds={max_rounds}")
