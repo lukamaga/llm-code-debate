@@ -1,0 +1,41 @@
+Bootstrap: docker
+From: python:3.11-slim
+
+%labels
+    Author LLM Code Debate
+    Description Singularity container for LLM Code Debate System
+
+%post
+    apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        && rm -rf /var/lib/apt/lists/*
+
+    pip install --no-cache-dir \
+        pydantic>=2.5.0 \
+        pyyaml>=6.0 \
+        httpx>=0.25.0 \
+        asyncio-throttle>=1.0.2 \
+        sqlalchemy>=2.0.0 \
+        alembic>=1.13.0 \
+        pytest>=7.4.0 \
+        pytest-timeout>=2.2.0 \
+        pylint>=3.0.0 \
+        radon>=6.0.0 \
+        flask>=3.0.0 \
+        flask-socketio>=5.3.0 \
+        python-socketio>=5.10.0 \
+        eventlet>=0.34.0 \
+        pandas>=2.1.0 \
+        rich>=13.7.0 \
+        click>=8.1.0 \
+        python-dotenv>=1.0.0 \
+        tenacity>=8.2.0
+
+%environment
+    export PYTHONUNBUFFERED=1
+    export FLASK_ENV=production
+
+%runscript
+    # Note: This .def is an optional reference for building a custom container.
+    # The main scripts (run_experiment.sh, run_web.sh) use venv + Ollama SIF directly.
+    exec python3 -m src.main "$@"
