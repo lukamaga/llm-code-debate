@@ -28,7 +28,7 @@ OLLAMA_DATA="${PROJECT_DIR}/hpc/ollama_data"
 VENV_DIR="${PROJECT_DIR}/venv_hpc"
 
 # ── Config (edit these) ───────────────────────────────────────────────────
-MODELS="codellama:7b deepseek-coder:6.7b qwen2.5-coder:7b"
+MODELS="qwen2.5-coder:7b deepseek-coder:6.7b codellama:7b-instruct"
 MAX_ROUNDS=3
 TASK_DIRS="tasks/easy tasks/medium tasks/hard"
 
@@ -75,6 +75,7 @@ echo "Starting Ollama server..."
 # Singularity runs as current user (not root), so we use OLLAMA_MODELS env var
 # to store models in our project dir. Bind-mount ensures path is accessible.
 export OLLAMA_MODELS="${OLLAMA_DATA}"
+export OLLAMA_MAX_LOADED_MODELS=5
 singularity run --nv \
     --bind "${OLLAMA_DATA}:${OLLAMA_DATA}" \
     "${OLLAMA_SIF}" serve &
