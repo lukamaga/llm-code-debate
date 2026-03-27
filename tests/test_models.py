@@ -190,9 +190,9 @@ class TestAgent:
 
 class TestAgentConfig:
     def test_from_dict(self):
-        data = {"name": "ag", "model": "codellama:7b", "role": "judge", "temperature": 0.5}
+        data = {"name": "ag", "model": "codellama:7b-instruct", "role": "judge", "temperature": 0.5}
         config = AgentConfig.from_dict(data)
-        assert config.model == "codellama:7b"
+        assert config.model == "codellama:7b-instruct"
         assert config.role == AgentRole.JUDGE
         assert config.temperature == 0.5
 
