@@ -316,7 +316,7 @@ Examples:
     parser.add_argument(
         "--agents",
         nargs="+",
-        default=["qwen2.5-coder:7b", "deepseek-coder:6.7b", "codellama:7b"],
+        default=["qwen2.5-coder:7b", "deepseek-coder:6.7b", "codellama:7b-instruct"],
         help="List of Ollama model names for agents",
     )
     
