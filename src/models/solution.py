@@ -134,6 +134,9 @@ class Solution:
 
     # Voting
     votes_received: int = 0
+
+    # Truncation detection
+    was_truncated: bool = False  # True if LLM hit token limit (finish_reason="length")
     
     @property
     def passed_all_tests(self) -> bool:
@@ -194,6 +197,8 @@ class Solution:
         }
         if self.code_files:
             d["code_files"] = self.code_files
+        if self.was_truncated:
+            d["was_truncated"] = True
         return d
 
 
