@@ -8,7 +8,11 @@
     "def test_basic():\n    result = full_justify(['This', 'is', 'an', 'example', 'of', 'text', 'justification.'], 16)\n    assert result == ['This    is    an', 'example  of text', 'justification.  ']",
     "def test_short():\n    result = full_justify(['What', 'must', 'be', 'acknowledgment', 'shall', 'be'], 16)\n    assert result == ['What   must   be', 'acknowledgment  ', 'shall be        ']",
     "def test_long_words():\n    result = full_justify(['Science', 'is', 'what', 'we', 'understand', 'well'], 20)\n    assert len(result[0]) == 20",
-    "def test_single_word():\n    result = full_justify(['word'], 10)\n    assert result == ['word      ']"
+    "def test_single_word():\n    result = full_justify(['word'], 10)\n    assert result == ['word      ']",
+    "def test_exact_fit():\n    result = full_justify(['ab', 'cd', 'ef'], 8)\n    assert result == ['ab cd ef']",
+    "def test_one_word_per_line():\n    result = full_justify(['abcdefghij'], 10)\n    assert result == ['abcdefghij']",
+    "def test_uneven_spaces():\n    result = full_justify(['a', 'b', 'c', 'd'], 5)\n    # 'a b c' fits (5 chars), 'd' on last line\n    assert len(result[-1]) == 5\n    # Every line must be exactly max_width\n    for line in result:\n        assert len(line) == 5",
+    "def test_last_line_left_justified():\n    result = full_justify(['the', 'quick', 'brown', 'fox'], 16)\n    # Last line should be left-justified with trailing spaces\n    last = result[-1]\n    assert len(last) == 16\n    assert last == last.rstrip() + ' ' * (16 - len(last.rstrip()))"
   ],
   "constraints": [
     "1 <= words.length <= 300",
