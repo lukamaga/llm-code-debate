@@ -72,16 +72,26 @@ class MetricsCollector:
                     metrics.improvement_over_best_initial = (
                         (metrics.final_pass_rate - best_initial) / best_initial
                     )
+                elif metrics.final_pass_rate > 0:
+                    # initial was 0% but we improved — use absolute difference
+                    metrics.improvement_over_best_initial = metrics.final_pass_rate
+
                 if avg_initial > 0:
                     metrics.improvement_over_avg_initial = (
                         (metrics.final_pass_rate - avg_initial) / avg_initial
                     )
+                elif metrics.final_pass_rate > 0:
+                    metrics.improvement_over_avg_initial = metrics.final_pass_rate
         
         # Debate dynamics
         metrics.total_rounds = debate.total_rounds
         metrics.consensus_reached = debate.final_consensus.reached if debate.final_consensus else False
         metrics.consensus_ratio = debate.final_consensus.consensus_ratio if debate.final_consensus else 0.0
-        metrics.rounds_to_consensus = debate.total_rounds if metrics.consensus_reached else 0
+        metrics.rounds_to_consensus = (
+            debate.final_consensus.round_num
+            if metrics.consensus_reached and debate.final_consensus
+            else 0
+        )
         
         # Critique stats
         all_critiques = debate.all_critiques
