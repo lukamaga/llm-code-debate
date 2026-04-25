@@ -12,7 +12,8 @@
     "def test_single_task():\n    assert least_interval(['A'], 5) == 1",
     "def test_cooldown_one():\n    assert least_interval(['A','A','A','B','B','B'], 1) == 6",
     "def test_all_different():\n    assert least_interval(['A','B','C','D'], 3) == 4",
-    "def test_dominant_task():\n    assert least_interval(['A','A','A','A','B','C'], 2) == 10"
+    "def test_dominant_task():\n    assert least_interval(['A','A','A','A','B','C'], 2) == 10",
+    "def test_large_cooldown():\n    assert least_interval(['A','A','B'], 10) == 12"
   ],
   "constraints": [
     "1 <= len(tasks) <= 10^4",
