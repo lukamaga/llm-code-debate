@@ -70,6 +70,12 @@ class OllamaClient(BaseLLMClient):
             "options": {
                 "temperature": request.temperature,
                 "num_predict": request.max_tokens,
+                # Context must hold: system prompt + user prompt (incl. 3 peer
+                # solutions in critique phase) + generated response. 16384 was
+                # overflowing on extreme multi-file tasks → silent truncation
+                # of the response. 32768 is safe for modern Qwen/DeepSeek
+                # coder models (their native context is 32k+).
+                "num_ctx": 32768,
             },
         }
         
@@ -123,12 +129,15 @@ class OllamaClient(BaseLLMClient):
             "options": {
                 "temperature": request.temperature,
                 "num_predict": request.max_tokens,
+                # Matches the non-streaming path above — see the comment there
+                # for why 32768 (was 16384, overflowed on extreme tasks).
+                "num_ctx": 32768,
             },
         }
-        
+
         if request.system_prompt:
             payload["system"] = request.system_prompt
-        
+
         try:
             async with client.stream("POST", "/api/generate", json=payload) as response:
                 response.raise_for_status()
