@@ -72,6 +72,15 @@ class ConsensusDetector:
                     vote_counts[sol_id] = vote_counts.get(sol_id, 0) + weight
                     raw_counts[sol_id] = raw_counts.get(sol_id, 0) + 1
 
+        # Warn if many votes were not counted (parse failures, abstains)
+        valid_vote_count = sum(raw_counts.values())
+        if len(votes) > 0 and valid_vote_count < len(votes):
+            import logging as _logging
+            _logging.getLogger(__name__).warning(
+                "Consensus: only %d of %d votes were valid (rest were abstain/parse failures)",
+                valid_vote_count, len(votes),
+            )
+
         if not vote_counts:
             return ConsensusResult(
                 reached=False,
@@ -187,13 +196,24 @@ class ConsensusDetector:
         if perfect:
             return True, f"Perfect solution found by {perfect.agent_id}"
 
-        # Check for unanimous agreement
+        # Check for unanimous agreement (only if the agreed solution actually works)
         voted_solutions = set()
         for vote in votes:
             if vote.vote_type in (VoteType.ADOPT, VoteType.DEFEND) and vote.voted_solution_id:
                 voted_solutions.add(vote.voted_solution_id)
 
         if len(voted_solutions) == 1 and len(votes) >= 2:
-            return True, "Unanimous agreement reached"
+            # Find the agreed-upon solution and check its quality
+            agreed_id = next(iter(voted_solutions))
+            agreed_sol = next((s for s in solutions if s.id == agreed_id), None)
+            agreed_pass_rate = agreed_sol.pass_rate if agreed_sol else 0.0
+            if agreed_pass_rate >= self.config.min_pass_rate:
+                return True, "Unanimous agreement reached"
+            else:
+                import logging as _logging
+                _logging.getLogger(__name__).warning(
+                    "Unanimous vote for solution with %.0f%% pass rate (min %.0f%%), continuing debate",
+                    agreed_pass_rate * 100, self.config.min_pass_rate * 100,
+                )
 
         return False, "No early stop condition met"
