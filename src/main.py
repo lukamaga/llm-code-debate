@@ -33,8 +33,8 @@ except ImportError:
 from .core import DebateOrchestrator
 from .database import DebateRepository
 from .llm import MultiModelClient
-from .models import AgentConfig, Debate, DebateConfig, RoundSummary, Task
-from .analysis import MetricsCollector
+from .models import AgentConfig, AgentRole, Debate, DebateConfig, RoundSummary, Task
+from .analysis import MetricsCollector, DebateVisualizer
 
 # Setup logging
 if HAS_RICH:
@@ -174,33 +174,53 @@ async def run_debate_cli(
     max_rounds: int,
     config: dict[str, Any],
     output_dir: str | None = None,
+    judge: str | None = None,
 ) -> Debate:
     """Run a debate from CLI."""
     # Load task
     task = load_task(task_path)
-    
+
+    # Normalize judge: treat empty string / whitespace / "none" as "no judge"
+    # (parity with the web handler in app.py so CLI and UI behave identically).
+    judge = (judge or "").strip() or None
+    if judge and judge.lower() == "none":
+        judge = None
+
     if HAS_RICH:
         console.print(f"\n[bold]Task:[/bold] {task.name}")
         console.print(f"[bold]Difficulty:[/bold] {task.difficulty}")
         console.print(f"[bold]Agents:[/bold] {', '.join(agents)}")
+        if judge:
+            console.print(f"[bold]Judge:[/bold] {judge} [dim](critiques + votes, does not propose)[/dim]")
         console.print()
     else:
         print(f"\nTask: {task.name}")
         print(f"Difficulty: {task.difficulty}")
         print(f"Agents: {', '.join(agents)}")
-    
+        if judge:
+            print(f"Judge:  {judge} (critiques + votes, does not propose)")
+
     # Create LLM client
     ollama_config = config.get("ollama", {})
     llm_client = MultiModelClient(
         base_url=ollama_config.get("base_url", "http://localhost:11434"),
         timeout=ollama_config.get("timeout", 120),
     )
-    
-    # Create agent configs
+
+    # Create agent configs. A judge (if provided) is appended with role=JUDGE
+    # so orchestrator skips proposal/revision for it but still runs critique
+    # and vote phases — giving a stronger external evaluator a voice without
+    # having it try to author code.
     agent_configs = [
         AgentConfig(name=f"agent_{i+1}", model=model)
         for i, model in enumerate(agents)
     ]
+    if judge:
+        agent_configs.append(AgentConfig(
+            name="judge",
+            model=judge,
+            role=AgentRole.JUDGE,
+        ))
     
     # Create debate config
     debate_cfg = config.get("debate", {})
@@ -255,23 +275,35 @@ async def run_debate_cli(
     db_config = config.get("database", {})
     repository = DebateRepository(db_config.get("path", "debate_results.db"))
     repository.save_debate(debate)
-    
+
     if HAS_RICH:
         console.print(f"\n[dim]Results saved to database[/dim]")
-    
+
+    # Always save human-readable transcript
+    try:
+        transcript_dir = Path(output_dir) / "transcripts" if output_dir else Path("transcripts")
+        visualizer = DebateVisualizer(output_dir=transcript_dir)
+        transcript_path = visualizer.generate_full_transcript(debate)
+        if HAS_RICH:
+            console.print(f"[dim]Transcript saved to {transcript_path}[/dim]")
+        else:
+            print(f"Transcript saved to {transcript_path}")
+    except Exception as e:
+        logger.warning(f"Failed to write transcript: {e}")
+
     # Save output if requested
     if output_dir:
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
-        
+
         # Save JSON
         json_path = output_path / f"{debate.id}_result.json"
         with open(json_path, "w") as f:
             json.dump(debate.to_dict(), f, indent=2, default=str)
-        
+
         if HAS_RICH:
             console.print(f"[dim]Results saved to {json_path}[/dim]")
-    
+
     return debate
 
 
@@ -319,7 +351,19 @@ Examples:
         default=["qwen2.5-coder:7b", "deepseek-coder:6.7b", "codellama:7b-instruct"],
         help="List of Ollama model names for agents",
     )
-    
+
+    parser.add_argument(
+        "--judge",
+        type=str,
+        default=None,
+        help=(
+            "Optional heterogeneous judge model (e.g. qwen2.5-coder:32b). "
+            "The judge does NOT propose or revise, but critiques all proposals "
+            "and votes. Use a stronger model than the agent pool to add an "
+            "external evaluator signal. Omit for no judge."
+        ),
+    )
+
     parser.add_argument(
         "--max-rounds",
         type=int,
@@ -375,6 +419,7 @@ Examples:
             max_rounds=args.max_rounds,
             config=config,
             output_dir=args.output,
+            judge=args.judge,
         ))
     
     else:
