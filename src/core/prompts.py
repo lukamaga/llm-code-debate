@@ -32,23 +32,18 @@ Always wrap your code in ```python and ``` markers."""
 
 
 SYSTEM_PROMPT_CRITIC = """You are an expert code reviewer participating in a code review debate.
-Your goal is to find bugs, inefficiencies, and suggest improvements.
+Your PRIMARY goal is to find bugs that cause test failures and explain HOW to fix them.
 
 When critiquing code:
-1. Look for logical errors and bugs
-2. Check for edge cases that might fail
-3. Evaluate time and space complexity
-4. Assess code readability and maintainability
-5. Check PEP 8 compliance and code style
-6. Look for opportunities to simplify or optimize
-7. Suggest specific, actionable improvements
+1. **CORRECTNESS FIRST**: If tests are failing, focus on finding WHY
+2. For each bug found, explain the ROOT CAUSE (not just "there is a bug")
+3. Suggest a specific FIX: what line to change and how
+4. Check edge cases: empty input, boundary values, off-by-one errors
+5. **THEN QUALITY**: Evaluate readability, maintainability, and code style
+6. Assess time/space complexity and suggest optimizations
 
-IMPORTANT: Even if the code passes all tests, you should still critique:
-- Code style and readability
-- Variable naming
-- Code complexity (can it be simpler?)
-- Efficiency (is there a faster/better algorithm?)
-- Edge case handling
+PRIORITY: If a solution fails tests, spend most of your analysis on correctness bugs.
+If all tests pass, focus on code quality, efficiency, and readability improvements.
 
 Be constructive and specific. Rate each solution on correctness, efficiency, and readability (1-10 scale)."""
 
@@ -101,23 +96,47 @@ def build_critique_prompt(
     task: "Task",
     solutions: list["Solution"],
     agent_id: str,
+    previous_critique_summary: str = "",
 ) -> str:
-    """Build prompt for critiquing solutions."""
+    """Build prompt for critiquing solutions.
+
+    Args:
+        previous_critique_summary: Summary of critiques from prior round so the
+            critic can focus on NEW issues rather than repeating the same feedback.
+    """
     solutions_text = ""
-    for i, sol in enumerate(solutions, 1):
+    counter = 0
+    for sol in solutions:
         if sol.agent_id == agent_id:
             continue  # Skip own solution
+        counter += 1
         test_info = ""
+        test_feedback = ""
         if sol.execution_result:
             er = sol.execution_result
-            test_info = f"\nTest Results: {er.tests_passed}/{er.tests_total} passed ({sol.pass_rate:.0%})"
+            if er.tests_passed == 0 and er.tests_total <= 1 and er.error_message:
+                test_info = "\nERROR: Code failed to import — 0 tests could run"
+            else:
+                test_info = f"\nTest Results: {er.tests_passed}/{er.tests_total} passed ({sol.pass_rate:.0%})"
+            test_feedback = _format_test_feedback(er)
         if sol.code_files:
             code_display = format_multi_file_code_display(sol)
         else:
             code_display = f"```python\n{sol.extract_code_block()}\n```"
+        test_section = f"\n{test_feedback}" if test_feedback else ""
         solutions_text += f"""
-### Solution {i} (by {sol.agent_id}){test_info}
+### Solution {counter} (by {sol.agent_id}){test_info}
 {code_display}
+{test_section}
+"""
+
+    # Feature 4: previous critique history
+    history_section = ""
+    if previous_critique_summary:
+        history_section = f"""
+## Previous Round Critiques (already discussed)
+{previous_critique_summary}
+NOTE: Focus on issues NOT yet fixed, or identify NEW bugs. Do not repeat the same critique.
 """
 
     return f"""## Task: {task.name}
@@ -126,19 +145,21 @@ def build_critique_prompt(
 
 ## Solutions to Review
 {solutions_text}
-
+{history_section}
 ## Instructions
 For each solution above:
-1. Identify any bugs or logical errors
-2. Evaluate correctness, efficiency, and readability (1-10)
-3. Suggest specific improvements
+1. **Ground every bug report in concrete evidence** — cite a FAILING test name (from "Detailed test results") or a specific line of code. Do NOT invent bugs that are not supported by a failing test or a real code defect.
+2. If a test is shown as FAILED with a full error, quote the key part of that error (expected vs. actual) in your bug description.
+3. For each bug, explain the root cause and suggest a specific fix.
+4. Evaluate correctness, efficiency, and readability (1-10).
+5. If the solution already passes all shown tests, say so — do not fabricate problems to look thorough.
 
 Format your response as:
 
 ### Solution 1 Analysis
 **Bugs Found:**
-- Bug 1: description
-- Bug 2: description
+- Bug 1: description — Evidence: (failing test name OR code line) — Root cause: ... — Fix: ...
+- Bug 2: description — Evidence: ... — Root cause: ... — Fix: ...
 
 **Ratings:**
 - Correctness: X/10
@@ -155,14 +176,128 @@ Format your response as:
 (Repeat for each solution)"""
 
 
+# =============================================================================
+# Diverse Revision Strategies (DMAD-style, ICLR 2025)
+# =============================================================================
+
+REVISION_STRATEGIES: dict[str, str] = {
+    "step_by_step": (
+        "**Strategy: Step-by-Step Trace**\n"
+        "Trace through each FAILING test case with your code:\n"
+        "1. Write down the test input values\n"
+        "2. Execute your code line by line mentally\n"
+        "3. Track the state of all variables at each step\n"
+        "4. Find the EXACT line where actual output diverges from expected\n"
+        "Do NOT guess — trace precisely, then fix only the broken logic."
+    ),
+    "simplify": (
+        "**Strategy: Simplify & Rewrite**\n"
+        "Your current approach may be over-complicated or have deep structural bugs.\n"
+        "1. Rewrite the solution from scratch using the SIMPLEST possible approach\n"
+        "2. Use basic data structures (dict, list) before optimizing\n"
+        "3. First make it CORRECT, then make it fast\n"
+        "4. Start fresh — do not patch the existing code"
+    ),
+    "test_driven": (
+        "**Strategy: Test-Driven Fix**\n"
+        "Focus exclusively on the failing tests:\n"
+        "1. For each failing test, identify the MINIMAL code change needed\n"
+        "2. Fix one test at a time — do not refactor unrelated code\n"
+        "3. After each fix, mentally re-run all tests to check for regressions\n"
+        "4. Prioritize passing more tests over code elegance"
+    ),
+    "edge_cases": (
+        "**Strategy: Edge Case Analysis**\n"
+        "Focus on boundary conditions and special cases:\n"
+        "1. Check: empty input, single element, maximum capacity\n"
+        "2. Check: duplicate keys, zero values, negative values\n"
+        "3. Check: operations in unusual order (delete before insert, etc.)\n"
+        "4. For each edge case, verify your code handles it correctly"
+    ),
+}
+
+# Default order for round-robin assignment
+STRATEGY_ORDER = ["step_by_step", "test_driven", "simplify", "edge_cases"]
+
+
+def _format_test_feedback(execution_result, full_detail: bool = True) -> str:
+    """Format per-test pass/fail details.
+
+    When ``full_detail=True`` (default), the FIRST failing test's error message
+    is shown verbatim (up to 800 chars) so critics/revisers see the exact
+    assertion or exception. Remaining failures get a short (200 char) summary.
+    This is the "test-grounded" mode (Reflexion-style, Shinn et al. NeurIPS
+    2023): giving agents concrete failing-test evidence cuts hallucinated bug
+    reports substantially.
+
+    When ``full_detail=False``, every failure uses the short 200-char summary
+    (legacy behaviour — used where token budget is extra-tight).
+
+    When no tests were collected (ImportError/SyntaxError at module level),
+    the actual error is shown so agents know their code doesn't even parse.
+    """
+    if not execution_result:
+        return ""
+
+    if not execution_result.test_results:
+        if execution_result.error_message:
+            err = execution_result.error_message
+            if len(err) > 500:
+                err = err[:500] + "..."
+            return (
+                "CRITICAL: Your code failed to import — no tests could run.\n"
+                "Error:\n" + err
+            )
+        return ""
+
+    lines = []
+    first_failure_shown = False
+    for tr in execution_result.test_results:
+        if tr.passed:
+            lines.append(f"  - {tr.test_name}: PASSED")
+            continue
+
+        err = tr.error_message or ""
+        # Ground the first failure in full detail so the agent can reason
+        # about the actual assertion/exception rather than guess. Subsequent
+        # failures are summarised to keep the prompt compact.
+        if full_detail and not first_failure_shown and err:
+            first_failure_shown = True
+            detail = err if len(err) <= 800 else err[:800] + "..."
+            lines.append(f"  - {tr.test_name}: FAILED")
+            lines.append("      ↳ FULL ERROR (ground truth — base your fix on this):")
+            for raw_line in detail.splitlines():
+                lines.append(f"      {raw_line}")
+        else:
+            short = err if len(err) <= 200 else err[:200] + "..."
+            if short:
+                lines.append(f"  - {tr.test_name}: FAILED — {short}")
+            else:
+                lines.append(f"  - {tr.test_name}: FAILED")
+
+    if not lines:
+        return ""
+
+    return "Detailed test results:\n" + "\n".join(lines)
+
+
 def build_revision_prompt(
     task: "Task",
     own_solution: "Solution",
     critiques: list["Critique"],
     all_solutions: list["Solution"] | None = None,
     all_critiques: list["Critique"] | None = None,
+    show_all_solutions: bool = False,
+    strategy: str = "",
+    previous_critiques_summary: str = "",
 ) -> str:
-    """Build prompt for revising solution based on critiques."""
+    """Build prompt for revising solution based on critiques.
+
+    Args:
+        strategy: Revision strategy name from REVISION_STRATEGIES (empty = no strategy).
+        previous_critiques_summary: Summary of critiques from the previous round
+            so the agent knows what was already addressed (empty = first revision).
+    """
     if own_solution.code_files:
         own_code_display = format_multi_file_code_display(own_solution)
     else:
@@ -170,9 +305,15 @@ def build_revision_prompt(
 
     # Test results for own solution
     own_test_info = ""
+    test_feedback = ""
     if own_solution.execution_result:
         er = own_solution.execution_result
-        own_test_info = f"Test Results: {er.tests_passed}/{er.tests_total} passed ({own_solution.pass_rate:.0%})"
+        if er.tests_passed == 0 and er.tests_total <= 1 and er.error_message:
+            # Import/syntax error — code didn't even load
+            own_test_info = "ERROR: Code failed to import — 0 tests could run"
+        else:
+            own_test_info = f"Test Results: {er.tests_passed}/{er.tests_total} passed ({own_solution.pass_rate:.0%})"
+        test_feedback = _format_test_feedback(er)
 
     # Critiques received
     critiques_text = ""
@@ -188,21 +329,39 @@ From {crit.agent_id}:
 - Would adopt: {'Yes' if crit.would_adopt else 'No'}
 """
 
-    # Other solutions (for potential adoption)
+    # Other solutions for potential adoption
     other_solutions_text = ""
     if all_solutions:
-        for sol in all_solutions:
-            if sol.agent_id != own_solution.agent_id:
-                test_info = ""
-                if sol.execution_result:
-                    er = sol.execution_result
-                    test_info = f" ({er.tests_passed}/{er.tests_total} tests, {sol.pass_rate:.0%})"
-                if sol.code_files:
-                    code_display = format_multi_file_code_display(sol)
-                else:
-                    code_display = f"```python\n{sol.extract_code_block()}\n```"
-                other_solutions_text += f"""
+        other_sols = [s for s in all_solutions if s.agent_id != own_solution.agent_id]
+        if other_sols:
+            if show_all_solutions:
+                # Show all other solutions (uses more tokens, better for larger models)
+                for sol in sorted(other_sols, key=lambda s: s.pass_rate, reverse=True):
+                    test_info = ""
+                    if sol.execution_result:
+                        er = sol.execution_result
+                        test_info = f" ({er.tests_passed}/{er.tests_total} tests, {sol.pass_rate:.0%})"
+                    if sol.code_files:
+                        code_display = format_multi_file_code_display(sol)
+                    else:
+                        code_display = f"```python\n{sol.extract_code_block()}\n```"
+                    other_solutions_text += f"""
 ### {sol.agent_id}'s Solution{test_info}
+{code_display}
+"""
+            else:
+                # Show only the best solution (saves tokens for 7B models)
+                best_other = max(other_sols, key=lambda s: s.pass_rate)
+                test_info = ""
+                if best_other.execution_result:
+                    er = best_other.execution_result
+                    test_info = f" ({er.tests_passed}/{er.tests_total} tests, {best_other.pass_rate:.0%})"
+                if best_other.code_files:
+                    code_display = format_multi_file_code_display(best_other)
+                else:
+                    code_display = f"```python\n{best_other.extract_code_block()}\n```"
+                other_solutions_text = f"""
+### {best_other.agent_id}'s Solution{test_info}
 {code_display}
 """
 
@@ -222,9 +381,37 @@ From {crit.agent_id}:
 ## Your Current Solution
 {own_test_info}
 {own_code_display}
+"""
 
+    # Feature 1: test failure details
+    if test_feedback:
+        prompt += f"""
+## Test Feedback
+{test_feedback}
+"""
+
+    # Truncation warning (when LLM hit token limit on previous attempt)
+    if own_solution.was_truncated:
+        prompt += """
+## IMPORTANT: Output Was Truncated
+Your previous code was CUT OFF because it exceeded the token limit.
+The code is incomplete and has syntax errors. To fix this:
+- Focus on the core algorithm — keep it simple and direct
+- Make sure EVERY function and class is complete (no partial code)
+- Prefer a straightforward approach over a complex one
+"""
+
+    prompt += f"""
 ## Critiques Received
 {critiques_text if critiques_text else "No critiques received."}
+"""
+
+    # Feature 4: previous round critique history
+    if previous_critiques_summary:
+        prompt += f"""
+## Previous Round Issues (already discussed)
+{previous_critiques_summary}
+Focus on issues NOT yet resolved from above, or find NEW problems.
 """
 
     if other_solutions_text:
@@ -239,13 +426,23 @@ From {crit.agent_id}:
 {discussion_text}
 """
 
+    # Feature 2: diverse strategy instruction
+    strategy_text = REVISION_STRATEGIES.get(strategy, "")
+    if strategy_text:
+        prompt += f"""
+## Revision Strategy
+{strategy_text}
+
+"""
+
     prompt += """
 ## Instructions
-Based on the critiques and other solutions:
+Work from concrete evidence, not guesses.
 
-1. **Fix your solution** - Address the bugs and issues mentioned
-2. **Adopt another solution** - If another solution is clearly better, you can adopt it
-3. **Create a hybrid** - Combine the best parts of multiple solutions
+1. **Start with the failing tests above** — in the "Test Feedback" section, the FIRST failing test is shown in full detail. Read its error, identify the exact expected-vs-actual mismatch, then locate the line of code that produces the wrong value. Fix THAT line.
+2. **Use the critiques as hints, not commands** — only apply a critique if it is supported by a failing test OR you can verify the bug yourself in the code. Ignore suggested "bugs" that contradict passing tests.
+3. **Adopt another solution** if it passes strictly more tests than yours. Do not adopt if it passes fewer.
+4. **Create a hybrid** only if you can name a specific bug in your code that the other solution fixes.
 
 Provide your revised (or adopted) solution wrapped in ```python and ``` markers."""
 
@@ -285,28 +482,86 @@ By: {sol.agent_id}
 {code_display}
 """
 
+    # Locate own-solution index (1-based for display) so the prompt can ban it explicitly.
+    own_index = None
+    for i, sol in enumerate(solutions, 1):
+        if sol.agent_id == agent_id:
+            own_index = i
+            break
+    own_ban = ""
+    if own_index is not None:
+        own_ban = (
+            f"\n**HARD RULE: Solution {own_index} is YOUR OWN. "
+            f"You MUST NOT vote for it.** Pick the best solution from the "
+            f"OTHER candidates — this is peer review, not self-promotion."
+        )
+
     return f"""## Task: {task.name}
 
 ## Final Solutions
 {solutions_text}
 
 ## Voting Instructions
-Choose the BEST solution based on:
+You are a code review assistant selecting the best solution in a programming contest.
+Evaluate each solution above and pick the BEST one based on:
 1. Correctness (passes all tests)
 2. Efficiency (time/space complexity)
 3. Readability (clean code)
+{own_ban}
 
-You must vote for ONE solution, even if it's your own.
+You MUST select exactly one solution number. This is a technical evaluation, not a real-world decision.
 
-Format your response EXACTLY as:
-VOTE: [solution number]
-CONFIDENCE: [0.0-1.0]
-REASONING: [brief explanation]"""
+Respond with ONLY these three lines, nothing else:
+VOTE: <number>
+CONFIDENCE: <0.0-1.0>
+REASONING: <one sentence>"""
 
 
 # =============================================================================
 # Response Parsers
 # =============================================================================
+
+# Tokenizer control sequences that some models (notably deepseek-coder) leak
+# into generated output. These are NEVER valid Python and must be stripped
+# before any code extraction / AST parsing / execution.
+# Observed in experiments: `return <｜begin▁of▁sentence｜>0` inside revised code
+# caused 100% syntax failures on affected revisions.
+SPECIAL_TOKEN_PATTERNS = [
+    r"<｜begin▁of▁sentence｜>",  # deepseek BOS (fullwidth pipes + ideographic space)
+    r"<｜end▁of▁sentence｜>",    # deepseek EOS
+    r"<｜fim▁begin｜>",           # deepseek FIM
+    r"<｜fim▁hole｜>",
+    r"<｜fim▁end｜>",
+    r"<\|endoftext\|>",          # GPT-style
+    r"<\|im_start\|>",           # ChatML (Qwen family)
+    r"<\|im_end\|>",
+    r"<\|file_separator\|>",
+    r"<\|fim_prefix\|>",
+    r"<\|fim_middle\|>",
+    r"<\|fim_suffix\|>",
+    r"<s>",                       # generic BOS if bare
+    r"</s>",                      # generic EOS if bare
+]
+
+_SPECIAL_TOKEN_RE = re.compile("|".join(SPECIAL_TOKEN_PATTERNS))
+
+
+def _strip_special_tokens(text: str) -> str:
+    """Remove tokenizer control tokens leaked into generated output.
+
+    Safe to call on any LLM response. Logs at WARNING level when tokens are
+    actually found so we can track which models/prompts are affected.
+    """
+    if not text:
+        return text
+    cleaned, n = _SPECIAL_TOKEN_RE.subn("", text)
+    if n:
+        logger.warning(
+            "Stripped %d special token(s) from LLM output (was %d chars, now %d)",
+            n, len(text), len(cleaned),
+        )
+    return cleaned
+
 
 def extract_code_from_response(response: str) -> str:
     """
@@ -324,6 +579,10 @@ def extract_code_from_response(response: str) -> str:
     Returns:
         Extracted Python code
     """
+    # Always strip tokenizer control sequences first — they break AST parsing
+    # and can corrupt extracted code (e.g. `return <｜begin▁of▁sentence｜>0`).
+    response = _strip_special_tokens(response)
+
     # Strategy 1: Look for ```python blocks
     python_pattern = r"```python\s*\n?(.*?)```"
     matches = re.findall(python_pattern, response, re.DOTALL)
@@ -365,8 +624,9 @@ def extract_code_from_response(response: str) -> str:
         if _looks_like_python(code):
             return code
 
-    # Strategy 4: Return entire response as fallback
-    return response.strip()
+    # Strategy 4: No code found
+    logger.warning("No Python code found in response: %s", response[:200])
+    return ""
 
 
 def _looks_like_python(text: str) -> bool:
@@ -436,7 +696,7 @@ def parse_critique_response(response: str) -> dict:
                 bug_bullets = re.findall(r"[-*]\s*(.+?)(?:\n|$)", bugs_text)
                 for bug in bug_bullets:
                     bug_text = bug.strip()
-                    if len(bug_text) > 10 and "none" not in bug_text.lower():
+                    if len(bug_text) > 5 and bug_text.lower().strip() not in ("none", "none found", "no bugs", "n/a", "no bugs found"):
                         current_critique["bugs"].append(bug_text)
             else:
                 # Fallback: only keyword-based bug detection (no generic bullets)
@@ -522,7 +782,14 @@ def parse_vote_response(response: str) -> dict:
         "voted_solution": None,
         "confidence": 0.5,
         "reasoning": "",
+        "parse_failed": False,
     }
+
+    # Detect if response is just echoing the example/template format
+    if re.search(r"VOTE:\s*\[solution\s*number\]", response, re.IGNORECASE):
+        logger.warning("Vote response is just echoing the template: %s", response[:200])
+        result["parse_failed"] = True
+        return result
 
     # Parse VOTE line — primary pattern
     vote_match = re.search(r"VOTE[:\s]*(\d+)", response, re.IGNORECASE)
@@ -548,6 +815,7 @@ def parse_vote_response(response: str) -> dict:
                 break
         else:
             logger.warning("Failed to parse vote from response: %s", response[:200])
+            result["parse_failed"] = True
 
     # Parse CONFIDENCE line
     conf_match = re.search(r"CONFIDENCE[:\s]*([\d.]+)", response, re.IGNORECASE)
@@ -576,6 +844,151 @@ def parse_vote_response(response: str) -> dict:
         result["vote_type"] = "defend"
 
     return result
+
+
+# =============================================================================
+# Chunked Generation (file-by-file for multi-file tasks)
+# =============================================================================
+
+def build_chunked_file_proposal_prompt(
+    task: "Task",
+    target_file: str,
+    already_generated: dict[str, str] | None = None,
+) -> str:
+    """Build prompt for generating a single file in a multi-file task.
+
+    Instead of asking the LLM to produce all files at once (which causes
+    truncation on 7B models), we generate one file per LLM call.  Each
+    call receives the task description, full signatures, and any files
+    that were already generated so imports stay consistent.
+    """
+    constraints_text = chr(10).join(f'- {c}' for c in task.constraints)
+
+    prompt = f"""## Task: {task.name}
+
+{task.description}
+
+### All Signatures (for reference)
+```
+{task.signature}
+```
+
+### Constraints
+{constraints_text}
+"""
+
+    if already_generated:
+        prompt += "\n### Already Implemented Files\n"
+        prompt += "These files are already written. Your code MUST be compatible with them.\n"
+        for fname, fcode in already_generated.items():
+            prompt += f"\n# {fname}\n```python\n{fcode}\n```\n"
+
+    prompt += f"""
+### Instructions
+Write ONLY the `{target_file}` module. Output a single ```python block.
+- Do NOT include other files
+- Make sure imports from other modules match the signatures above
+- Write complete, working code — no placeholders or TODOs"""
+
+    if already_generated:
+        prompt += "\n- Your code must be compatible with the already-implemented files above"
+
+    return prompt
+
+
+def build_chunked_file_revision_prompt(
+    task: "Task",
+    target_file: str,
+    own_solution: "Solution",
+    critiques: list["Critique"],
+    already_revised: dict[str, str] | None = None,
+    test_feedback: str = "",
+    strategy: str = "",
+) -> str:
+    """Build prompt for revising a single file based on critiques.
+
+    Similar to build_revision_prompt but focused on one file at a time.
+    The agent sees the full current solution + critiques + test feedback
+    but is asked to output only the target file.
+    """
+    # Show current solution (all files)
+    own_code_parts = []
+    if own_solution.code_files:
+        for fname, fcode in own_solution.code_files.items():
+            own_code_parts.append(f"# {fname}\n```python\n{fcode}\n```")
+    own_code_display = "\n\n".join(own_code_parts)
+
+    # Test info
+    own_test_info = ""
+    if own_solution.execution_result:
+        er = own_solution.execution_result
+        if er.tests_passed == 0 and er.tests_total <= 1 and er.error_message:
+            own_test_info = "ERROR: Code failed to import — 0 tests could run"
+        else:
+            own_test_info = f"Test Results: {er.tests_passed}/{er.tests_total} passed ({own_solution.pass_rate:.0%})"
+
+    # Critiques
+    critiques_text = ""
+    for crit in critiques:
+        bugs = "\n".join(f"  - {b.description}" for b in crit.bugs) or "  None found"
+        critiques_text += f"""
+From {crit.agent_id}:
+- Correctness: {crit.correctness_rating}/10
+- Bugs found:
+{bugs}
+"""
+
+    prompt = f"""## Task: {task.name}
+
+{task.description}
+
+## Your Current Solution
+{own_test_info}
+{own_code_display}
+"""
+
+    if test_feedback:
+        prompt += f"""
+## Test Feedback
+{test_feedback}
+"""
+
+    # Truncation warning
+    if own_solution.was_truncated:
+        prompt += """
+## IMPORTANT: Output Was Truncated
+Your previous code was CUT OFF because it exceeded the token limit.
+The code is incomplete and has syntax errors. To fix this:
+- Focus on the core algorithm — keep it simple and direct
+- Make sure EVERY function and class is complete (no partial code)
+- Prefer a straightforward approach over a complex one
+"""
+
+    prompt += f"""
+## Critiques Received
+{critiques_text if critiques_text else "No critiques received."}
+"""
+
+    # Strategy instruction
+    strategy_text = REVISION_STRATEGIES.get(strategy, "")
+    if strategy_text:
+        prompt += f"""
+## Revision Strategy
+{strategy_text}
+"""
+
+    if already_revised:
+        prompt += "\n### Already Revised Files (this round)\n"
+        prompt += "Your code MUST be compatible with these revised files.\n"
+        for fname, fcode in already_revised.items():
+            prompt += f"\n# {fname}\n```python\n{fcode}\n```\n"
+
+    prompt += f"""
+## Instructions
+Revise ONLY `{target_file}`. Output a single ```python block.
+Fix the bugs mentioned in critiques. Write complete, working code."""
+
+    return prompt
 
 
 # =============================================================================
@@ -638,6 +1051,9 @@ def extract_multi_file_code_from_response(
 
     Returns dict of filename -> code.
     """
+    # Strip tokenizer control sequences before any pattern matching
+    response = _strip_special_tokens(response)
+
     code_files: dict[str, str] = {}
 
     # Strategy 1: # FILE: filename.py pattern
@@ -663,6 +1079,22 @@ def extract_multi_file_code_from_response(
         unassigned = [b.strip() for b in blocks if b.strip() not in code_files.values()]
         for fname, block in zip(missing, unassigned):
             code_files[fname] = block
+
+    # Strategy 4: Split by # FILE: markers without backtick wrappers
+    # Handles LLM responses that use # FILE: but no ```python blocks
+    if not all(f in code_files for f in required_files):
+        file_header_pattern = r'#\s*FILE:\s*(\S+\.py)\s*\n'
+        parts = re.split(file_header_pattern, response)
+        # parts = [preamble, filename1, code1, filename2, code2, ...]
+        if len(parts) >= 3:
+            for i in range(1, len(parts) - 1, 2):
+                fname = parts[i].strip()
+                code = parts[i + 1].strip()
+                # Remove any trailing/leading backtick artifacts
+                code = re.sub(r'^```(?:python)?\s*\n?', '', code)
+                code = re.sub(r'\n?```\s*$', '', code)
+                if fname in required_files and fname not in code_files and code:
+                    code_files[fname] = code
 
     return code_files
 
