@@ -8,6 +8,7 @@ import hashlib
 import logging
 import os
 import subprocess
+import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -29,10 +30,28 @@ class CodeExecutor:
     - Result caching by code hash
     """
 
+    MAX_CACHE_SIZE = 2048
+
     def __init__(self, timeout: int = 30, max_memory_mb: int = 512):
         self.timeout = timeout
         self.max_memory_mb = max_memory_mb
         self._cache: dict[str, "ExecutionResult"] = {}
+
+    @staticmethod
+    def _fix_relative_imports(code: str) -> str:
+        """Convert relative imports to absolute for flat temp directory execution.
+
+        LLMs sometimes generate `from .module import X` which requires a
+        package with __init__.py.  In our flat tmpdir layout, only absolute
+        imports work (e.g. `from module import X`).
+        """
+        import re as _re
+        # from .foo import X  →  from foo import X
+        # from .foo.bar import X  →  from foo.bar import X
+        fixed = _re.sub(r'^(from\s+)\.(\w)', r'\1\2', code, flags=_re.MULTILINE)
+        if fixed != code:
+            logger.debug("Fixed relative imports in solution code")
+        return fixed
 
     @staticmethod
     def _strip_test_functions(code: str) -> str:
@@ -128,7 +147,11 @@ class CodeExecutor:
                 extracted = solution.extract_code_files()
                 for filename, file_code in extracted.items():
                     file_code = self._strip_test_functions(file_code)
+                    # Fix relative imports: LLMs sometimes use `from .module`
+                    # which fails in a flat temp directory (no __init__.py).
+                    file_code = self._fix_relative_imports(file_code)
                     (Path(tmpdir) / filename).write_text(file_code)
+                    logger.debug("Multi-file: wrote %s (%d chars)", filename, len(file_code))
 
                 # Write helper stubs if provided (don't overwrite LLM files)
                 if hasattr(task, 'helper_code') and task.helper_code:
@@ -163,11 +186,25 @@ sys.path.insert(0, "{tmpdir}")
                 solution_path = Path(tmpdir) / "solution.py"
                 solution_path.write_text(code)
 
+                # Build selective import: only import non-test names from solution
+                # to prevent LLM-generated test_ functions from leaking into
+                # the pytest namespace (even after stripping, syntax errors
+                # in the solution may cause the stripper to miss some).
+                import_block = (
+                    "import importlib, sys\n"
+                    f'sys.path.insert(0, "{tmpdir}")\n'
+                    "try:\n"
+                    "    _sol = importlib.import_module('solution')\n"
+                    "    for _name in dir(_sol):\n"
+                    "        if not _name.startswith('test_') and not _name.startswith('_'):\n"
+                    "            globals()[_name] = getattr(_sol, _name)\n"
+                    "except (ImportError, SyntaxError):\n"
+                    "    pass  # let tests fail naturally with NameError\n"
+                )
+
                 # Write test file
                 test_content = f"""
-import sys
-sys.path.insert(0, "{tmpdir}")
-from solution import *
+{import_block}
 
 {test_code}
 """
@@ -197,7 +234,10 @@ from solution import *
                     execution_time=0.0,
                 )
 
-        # Cache result
+        # Cache result (evict oldest if full)
+        if len(self._cache) >= self.MAX_CACHE_SIZE:
+            oldest_key = next(iter(self._cache))
+            del self._cache[oldest_key]
         self._cache[cache_key] = result
         return result
 
@@ -214,7 +254,7 @@ from solution import *
 
         # Run pytest with JSON output
         proc = await asyncio.create_subprocess_exec(
-            "python3", "-m", "pytest", str(test_path), "-v", "--tb=short",
+            sys.executable, "-m", "pytest", str(test_path), "-v", "--tb=short",
             "-o", "python_files=test_solution.py",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -226,41 +266,46 @@ from solution import *
 
         output = stdout.decode() + stderr.decode()
 
-        # Parse pytest output
+        # Parse pytest output — only match actual test result lines
+        # which have format: "test_solution.py::test_name PASSED/FAILED"
+        import re as _re
         tests_passed = 0
         tests_total = 0
         test_results: list[TestResult] = []
 
         for line in output.split("\n"):
-            if "PASSED" in line:
-                tests_passed += 1
+            # Match pytest verbose output lines: "file::test_name PASSED/FAILED/ERROR"
+            m = _re.match(r".*::(\w+)\s+(PASSED|FAILED|ERROR)", line)
+            if m:
+                test_name = m.group(1)
+                status_str = m.group(2)
                 tests_total += 1
-                test_results.append(TestResult(
-                    test_name=line.split("::")[1].split()[0] if "::" in line else "test",
-                    passed=True,
-                ))
-            elif "FAILED" in line:
-                tests_total += 1
-                test_results.append(TestResult(
-                    test_name=line.split("::")[1].split()[0] if "::" in line else "test",
-                    passed=False,
-                    error_message=line,
-                ))
-            elif "ERROR" in line and "test_" in line:
-                tests_total += 1
-                test_results.append(TestResult(
-                    test_name="test",
-                    passed=False,
-                    error_message=line,
-                ))
+                if status_str == "PASSED":
+                    tests_passed += 1
+                    test_results.append(TestResult(
+                        test_name=test_name,
+                        passed=True,
+                    ))
+                else:
+                    test_results.append(TestResult(
+                        test_name=test_name,
+                        passed=False,
+                        error_message=line.strip(),
+                    ))
 
         # Determine status
         if proc.returncode == 0:
             status = SolutionStatus.PASSED
         elif "SyntaxError" in output:
             status = SolutionStatus.SYNTAX_ERROR
+            logger.warning("SyntaxError in solution: %s", output[:300])
         elif tests_total == 0:
             status = SolutionStatus.RUNTIME_ERROR
+            # Log the real reason — usually an ImportError at collection time
+            logger.warning(
+                "No tests collected (likely ImportError or SyntaxError at module level). "
+                "Pytest output: %s", output[:500]
+            )
         else:
             status = SolutionStatus.TEST_FAILED
 
@@ -372,6 +417,8 @@ class CodeQualityAnalyzer:
 
             complexities = []
             for file_data in cc_data.values():
+                if not isinstance(file_data, list):
+                    continue  # radon returns {"error": "..."} for SyntaxError
                 for item in file_data:
                     complexities.append(item.get("complexity", 1))
 
@@ -387,7 +434,8 @@ class CodeQualityAnalyzer:
             stdout2, _ = await proc2.communicate()
 
             mi_data = json.loads(stdout2.decode()) if stdout2 else {}
-            mi = list(mi_data.values())[0].get("mi", 100.0) if mi_data else 100.0
+            mi_val = list(mi_data.values())[0] if mi_data else None
+            mi = mi_val.get("mi", 100.0) if isinstance(mi_val, dict) else (mi_val if isinstance(mi_val, (int, float)) else 100.0)
 
             return {
                 "avg_complexity": avg_complexity,
