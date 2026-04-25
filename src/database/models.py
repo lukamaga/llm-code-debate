@@ -19,6 +19,7 @@ from sqlalchemy import (
     create_engine,
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 Base = declarative_base()
 
@@ -188,13 +189,27 @@ class ExperimentRecord(Base):
 def create_database(db_path: str = "debate_results.db") -> sessionmaker:
     """
     Create database and return session maker.
-    
+
     Args:
         db_path: Path to SQLite database file.
-        
+
     Returns:
         sessionmaker for creating database sessions.
+
+    Notes:
+        - ``check_same_thread=False`` is required because the web app runs
+          debates on a worker thread and saves results from there, while the
+          engine is created on the main thread. Without this SQLite raises
+          obscure errors (including spurious "readonly database" under load).
+        - ``StaticPool`` reuses a single underlying connection, which is safe
+          for SQLite and avoids per-thread connection state that can also
+          surface as "readonly" when WAL / journal files are contended.
     """
-    engine = create_engine(f"sqlite:///{db_path}", echo=False)
+    engine = create_engine(
+        f"sqlite:///{db_path}",
+        echo=False,
+        connect_args={"check_same_thread": False, "timeout": 30},
+        poolclass=StaticPool,
+    )
     Base.metadata.create_all(engine)
     return sessionmaker(bind=engine)
