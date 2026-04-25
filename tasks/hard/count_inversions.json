@@ -10,7 +10,7 @@
     "def test_reverse_sorted():\n    assert count_inversions([5, 4, 3, 2, 1]) == 10",
     "def test_single_element():\n    assert count_inversions([42]) == 0",
     "def test_empty():\n    assert count_inversions([]) == 0",
-    "def test_duplicates():\n    assert count_inversions([3, 1, 2, 3, 1]) == 6",
+    "def test_duplicates():\n    assert count_inversions([3, 1, 2, 3, 1]) == 5",
     "def test_two_elements_inverted():\n    assert count_inversions([2, 1]) == 1",
     "def test_two_elements_sorted():\n    assert count_inversions([1, 2]) == 0",
     "def test_all_same():\n    assert count_inversions([5, 5, 5, 5]) == 0"
