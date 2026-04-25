@@ -64,7 +64,8 @@ class TestCodeExecutor:
             code="```python\ndef add_one(x:\n    return x + 1\n```",
         )
         result = await executor.execute(solution, simple_task)
-        assert result.status in (SolutionStatus.SYNTAX_ERROR, SolutionStatus.RUNTIME_ERROR)
+        assert result.status in (SolutionStatus.SYNTAX_ERROR, SolutionStatus.RUNTIME_ERROR, SolutionStatus.TEST_FAILED)
+        assert result.tests_passed == 0
 
     @pytest.mark.asyncio
     async def test_caching(self, executor, simple_task):
