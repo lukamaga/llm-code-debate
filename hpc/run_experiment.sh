@@ -28,9 +28,12 @@ OLLAMA_DATA="${PROJECT_DIR}/hpc/ollama_data"
 VENV_DIR="${PROJECT_DIR}/venv_hpc"
 
 # ── Config (edit these) ───────────────────────────────────────────────────
-MODELS="qwen2.5-coder:7b deepseek-coder:6.7b codellama:7b-instruct"
+# N=4 on HPC (strong voting signal, reliable tie-break, 12 critique calls/round).
+# For quick local testing use N=3: drop "mistral:7b" — 2× faster, triangulation
+# still works. N=2 is known-broken (echo chamber, no triangulation).
+MODELS="qwen2.5-coder:7b deepseek-coder:6.7b codellama:7b-instruct mistral:7b"
 MAX_ROUNDS=3
-TASK_DIRS="tasks/easy tasks/medium tasks/hard"
+TASK_DIRS="tasks/easy tasks/medium tasks/hard tasks/extreme"
 
 # ── Setup ─────────────────────────────────────────────────────────────────
 cd "${PROJECT_DIR}"
