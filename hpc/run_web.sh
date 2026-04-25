@@ -29,7 +29,7 @@ VENV_DIR="${PROJECT_DIR}/venv_hpc"
 WEB_PORT=5050
 
 # ── Config ────────────────────────────────────────────────────────────────
-MODELS="qwen2.5-coder:7b deepseek-coder:6.7b codellama:7b-instruct"
+MODELS="qwen2.5-coder:7b deepseek-coder:6.7b codellama:7b-instruct mistral:7b"
 
 # ── Setup ─────────────────────────────────────────────────────────────────
 cd "${PROJECT_DIR}"
