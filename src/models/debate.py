@@ -207,7 +207,17 @@ class DebateConfig:
     temperature_critique: float = 0.5
     temperature_revision: float = 0.4
     execution_timeout: int = 30
-    
+    revision_show_all_solutions: bool = False
+    # "uniform" = all agents get same prompt (baseline), "diverse" = DMAD-style strategies
+    revision_strategy: str = "uniform"
+    # Per-agent strategy overrides: {"agent_1_mistral": "simplify", ...}
+    # Empty dict = auto-assign round-robin when revision_strategy="diverse"
+    agent_strategies: dict[str, str] = field(default_factory=dict)
+    # Increase revision temperature when pass_rate stagnates between rounds
+    adaptive_temperature: bool = False
+    # Include critique history from previous rounds in prompts
+    critique_history: bool = False
+
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> DebateConfig:
         return cls(
@@ -219,4 +229,9 @@ class DebateConfig:
             temperature_critique=data.get("temperature_critique", 0.5),
             temperature_revision=data.get("temperature_revision", 0.4),
             execution_timeout=data.get("execution_timeout", 30),
+            revision_show_all_solutions=data.get("revision_show_all_solutions", False),
+            revision_strategy=data.get("revision_strategy", "uniform"),
+            agent_strategies=data.get("agent_strategies", {}),
+            adaptive_temperature=data.get("adaptive_temperature", False),
+            critique_history=data.get("critique_history", False),
         )
