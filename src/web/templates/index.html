@@ -13,23 +13,23 @@
 
     <style>
         :root {
-            --bg: #ffffff;
-            --bg2: #f7f7f8;
-            --bg3: #efefef;
-            --text: #111111;
-            --text2: #555555;
-            --text3: #999999;
-            --border: #e0e0e0;
-            --border2: #ccc;
-            --accent: #111111;
-            --accent-light: #f0f0f0;
-            --green: #22c55e;
-            --red: #ef4444;
-            --yellow: #f59e0b;
-            --blue: #3b82f6;
+            --bg: #1a1f2e;
+            --bg2: #141824;
+            --bg3: #252b3d;
+            --text: #e2e8f0;
+            --text2: #94a3b8;
+            --text3: #64748b;
+            --border: #2a3146;
+            --border2: #334155;
+            --accent: #6366f1;
+            --accent-light: rgba(99,102,241,0.12);
+            --green: #34d399;
+            --red: #f87171;
+            --yellow: #fbbf24;
+            --blue: #60a5fa;
             --radius: 8px;
-            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-            --shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow: 0 1px 3px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.2);
+            --shadow-lg: 0 4px 12px rgba(0,0,0,0.35);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -104,7 +104,19 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--text3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+
+        .activity-export-btns { display: flex; gap: 6px; }
+        .activity-export-btns button {
+            font-size: 11px; padding: 3px 10px; cursor: pointer;
+            border: 1px solid var(--border); border-radius: 4px;
+            background: var(--bg); color: var(--text2);
+            text-transform: none; letter-spacing: 0;
+        }
+        .activity-export-btns button:hover { background: var(--border); }
 
         .panel-body {
             padding: 20px;
@@ -143,7 +155,7 @@
         }
 
         select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
             padding-right: 32px;
@@ -151,7 +163,7 @@
 
         select:focus, input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
         }
 
         /* Agent Cards (config) */
@@ -186,6 +198,43 @@
 
         .agent-chip .x:hover { background: var(--bg3); color: var(--red); }
 
+        /* Judge field — inline hint + info box shown when a judge is active */
+        .field-label-hint {
+            margin-left: 6px;
+            font-weight: 400;
+            font-size: 11px;
+            color: var(--text3);
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        .judge-active-info {
+            margin-top: 8px;
+            padding: 8px 10px;
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.32);
+            border-radius: var(--radius);
+            font-size: 11.5px;
+            color: var(--text2);
+            line-height: 1.45;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .judge-active-info strong { color: var(--text); font-weight: 600; }
+        .judge-badge {
+            flex: 0 0 auto;
+            padding: 2px 7px;
+            background: rgba(251, 191, 36, 0.18);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.45);
+            border-radius: 10px;
+            font-size: 9.5px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            line-height: 1.2;
+            font-family: 'Inter', sans-serif;
+        }
+
         /* Buttons */
         .btn {
             width: 100%;
@@ -204,11 +253,11 @@
             color: white;
         }
 
-        .btn-start:hover { background: #333; }
+        .btn-start:hover { background: #4f46e5; }
         .btn-start:active { transform: scale(0.98); }
 
         .btn-stop {
-            background: white;
+            background: rgba(248,113,113,0.1);
             color: var(--red);
             border: 1px solid var(--red);
             margin-top: 8px;
@@ -285,10 +334,10 @@
         }
 
         .phase-badge.active { display: inline-block; }
-        .phase-badge.propose { background: #dbeafe; color: #1d4ed8; }
-        .phase-badge.critique { background: #fef3c7; color: #92400e; }
-        .phase-badge.revise { background: #d1fae5; color: #065f46; }
-        .phase-badge.vote { background: #ede9fe; color: #5b21b6; }
+        .phase-badge.propose { background: rgba(96,165,250,0.15); color: #93bbfd; }
+        .phase-badge.critique { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .phase-badge.revise { background: rgba(52,211,153,0.15); color: #34d399; }
+        .phase-badge.vote { background: rgba(139,92,246,0.15); color: #a78bfa; }
 
         /* Debate Timeline */
         .timeline { display: flex; flex-direction: column; gap: 16px; }
@@ -343,7 +392,7 @@
             100% { background-position: -200% 0; }
         }
 
-        .agent-card.winner { background: #f0fdf4; }
+        .agent-card.winner { background: rgba(52,211,153,0.08); }
 
         .agent-top {
             display: flex;
@@ -365,10 +414,10 @@
             flex-shrink: 0;
         }
 
-        .agent-avatar.a1 { background: #111; }
-        .agent-avatar.a2 { background: #6366f1; }
-        .agent-avatar.a3 { background: #0891b2; }
-        .agent-avatar.a4 { background: #be185d; }
+        .agent-avatar.a1 { background: #6366f1; }
+        .agent-avatar.a2 { background: #8b5cf6; }
+        .agent-avatar.a3 { background: #06b6d4; }
+        .agent-avatar.a4 { background: #ec4899; }
 
         .agent-name { font-size: 13px; font-weight: 600; }
         .agent-model { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
@@ -416,6 +465,354 @@
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
         }
+
+        /* Arena view toggle */
+        .view-toggle {
+            display: flex;
+            gap: 0;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2px;
+        }
+        .view-btn {
+            padding: 5px 14px;
+            border: none;
+            background: transparent;
+            color: var(--text3);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: calc(var(--radius) - 2px);
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .view-btn:hover { color: var(--text); }
+        .view-btn.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 1px 4px rgba(99,102,241,0.5);
+        }
+
+        .arena-view { display: block; }
+
+        /* Graph view */
+        .graph-container {
+            position: relative;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            height: calc(100vh - 200px);
+            min-height: 520px;
+        }
+
+        #graphSvg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background:
+              radial-gradient(ellipse at center, rgba(99,102,241,0.07) 0%, transparent 65%),
+              var(--bg);
+        }
+
+        .graph-node-group { transition: all 0.3s; }
+
+        .graph-node-circle {
+            transition: all 0.3s ease;
+            transform-origin: center;
+            transform-box: fill-box;
+        }
+        .graph-node-group.task .graph-node-circle {
+            fill: url(#taskGradient);
+            stroke: #a5b4fc;
+            stroke-width: 2.5;
+            filter: drop-shadow(0 0 14px rgba(99,102,241,0.7));
+        }
+        .graph-node-group.agent .graph-node-circle {
+            stroke-width: 2.5;
+            filter: drop-shadow(0 3px 8px rgba(0,0,0,0.45));
+        }
+        .graph-node-group.active .graph-node-circle {
+            animation: graphNodePulse 1.1s infinite ease-in-out;
+        }
+        @keyframes graphNodePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.09); }
+        }
+
+        .graph-node-ring {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            opacity: 0;
+            transform-origin: center;
+            transform-box: fill-box;
+            pointer-events: none;
+        }
+        .graph-node-group.active .graph-node-ring {
+            animation: graphRingExpand 1.4s infinite ease-out;
+        }
+        @keyframes graphRingExpand {
+            0% { opacity: 0.75; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.9); }
+        }
+
+        .graph-node-label {
+            font-size: 13px;
+            font-weight: 700;
+            fill: #fff;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+        }
+        .graph-node-group.task .graph-node-label {
+            font-size: 12px;
+            letter-spacing: 1.5px;
+        }
+        .graph-node-sub {
+            font-size: 10.5px;
+            fill: var(--text2);
+            text-anchor: middle;
+            font-family: 'JetBrains Mono', monospace;
+            pointer-events: none;
+        }
+        .graph-node-stat {
+            font-size: 11px;
+            font-weight: 700;
+            fill: var(--text);
+            text-anchor: middle;
+            font-family: 'JetBrains Mono', monospace;
+            pointer-events: none;
+        }
+
+        .graph-edge {
+            fill: none;
+            stroke: #8a9bc4;
+            stroke-width: 1.2;
+            stroke-dasharray: 4 5;
+            opacity: 0.55;
+            transition: stroke 0.25s, opacity 0.25s, stroke-width 0.25s;
+            pointer-events: none;
+        }
+        .graph-edge.pair {
+            opacity: 0.62;
+            stroke: #8a9bc4;
+            stroke-dasharray: 6 6;
+            stroke-width: 1.7;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 2px rgba(138, 155, 196, 0.35));
+        }
+        .graph-edge.pair.flowing {
+            opacity: 0.95;
+            stroke-width: 2.4;
+            filter: drop-shadow(0 0 6px currentColor);
+            animation: edgeFlow 1.8s linear infinite;
+        }
+        @keyframes edgeFlow {
+            from { stroke-dashoffset: 0; }
+            to   { stroke-dashoffset: -24; }
+        }
+
+        .graph-particle { pointer-events: none; }
+
+        .graph-node-group.agent .graph-node-label {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+        }
+        .graph-node-group.agent { cursor: grab; }
+        .graph-node-group.agent.dragging {
+            cursor: grabbing;
+            transition: none;
+        }
+        .graph-node-group.agent.dragging .graph-node-circle {
+            filter: drop-shadow(0 10px 22px rgba(0,0,0,0.65)) drop-shadow(0 0 12px currentColor);
+            transition: none;
+        }
+        .graph-node-group.agent.dragging .graph-node-ring {
+            opacity: 0.55;
+            transform: scale(1.25);
+        }
+        .graph-inbox.dragging-follow {
+            transition: none !important;
+        }
+        .graph-node-agent-name {
+            font-size: 12px;
+            font-weight: 700;
+            fill: var(--text);
+            text-anchor: middle;
+            font-family: 'Inter', sans-serif;
+            pointer-events: none;
+            letter-spacing: 0.3px;
+        }
+
+        .graph-node-group.winner .graph-node-circle {
+            stroke: #34d399 !important;
+            stroke-width: 4 !important;
+            filter: drop-shadow(0 0 22px #34d399) !important;
+            animation: graphWinnerPulse 2s infinite ease-in-out !important;
+        }
+        @keyframes graphWinnerPulse {
+            0%, 100% { transform: scale(1.02); }
+            50% { transform: scale(1.1); }
+        }
+
+        .graph-phase-badge {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            padding: 7px 14px;
+            background: rgba(20, 24, 36, 0.88);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(6px);
+            z-index: 3;
+        }
+        .graph-phase-badge .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--text3);
+            animation: graphPhaseDot 1s infinite;
+        }
+        @keyframes graphPhaseDot {
+            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 currentColor; }
+            50% { opacity: 0.55; transform: scale(1.35); box-shadow: 0 0 0 6px transparent; }
+        }
+        .graph-phase-badge.propose { color: #60a5fa; }
+        .graph-phase-badge.propose .dot { background: #60a5fa; }
+        .graph-phase-badge.critique { color: #fbbf24; }
+        .graph-phase-badge.critique .dot { background: #fbbf24; }
+        .graph-phase-badge.revise { color: #34d399; }
+        .graph-phase-badge.revise .dot { background: #34d399; }
+        .graph-phase-badge.vote { color: #a78bfa; }
+        .graph-phase-badge.vote .dot { background: #a78bfa; }
+
+        .graph-legend {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            padding: 9px 14px;
+            background: rgba(20, 24, 36, 0.88);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            font-size: 11px;
+            color: var(--text2);
+            backdrop-filter: blur(6px);
+            max-width: 420px;
+            z-index: 3;
+        }
+        .graph-legend .legend-item { display: flex; align-items: center; gap: 6px; }
+        .graph-legend .legend-dot {
+            width: 9px; height: 9px;
+            border-radius: 50%;
+            box-shadow: 0 0 6px currentColor;
+        }
+        .graph-legend .legend-dot.propose { background: #60a5fa; color: #60a5fa; }
+        .graph-legend .legend-dot.critique { background: #fbbf24; color: #fbbf24; }
+        .graph-legend .legend-dot.revise { background: #34d399; color: #34d399; }
+        .graph-legend .legend-dot.vote { background: #a78bfa; color: #a78bfa; }
+
+        /* Inbox layer — текстовые окошки возле агентов с содержимым "что я получил" */
+        .graph-inbox-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 4;
+        }
+        .graph-inbox {
+            position: absolute;
+            transform: translate(-50%, -50%) scale(0.85);
+            opacity: 0;
+            background: rgba(20, 24, 36, 0.94);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 6px 10px;
+            min-width: 96px;
+            max-width: 200px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.42), 0 0 0 1px rgba(255,255,255,0.02);
+            transition: opacity 0.28s ease-out, transform 0.28s ease-out, border-color 0.2s;
+            font-family: 'Inter', sans-serif;
+            pointer-events: none;
+            will-change: opacity, transform;
+        }
+        .graph-inbox.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .graph-inbox.thinking {
+            animation: inboxThinking 1.6s infinite ease-in-out;
+        }
+        @keyframes inboxThinking {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.62; }
+        }
+        .graph-inbox .inbox-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text);
+        }
+        .graph-inbox .inbox-title .inbox-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 8px currentColor;
+            flex: 0 0 auto;
+        }
+        .graph-inbox .inbox-body {
+            font-size: 10.5px;
+            color: var(--text2);
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.35;
+            word-break: break-word;
+        }
+        .graph-inbox.propose  { border-color: rgba(96,165,250,0.45); }
+        .graph-inbox.propose  .inbox-title { color: #60a5fa; }
+        .graph-inbox.critique { border-color: rgba(251,191,36,0.45); }
+        .graph-inbox.critique .inbox-title { color: #fbbf24; }
+        .graph-inbox.revise   { border-color: rgba(52,211,153,0.45); }
+        .graph-inbox.revise   .inbox-title { color: #34d399; }
+        .graph-inbox.vote     { border-color: rgba(167,139,250,0.45); }
+        .graph-inbox.vote     .inbox-title { color: #a78bfa; }
+        .graph-inbox.sent     { border-color: rgba(52,211,153,0.75); }
+        .graph-inbox.sent     .inbox-title { color: #34d399; }
+
+        .graph-empty {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text3);
+            text-align: center;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .graph-empty .emoji { font-size: 40px; opacity: 0.4; margin-bottom: 12px; }
 
         /* Placeholder */
         .placeholder {
@@ -494,10 +891,10 @@
             letter-spacing: 0.5px;
         }
 
-        .activity-tag.proposal { background: #dbeafe; color: #1d4ed8; }
-        .activity-tag.critique { background: #fef3c7; color: #92400e; }
-        .activity-tag.revision { background: #d1fae5; color: #065f46; }
-        .activity-tag.vote { background: #ede9fe; color: #5b21b6; }
+        .activity-tag.proposal { background: rgba(96,165,250,0.15); color: #93bbfd; }
+        .activity-tag.critique { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .activity-tag.revision { background: rgba(52,211,153,0.15); color: #34d399; }
+        .activity-tag.vote { background: rgba(139,92,246,0.15); color: #a78bfa; }
 
         .activity-text {
             font-size: 12px;
@@ -507,7 +904,30 @@
             max-height: 60px;
             overflow: hidden;
             line-height: 1.5;
+            cursor: pointer;
+            position: relative;
         }
+        .activity-text.expanded {
+            max-height: none;
+        }
+        .activity-text:not(.expanded)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(transparent, var(--bg));
+            pointer-events: none;
+        }
+        .activity-expand {
+            font-size: 11px;
+            color: var(--accent);
+            cursor: pointer;
+            padding: 2px 0;
+            user-select: none;
+        }
+        .activity-expand:hover { text-decoration: underline; }
 
         /* Phase event in activity */
         .activity-phase {
@@ -526,8 +946,8 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -537,13 +957,14 @@
 
         .modal-box {
             background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 12px;
             padding: 28px;
             max-width: 900px;
             width: 95%;
             max-height: 85vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
 
         .modal-title {
@@ -644,8 +1065,8 @@
         }
         .metric-bar.green { background: var(--green); }
         .metric-bar.yellow { background: var(--yellow); }
-        .metric-bar.red { background: #ef4444; }
-        .metric-bar.blue { background: #3b82f6; }
+        .metric-bar.red { background: var(--red); }
+        .metric-bar.blue { background: var(--blue); }
 
         .metric-card {
             background: var(--bg2);
@@ -668,9 +1089,9 @@
             padding: 2px 6px;
             border-radius: 4px;
         }
-        .improvement-arrow.up { color: #16a34a; background: #dcfce7; }
-        .improvement-arrow.down { color: #dc2626; background: #fee2e2; }
-        .improvement-arrow.same { color: #737373; background: #f5f5f5; }
+        .improvement-arrow.up { color: #34d399; background: rgba(52,211,153,0.12); }
+        .improvement-arrow.down { color: #f87171; background: rgba(248,113,113,0.12); }
+        .improvement-arrow.same { color: #64748b; background: rgba(100,116,139,0.12); }
 
         .agent-behavior-grid {
             display: grid;
@@ -763,9 +1184,9 @@
         .comparison-table .improvement-cell {
             font-weight: 700;
         }
-        .improvement-positive { color: #16a34a; }
-        .improvement-negative { color: #dc2626; }
-        .improvement-zero { color: #737373; }
+        .improvement-positive { color: var(--green); }
+        .improvement-negative { color: var(--red); }
+        .improvement-zero { color: var(--text3); }
 
         .comparison-summary {
             display: grid;
@@ -790,6 +1211,17 @@
 
         @media (max-width: 768px) {
             .container { grid-template-columns: 1fr; }
+        }
+
+        /* Checkbox styling */
+        input[type="checkbox"] {
+            accent-color: var(--accent);
+        }
+
+        /* Select option styling (Firefox) */
+        option {
+            background: var(--bg);
+            color: var(--text);
         }
 
         /* Scrollbar */
@@ -834,15 +1266,64 @@
                 </div>
 
                 <div class="field">
+                    <div class="field-label">Revision Mode</div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px;">
+                            <input type="checkbox" id="showAllSolutions" style="accent-color:var(--accent);">
+                            Show all solutions
+                        </label>
+                        <span id="revisionModeHint" style="font-size:11px; color:var(--text3);">Best only</span>
+                    </div>
+                </div>
+
+                <div class="field" id="enhancementsField">
+                    <div class="field-label">Debate Enhancements</div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; flex:1;">
+                                <input type="checkbox" id="adaptiveTemp" style="accent-color:var(--accent);" checked>
+                                Adaptive temperature
+                            </label>
+                            <span style="font-size:10px; color:var(--text3);" title="Increase temperature when agents stagnate">↑ temp on stall</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; flex:1;">
+                                <input type="checkbox" id="critiqueHistory" style="accent-color:var(--accent);" checked>
+                                Critique history
+                            </label>
+                            <span style="font-size:10px; color:var(--text3);" title="Show previous round critiques to avoid repetition">no repeats</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                            <span style="font-size:12px; min-width:60px;">Strategy:</span>
+                            <select id="revisionStrategy" style="flex:1; font-size:11px;">
+                                <option value="uniform">Uniform (baseline)</option>
+                                <option value="diverse" selected>Diverse (DMAD)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
                     <div class="field-label">Agents</div>
                     <div class="agent-cards" id="agentList">
-                        <div class="agent-chip">qwen2.5-coder:7b<span class="x" onclick="removeAgent(this)">&times;</span></div>
-                        <div class="agent-chip">deepseek-coder:6.7b<span class="x" onclick="removeAgent(this)">&times;</span></div>
-                        <div class="agent-chip">codellama:7b-instruct<span class="x" onclick="removeAgent(this)">&times;</span></div>
                     </div>
                     <select id="addAgent" style="margin-top: 8px;">
                         <option value="">+ Add agent...</option>
                     </select>
+                </div>
+
+                <div class="field">
+                    <div class="field-label">
+                        Judge
+                        <span class="field-label-hint">optional — stronger model that only evaluates</span>
+                    </div>
+                    <select id="judgeSelect">
+                        <option value="">No judge</option>
+                    </select>
+                    <div id="judgeActiveInfo" class="judge-active-info" style="display:none;">
+                        <span class="judge-badge">JUDGE</span>
+                        <span>Critiques every proposal and votes, but does <strong>not</strong> propose or revise.</span>
+                    </div>
                 </div>
 
                 <button class="btn btn-start" id="startBtn" onclick="startRun()">Start Debate</button>
@@ -851,6 +1332,7 @@
                 <div style="margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px;">
                     <button class="btn btn-secondary" onclick="showBatchModal()">Batch Experiment</button>
                     <button class="btn btn-secondary" onclick="showComparison()">Compare Solo vs Debate</button>
+                    <button class="btn btn-secondary" onclick="showTranscripts()">Transcripts</button>
                     <a href="/api/export/csv" class="btn btn-secondary" style="display:block; text-align:center; text-decoration:none;">Export CSV</a>
                     <button class="btn btn-secondary" onclick="showClearConfirm()" style="margin-top:6px; color:var(--red); border-color:var(--red);">Clear All Data</button>
                 </div>
@@ -859,7 +1341,13 @@
 
         <!-- Arena -->
         <div class="panel arena-panel">
-            <div class="panel-header">Arena</div>
+            <div class="panel-header">
+                <span>Arena</span>
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="timeline" onclick="switchArenaView('timeline')">Timeline</button>
+                    <button class="view-btn" data-view="graph" onclick="switchArenaView('graph')">Graph</button>
+                </div>
+            </div>
             <div class="panel-body">
                 <div class="round-bar">
                     <div class="round-num" id="roundNum">-</div>
@@ -870,26 +1358,66 @@
                     <div class="phase-badge" id="phaseBadge">propose</div>
                 </div>
 
-                <div class="timeline" id="timeline">
-                    <div class="placeholder">
-                        <div class="placeholder-icon">&#9672;</div>
-                        Select a task and press Start to begin the debate
+                <div class="arena-view" id="timelineView">
+                    <div class="timeline" id="timeline">
+                        <div class="placeholder">
+                            <div class="placeholder-icon">&#9672;</div>
+                            Select a task and press Start to begin the debate
+                        </div>
+                    </div>
+
+                    <div class="final-code" id="finalCode">
+                        <div class="final-code-header">
+                            <span>Final Solution</span>
+                            <span id="finalRate">-</span>
+                        </div>
+                        <pre id="finalCodePre"></pre>
                     </div>
                 </div>
 
-                <div class="final-code" id="finalCode">
-                    <div class="final-code-header">
-                        <span>Final Solution</span>
-                        <span id="finalRate">-</span>
+                <div class="arena-view" id="graphView" style="display:none">
+                    <div class="graph-container">
+                        <div class="graph-phase-badge" id="graphPhaseBadge">
+                            <span class="dot"></span>
+                            <span class="label">Round 1 &middot; propose</span>
+                        </div>
+                        <svg id="graphSvg" viewBox="0 0 800 540" preserveAspectRatio="xMidYMid meet">
+                            <defs>
+                                <radialGradient id="taskGradient" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" stop-color="#818cf8" stop-opacity="1"/>
+                                    <stop offset="60%" stop-color="#6366f1" stop-opacity="1"/>
+                                    <stop offset="100%" stop-color="#4338ca" stop-opacity="1"/>
+                                </radialGradient>
+                            </defs>
+                            <g id="graphEdges"></g>
+                            <g id="graphNodes"></g>
+                            <g id="graphParticles"></g>
+                        </svg>
+                        <div class="graph-inbox-layer" id="graphInboxLayer"></div>
+                        <div class="graph-empty" id="graphEmpty">
+                            <div class="emoji">&#9729;</div>
+                            Start a debate to see the agent network
+                        </div>
+                        <div class="graph-legend">
+                            <div class="legend-item"><span class="legend-dot propose"></span>Propose</div>
+                            <div class="legend-item"><span class="legend-dot critique"></span>Critique</div>
+                            <div class="legend-item"><span class="legend-dot revise"></span>Revise</div>
+                            <div class="legend-item"><span class="legend-dot vote"></span>Vote</div>
+                        </div>
                     </div>
-                    <pre id="finalCodePre"></pre>
                 </div>
             </div>
         </div>
 
         <!-- Activity Feed -->
         <div class="panel right-panel">
-            <div class="panel-header">Activity</div>
+            <div class="panel-header">
+                <span>Activity</span>
+                <div class="activity-export-btns">
+                    <button onclick="copyActivity()" title="Copy to clipboard">Copy</button>
+                    <button onclick="downloadActivity()" title="Download as .txt">Download</button>
+                </div>
+            </div>
             <div class="panel-body activity" id="activityFeed">
                 <div class="placeholder" style="padding: 40px 20px;">Waiting for events...</div>
             </div>
@@ -919,7 +1447,7 @@
             <div id="batchContent">
                 <div class="field">
                     <div class="field-label">Mode</div>
-                    <select id="batchMode">
+                    <select id="batchMode" onchange="document.getElementById('batchConfigField').style.display = this.value === 'solo' ? 'none' : 'block';">
                         <option value="debate">Debate</option>
                         <option value="solo">Solo</option>
                     </select>
@@ -928,13 +1456,17 @@
                     <div class="field-label">Select Tasks</div>
                     <div id="batchTaskList" style="max-height:200px; overflow-y:auto; background:var(--bg2); border-radius:var(--radius); padding:8px;"></div>
                     <div style="margin-top:6px; display:flex; gap:4px;">
-                        <button class="btn" onclick="batchSelectAll(true)" style="font-size:10px; padding:4px 8px;">Select All</button>
-                        <button class="btn" onclick="batchSelectAll(false)" style="font-size:10px; padding:4px 8px;">Deselect All</button>
+                        <button class="btn" onclick="batchSelectAll(true)" style="font-size:10px; padding:4px 8px; background:var(--bg3); color:var(--text2); border:1px solid var(--border);">Select All</button>
+                        <button class="btn" onclick="batchSelectAll(false)" style="font-size:10px; padding:4px 8px; background:var(--bg3); color:var(--text2); border:1px solid var(--border);">Deselect All</button>
                     </div>
                 </div>
                 <div class="field">
                     <div class="field-label">Agents (from main config)</div>
                     <div id="batchAgentInfo" style="font-size:12px; color:var(--text2);"></div>
+                </div>
+                <div class="field" id="batchConfigField">
+                    <div class="field-label">Active Configuration</div>
+                    <div id="batchConfigInfo" style="font-size:12px; color:var(--text2); background:var(--bg2); border-radius:var(--radius); padding:10px; display:flex; flex-wrap:wrap; gap:6px;"></div>
                 </div>
                 <div id="batchProgress" style="display:none; margin:12px 0;">
                     <div style="font-size:12px; margin-bottom:6px;"><span id="batchProgressText">0/0</span></div>
@@ -947,6 +1479,49 @@
             <div class="modal-footer">
                 <button class="btn btn-start" id="batchStartBtn" onclick="startBatch()">Run Batch</button>
                 <button class="btn btn-close" onclick="document.getElementById('batchModal').classList.remove('active')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transcripts Modal -->
+    <div class="modal" id="transcriptsModal">
+        <div class="modal-box" style="max-width: 1100px; width: 95%;">
+            <div class="modal-title" id="transcriptsTitle">Debate Transcripts</div>
+            <div id="transcriptsList">
+                <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
+                    <input type="text" id="transcriptSearch" placeholder="Search by task..."
+                        style="flex:1; min-width:200px; padding:6px 10px; background:var(--bg2); border:1px solid var(--border); color:var(--text); border-radius:6px; font-size:13px;"
+                        oninput="renderTranscripts()">
+                    <select id="transcriptModeFilter" onchange="renderTranscripts()"
+                        style="padding:6px 10px; background:var(--bg2); border:1px solid var(--border); color:var(--text); border-radius:6px; font-size:13px;">
+                        <option value="">All modes</option>
+                        <option value="debate">Debate</option>
+                        <option value="solo">Solo</option>
+                    </select>
+                    <select id="transcriptDifficultyFilter" onchange="renderTranscripts()"
+                        style="padding:6px 10px; background:var(--bg2); border:1px solid var(--border); color:var(--text); border-radius:6px; font-size:13px;">
+                        <option value="">All difficulties</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                        <option value="extreme">Extreme</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="loadTranscripts()" style="padding:6px 12px;">Refresh</button>
+                </div>
+                <div id="transcriptsTableWrap" style="max-height: 60vh; overflow-y: auto; border:1px solid var(--border); border-radius:6px;">
+                    <div style="padding:20px; text-align:center; color:var(--text2);">Loading...</div>
+                </div>
+            </div>
+            <div id="transcriptViewer" style="display:none;">
+                <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+                    <button class="btn btn-secondary" onclick="backToTranscriptList()" style="padding:4px 10px;">&larr; Back to list</button>
+                    <span id="transcriptViewerName" style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--text2); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+                    <a id="transcriptDownloadLink" href="#" class="btn btn-secondary" style="padding:4px 10px;">Download</a>
+                </div>
+                <pre id="transcriptViewerContent" style="max-height:65vh; overflow:auto; background:var(--bg2); padding:12px; border-radius:6px; font-family:'JetBrains Mono', monospace; font-size:12px; line-height:1.5; color:var(--text); white-space:pre-wrap; word-break:break-word;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-close" onclick="document.getElementById('transcriptsModal').classList.remove('active')">Close</button>
             </div>
         </div>
     </div>
@@ -965,10 +1540,13 @@
 
     <script>
         const socket = io();
-        let currentAgents = ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b-instruct'];
+        let currentAgents = ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b-instruct', 'mistral:7b'];
+        let currentJudge = null;  // Optional heterogeneous judge model; null = "No judge"
         let agentData = {};
         let currentRoundEl = null;
         let currentMode = 'debate';
+        const STRATEGIES = ['auto', 'step_by_step', 'test_driven', 'simplify', 'edge_cases'];
+        const STRATEGY_LABELS = {auto:'Auto', step_by_step:'Step-by-step trace', test_driven:'Test-driven fix', simplify:'Simplify & rewrite', edge_cases:'Edge case analysis'};
 
         const avatarColors = ['a1','a2','a3','a4'];
 
@@ -977,6 +1555,7 @@
             document.getElementById('modeDebate').classList.toggle('active', mode === 'debate');
             document.getElementById('modeSolo').classList.toggle('active', mode === 'solo');
             document.getElementById('roundsField').style.display = mode === 'solo' ? 'none' : 'block';
+            document.getElementById('enhancementsField').style.display = mode === 'solo' ? 'none' : 'block';
             document.getElementById('startBtn').textContent = mode === 'solo' ? 'Run Solo' : 'Start Debate';
         }
 
@@ -993,15 +1572,8 @@
             if (!taskPath) { alert('Select a task'); return; }
             if (currentAgents.length < 1) { alert('Add at least 1 agent'); return; }
 
-            document.getElementById('timeline').innerHTML = '';
-            document.getElementById('activityFeed').innerHTML = '';
-            document.getElementById('finalCode').style.display = 'none';
-            document.getElementById('roundNum').textContent = '-';
+            document.getElementById('startBtn').disabled = true;
             document.getElementById('roundStatus').textContent = 'Starting solo run...';
-            document.getElementById('phaseBadge').classList.remove('active');
-            document.getElementById('modalContent').innerHTML = '';
-            currentRoundEl = null;
-            agentData = {};
 
             socket.emit('start_solo', {
                 task_path: taskPath,
@@ -1076,6 +1648,778 @@
                 });
         }
 
+        // ============== Graph View ==============
+        const PHASE_COLORS = {
+            propose: '#60a5fa',
+            critique: '#fbbf24',
+            revise: '#34d399',
+            vote: '#a78bfa',
+        };
+        const GRAPH_AGENT_COLORS = ['#6366f1', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#10b981', '#eab308'];
+        const AGENT_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+        // Inbox text per phase — описывает, что агент "держит у себя" в этот момент.
+        // N = количество агентов, task = имя выбранной задачи (если есть).
+        const INBOX_BY_PHASE = {
+            propose:  (n, task) => ({ title: 'Task',     body: task || 'problem specification' }),
+            critique: (n)       => ({ title: 'Review',   body: Math.max(1, n - 1) + ' solutions to review' }),
+            revise:   (n)       => ({ title: 'Feedback', body: 'critiques + test results' }),
+            vote:     (n)       => ({ title: 'Evaluate', body: n + ' candidates to rank' }),
+        };
+
+        const GraphView = {
+            svg: null,
+            W: 800, H: 540,
+            cx: 400, cy: 270,
+            nodeR: 22,
+            agents: [],
+            currentPhase: null,
+            currentRound: 0,
+            lastSolutions: {},
+            built: false,
+            taskName: null,
+            _resizeHandler: null,
+
+            init() {
+                this.svg = document.getElementById('graphSvg');
+                this.phaseBadgeEl = document.getElementById('graphPhaseBadge');
+                this.emptyEl = document.getElementById('graphEmpty');
+                this.inboxLayerEl = document.getElementById('graphInboxLayer');
+                if (!this._resizeHandler) {
+                    this._resizeHandler = () => this._updateInboxPositions();
+                    window.addEventListener('resize', this._resizeHandler);
+                }
+                if (!this._dragMoveBound) {
+                    this._dragMoveBound = (e) => this._onDragMove(e);
+                    this._dragEndBound = (e) => this._onDragEnd(e);
+                }
+                this._dragging = null;
+            },
+
+            clear() {
+                if (!this.svg) return;
+                ['graphEdges', 'graphNodes', 'graphParticles'].forEach(id => {
+                    const g = this.svg.querySelector('#' + id);
+                    if (g) g.innerHTML = '';
+                });
+                if (this.phaseBadgeEl) this.phaseBadgeEl.style.display = 'none';
+                if (this.inboxLayerEl) this.inboxLayerEl.innerHTML = '';
+                this.built = false;
+                if (this.emptyEl) this.emptyEl.style.display = 'block';
+            },
+
+            build(agentModels) {
+                if (!this.svg) this.init();
+                if (!this.svg) return;
+                this.clear();
+                if (!agentModels || agentModels.length === 0) return;
+                if (this.emptyEl) this.emptyEl.style.display = 'none';
+
+                const n = agentModels.length;
+                // n=2 — горизонтальная линия, остальные — по кругу
+                const ring = n <= 2 ? 180 : n <= 4 ? 200 : 220;
+                this.agents = agentModels.map((model, i) => {
+                    let x, y;
+                    if (n === 1) {
+                        x = this.cx; y = this.cy;
+                    } else if (n === 2) {
+                        x = this.cx + (i === 0 ? -ring : ring);
+                        y = this.cy;
+                    } else {
+                        const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+                        x = this.cx + ring * Math.cos(angle);
+                        y = this.cy + ring * Math.sin(angle);
+                    }
+                    return {
+                        id: 'agent_' + (i + 1) + '_' + model.split(':')[0],
+                        letter: AGENT_LETTERS[i] || ('A' + (i + 1)),
+                        name: 'Agent ' + (i + 1),
+                        model: model,
+                        x: x, y: y, r: this.nodeR,
+                        color: GRAPH_AGENT_COLORS[i % GRAPH_AGENT_COLORS.length],
+                        index: i,
+                    };
+                });
+
+                const edgesG = this.svg.querySelector('#graphEdges');
+                const nodesG = this.svg.querySelector('#graphNodes');
+                const NS = 'http://www.w3.org/2000/svg';
+
+                // Направленные дуги между всеми парами (A→B и B→A — разные изогнутые линии).
+                // Для каждой упорядоченной пары (i,j), i!==j создаём один curved <path>.
+                for (let i = 0; i < this.agents.length; i++) {
+                    for (let j = 0; j < this.agents.length; j++) {
+                        if (i === j) continue;
+                        const from = this.agents[i], to = this.agents[j];
+                        const path = document.createElementNS(NS, 'path');
+                        const arc = this._arcGeometry(from, to);
+                        if (!arc) continue;
+                        path.setAttribute('d', arc.d);
+                        path.setAttribute('class', 'graph-edge pair');
+                        path.setAttribute('data-from', from.id);
+                        path.setAttribute('data-to', to.id);
+                        edgesG.appendChild(path);
+                    }
+                }
+
+                // Узлы агентов (маленькие, с буквой внутри)
+                this.agents.forEach(a => {
+                    this._drawNode(nodesG, {
+                        id: a.id, x: a.x, y: a.y,
+                        letter: a.letter, name: a.name, sub: a.model,
+                        r: a.r, color: a.color
+                    });
+                });
+
+                this._buildInboxes();
+                this.taskName = this._captureTaskName();
+                this.built = true;
+            },
+
+            _drawNode(parent, opts) {
+                const NS = 'http://www.w3.org/2000/svg';
+                const g = document.createElementNS(NS, 'g');
+                g.setAttribute('class', 'graph-node-group agent');
+                g.setAttribute('data-node', opts.id);
+                g.setAttribute('transform', 'translate(' + opts.x + ',' + opts.y + ')');
+                g.addEventListener('pointerdown', (e) => this._beginDrag(e, opts.id));
+                // Tooltip hint
+                const ttl = document.createElementNS(NS, 'title');
+                ttl.textContent = 'Drag to reposition';
+                g.appendChild(ttl);
+
+                const ring = document.createElementNS(NS, 'circle');
+                ring.setAttribute('class', 'graph-node-ring');
+                ring.setAttribute('r', opts.r);
+                ring.setAttribute('cx', 0); ring.setAttribute('cy', 0);
+                ring.style.color = opts.color || '#818cf8';
+                g.appendChild(ring);
+
+                const c = document.createElementNS(NS, 'circle');
+                c.setAttribute('class', 'graph-node-circle');
+                c.setAttribute('r', opts.r);
+                c.setAttribute('cx', 0); c.setAttribute('cy', 0);
+                c.setAttribute('fill', opts.color);
+                c.setAttribute('stroke', '#1a1f2e');
+                g.appendChild(c);
+
+                const letter = document.createElementNS(NS, 'text');
+                letter.setAttribute('class', 'graph-node-label');
+                letter.setAttribute('y', 0);
+                letter.textContent = opts.letter;
+                g.appendChild(letter);
+
+                const name = document.createElementNS(NS, 'text');
+                name.setAttribute('class', 'graph-node-agent-name');
+                name.setAttribute('y', opts.r + 16);
+                name.textContent = opts.name;
+                g.appendChild(name);
+
+                const sub = document.createElementNS(NS, 'text');
+                sub.setAttribute('class', 'graph-node-sub');
+                sub.setAttribute('y', opts.r + 30);
+                const subText = (opts.sub || '').length > 22 ? opts.sub.slice(0, 20) + '…' : opts.sub;
+                sub.textContent = subText;
+                g.appendChild(sub);
+
+                const stat = document.createElementNS(NS, 'text');
+                stat.setAttribute('class', 'graph-node-stat');
+                stat.setAttribute('y', opts.r + 44);
+                stat.setAttribute('data-stat', opts.id);
+                stat.textContent = '—';
+                g.appendChild(stat);
+
+                parent.appendChild(g);
+            },
+
+            _buildInboxes() {
+                if (!this.inboxLayerEl) return;
+                this.inboxLayerEl.innerHTML = '';
+                this.agents.forEach(a => {
+                    const el = document.createElement('div');
+                    el.className = 'graph-inbox';
+                    el.setAttribute('data-inbox', a.id);
+                    el.innerHTML =
+                        '<div class="inbox-title"><span class="inbox-dot"></span>' +
+                        '<span class="inbox-title-text"></span></div>' +
+                        '<div class="inbox-body"></div>';
+                    this.inboxLayerEl.appendChild(el);
+                });
+                this._updateInboxPositions();
+            },
+
+            _updateInboxPositions() {
+                if (!this.svg || !this.inboxLayerEl) return;
+                this.agents.forEach(a => {
+                    const el = this.inboxLayerEl.querySelector('[data-inbox="' + CSS.escape(a.id) + '"]');
+                    if (!el) return;
+                    const pos = this._getInboxPixelPos(a);
+                    if (!pos) return;
+                    el.style.left = pos.x + 'px';
+                    el.style.top = pos.y + 'px';
+                });
+            },
+
+            _getInboxPixelPos(agent) {
+                if (!this.svg) return null;
+                const svgRect = this.svg.getBoundingClientRect();
+                const container = this.svg.parentElement;
+                if (!container) return null;
+                const containerRect = container.getBoundingClientRect();
+                if (svgRect.width === 0 || svgRect.height === 0) return null;
+                const scale = Math.min(svgRect.width / this.W, svgRect.height / this.H);
+                const renderedW = this.W * scale;
+                const renderedH = this.H * scale;
+                const offX = (svgRect.width - renderedW) / 2;
+                const offY = (svgRect.height - renderedH) / 2;
+
+                // Направление наружу от центра графа в SVG-координатах
+                const dx = agent.x - this.cx, dy = agent.y - this.cy;
+                const mag = Math.sqrt(dx * dx + dy * dy);
+                let svgPx, svgPy;
+                if (mag < 1) {
+                    svgPx = agent.x;
+                    svgPy = agent.y + agent.r + 58;
+                } else {
+                    const off = agent.r + 54;
+                    svgPx = agent.x + (dx / mag) * off;
+                    svgPy = agent.y + (dy / mag) * off;
+                }
+                const px = (svgRect.left - containerRect.left) + svgPx * scale + offX;
+                const py = (svgRect.top - containerRect.top) + svgPy * scale + offY;
+                return { x: px, y: py };
+            },
+
+            _captureTaskName() {
+                const sel = document.getElementById('taskSelect');
+                if (!sel) return null;
+                const opt = sel.selectedOptions && sel.selectedOptions[0];
+                if (!opt) return null;
+                const txt = (opt.textContent || '').trim();
+                return txt || null;
+            },
+
+            _setInboxContent(el, phaseClass, title, body) {
+                el.className = 'graph-inbox ' + phaseClass;
+                const t = el.querySelector('.inbox-title-text');
+                const b = el.querySelector('.inbox-body');
+                if (t) t.textContent = title;
+                if (b) b.textContent = body;
+            },
+
+            _showInbox(agentId, phase) {
+                if (!this.inboxLayerEl) return;
+                const el = this.inboxLayerEl.querySelector('[data-inbox="' + CSS.escape(agentId) + '"]');
+                if (!el) return;
+                const n = this.agents.length;
+                const meta = (INBOX_BY_PHASE[phase] || (() => ({ title: phase, body: '' })))(n, this.taskName);
+                this._setInboxContent(el, phase, meta.title, meta.body);
+                // Force reflow so transition kicks in
+                void el.offsetWidth;
+                el.classList.add('visible', 'thinking');
+            },
+
+            _hideInbox(agentId) {
+                if (!this.inboxLayerEl) return;
+                const el = this.inboxLayerEl.querySelector('[data-inbox="' + CSS.escape(agentId) + '"]');
+                if (!el) return;
+                el.classList.remove('visible', 'thinking', 'sent');
+            },
+
+            _showInboxSent(agentId, msgType) {
+                if (!this.inboxLayerEl) return;
+                const el = this.inboxLayerEl.querySelector('[data-inbox="' + CSS.escape(agentId) + '"]');
+                if (!el || !el.classList.contains('visible')) return;
+                el.classList.remove('thinking');
+                const pretty = ({proposal:'Proposal', critique:'Critique', revision:'Revision', vote:'Vote'})[msgType] || 'Response';
+                this._setInboxContent(el, 'sent', 'Sent', pretty);
+                el.classList.add('visible');
+                setTimeout(() => { el.classList.remove('visible', 'sent'); }, 900);
+            },
+
+            setPhase(phase, roundNum) {
+                if (!this.built) return;
+                this.currentPhase = phase;
+                this.currentRound = roundNum;
+                this.taskName = this._captureTaskName();
+
+                if (this.phaseBadgeEl) {
+                    this.phaseBadgeEl.className = 'graph-phase-badge ' + phase;
+                    const lbl = this.phaseBadgeEl.querySelector('.label');
+                    if (lbl) lbl.textContent = 'Round ' + roundNum + ' · ' + phase;
+                    this.phaseBadgeEl.style.display = 'flex';
+                }
+
+                this.svg.querySelectorAll('.graph-node-group.active').forEach(g => g.classList.remove('active'));
+                this._updateInboxPositions();
+                const color = PHASE_COLORS[phase] || '#6366f1';
+
+                // Inbox — у всех агентов одновременно: "получили X"
+                this.agents.forEach(a => this._showInbox(a.id, phase));
+
+                if (phase === 'propose') {
+                    // Каждый агент решает сам. Никаких стрелок между ними.
+                    this.agents.forEach((a, i) => {
+                        setTimeout(() => {
+                            this._activateNode(a.id, color);
+                            this._orbitParticles(a.id, color, 3);
+                        }, i * 120);
+                    });
+                } else if (phase === 'critique') {
+                    // A → B для каждой пары. A критикует решение B.
+                    this.agents.forEach(a => this._activateNode(a.id, color));
+                    let delay = 0;
+                    for (let i = 0; i < this.agents.length; i++) {
+                        for (let j = 0; j < this.agents.length; j++) {
+                            if (i === j) continue;
+                            const from = this.agents[i].id, to = this.agents[j].id;
+                            setTimeout(() => this._sendArrowParticle(from, to, color, 'critique'), delay);
+                            delay += 180;
+                        }
+                    }
+                } else if (phase === 'revise') {
+                    // B получает агрегированные критики от A, C, D → B
+                    this.agents.forEach(a => this._activateNode(a.id, color));
+                    let delay = 0;
+                    this.agents.forEach((b) => {
+                        this.agents.forEach((a) => {
+                            if (a.id === b.id) return;
+                            setTimeout(() => this._sendArrowParticle(a.id, b.id, color, 'feedback'), delay);
+                            delay += 160;
+                        });
+                    });
+                } else if (phase === 'vote') {
+                    // На phase_start голосующие "думают" — настоящие стрелки прилетят в showVotes()
+                    this.agents.forEach(a => this._activateNode(a.id, color));
+                }
+            },
+
+            onMessage(data) {
+                if (!this.built) return;
+                // Агент отправил ответ — прячем его inbox (через transient "Sent X")
+                this._showInboxSent(data.agent_id, data.message_type);
+                const phase = this.currentPhase || (({proposal:'propose',critique:'critique',revision:'revise',vote:'vote'})[data.message_type]);
+                const color = PHASE_COLORS[phase] || '#6366f1';
+                this._flashNode(data.agent_id, color);
+            },
+
+            onRoundComplete(data) {
+                if (!this.built) return;
+                (data.solutions || []).forEach(sol => {
+                    this.lastSolutions[sol.agent_id] = sol;
+                    const er = sol.execution_result;
+                    const total = (er && er.tests_total) || 0;
+                    const passed = (er && er.tests_passed) || 0;
+                    const rate = total > 0 ? (passed / total) * 100 : 0;
+                    const statEl = this.svg.querySelector('[data-stat="' + sol.agent_id + '"]');
+                    if (statEl) {
+                        statEl.textContent = total === 0 ? 'err' : (rate.toFixed(0) + '% · ' + passed + '/' + total);
+                        statEl.setAttribute('fill', rate < 30 ? '#f87171' : rate < 70 ? '#fbbf24' : '#34d399');
+                    }
+                    const rateColor = rate < 30 ? '#f87171' : rate < 70 ? '#fbbf24' : '#34d399';
+                    this._flashNode(sol.agent_id, rateColor);
+                });
+                this.svg.querySelectorAll('.graph-node-group.active').forEach(g => g.classList.remove('active'));
+                this.agents.forEach(a => this._hideInbox(a.id));
+                if (this.phaseBadgeEl) this.phaseBadgeEl.style.display = 'none';
+
+                // Реальные стрелки голосов (данные уже приходят с сервера)
+                if (data.votes && data.votes.length) {
+                    setTimeout(() => this.showVotes(data.votes), 600);
+                }
+            },
+
+            showVotes(votes) {
+                if (!this.built || !votes) return;
+                const color = PHASE_COLORS.vote;
+                votes.forEach((v, i) => {
+                    const from = v.voter_id || v.agent_id;
+                    const to = v.voted_agent_id;
+                    if (!from || !to) return;
+                    setTimeout(() => this._sendArrowParticle(from, to, color, 'vote'), i * 260);
+                });
+            },
+
+            onDebateComplete(data) {
+                if (!this.built) return;
+                this.svg.querySelectorAll('.graph-node-group.active').forEach(g => g.classList.remove('active'));
+                this.svg.querySelectorAll('.graph-node-group.winner').forEach(g => g.classList.remove('winner'));
+                this.agents.forEach(a => this._hideInbox(a.id));
+                if (data && data.winning_agent) {
+                    const node = this.svg.querySelector('[data-node="' + data.winning_agent + '"]');
+                    if (node) node.classList.add('winner');
+                }
+                if (this.phaseBadgeEl) this.phaseBadgeEl.style.display = 'none';
+            },
+
+            onReset() {
+                if (!this.svg) return;
+                this.svg.querySelectorAll('.graph-node-group.active').forEach(g => g.classList.remove('active'));
+                this.svg.querySelectorAll('.graph-node-group.winner').forEach(g => g.classList.remove('winner'));
+                this.svg.querySelectorAll('[data-stat]').forEach(s => {
+                    s.textContent = '—';
+                    s.setAttribute('fill', 'var(--text)');
+                });
+                this.agents.forEach(a => this._hideInbox(a.id));
+                this.lastSolutions = {};
+                if (this.phaseBadgeEl) this.phaseBadgeEl.style.display = 'none';
+            },
+
+            _activateNode(id, color) {
+                const node = this.svg.querySelector('[data-node="' + id + '"]');
+                if (!node) return;
+                node.classList.add('active');
+                const ring = node.querySelector('.graph-node-ring');
+                if (ring) ring.style.color = color;
+            },
+
+            _flashNode(id, color) {
+                const node = this.svg.querySelector('[data-node="' + id + '"]');
+                if (!node) return;
+                const circle = node.querySelector('.graph-node-circle');
+                if (!circle) return;
+                const origStroke = circle.getAttribute('stroke') || '';
+                circle.setAttribute('stroke', color);
+                circle.style.filter = 'drop-shadow(0 0 18px ' + color + ')';
+                setTimeout(() => {
+                    if (origStroke) circle.setAttribute('stroke', origStroke);
+                    circle.style.filter = '';
+                }, 750);
+            },
+
+            _getNodePos(id) {
+                const a = this.agents.find(x => x.id === id);
+                return a ? { x: a.x, y: a.y } : null;
+            },
+
+            _sendParticle(fromId, toId, color, speed, size) {
+                speed = speed || 1;
+                size = size || 12;
+                const from = this._getNodePos(fromId);
+                const to = this._getNodePos(toId);
+                if (!from || !to) return;
+
+                const NS = 'http://www.w3.org/2000/svg';
+                const particlesG = this.svg.querySelector('#graphParticles');
+                if (!particlesG) return;
+
+                const p = document.createElementNS(NS, 'circle');
+                p.setAttribute('class', 'graph-particle');
+                p.setAttribute('r', size);
+                p.setAttribute('fill', color);
+                p.setAttribute('cx', from.x);
+                p.setAttribute('cy', from.y);
+                p.style.filter = 'drop-shadow(0 0 12px ' + color + ')';
+                particlesG.appendChild(p);
+
+                const dx = to.x - from.x, dy = to.y - from.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const duration = Math.max(1300, Math.min(2100, dist * 4.3)) / speed;
+                const start = performance.now();
+
+                const step = (t) => {
+                    const elapsed = t - start;
+                    const prog = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - prog, 2);
+                    p.setAttribute('cx', from.x + (to.x - from.x) * eased);
+                    p.setAttribute('cy', from.y + (to.y - from.y) * eased);
+                    p.style.opacity = String(1 - prog * prog);
+                    if (prog < 1) requestAnimationFrame(step);
+                    else p.remove();
+                };
+                requestAnimationFrame(step);
+            },
+
+            _orbitParticles(agentId, color, count) {
+                count = count || 3;
+                const pos = this._getNodePos(agentId);
+                if (!pos) return;
+                const NS = 'http://www.w3.org/2000/svg';
+                const particlesG = this.svg.querySelector('#graphParticles');
+                if (!particlesG) return;
+                const orbitR = 36;
+                const duration = 2200;
+                for (let i = 0; i < count; i++) {
+                    const p = document.createElementNS(NS, 'circle');
+                    p.setAttribute('class', 'graph-particle');
+                    p.setAttribute('r', 3.6);
+                    p.setAttribute('fill', color);
+                    p.style.filter = 'drop-shadow(0 0 9px ' + color + ')';
+                    particlesG.appendChild(p);
+                    const phaseOffset = (i / count) * Math.PI * 2;
+                    const start = performance.now();
+                    const step = (t) => {
+                        const elapsed = t - start;
+                        const prog = Math.min(elapsed / duration, 1);
+                        const angle = phaseOffset + prog * Math.PI * 2;
+                        p.setAttribute('cx', pos.x + Math.cos(angle) * orbitR);
+                        p.setAttribute('cy', pos.y + Math.sin(angle) * orbitR);
+                        p.style.opacity = String(Math.sin(prog * Math.PI));
+                        if (prog < 1) requestAnimationFrame(step);
+                        else p.remove();
+                    };
+                    requestAnimationFrame(step);
+                }
+            },
+
+            // Заметная стрелка с хвостом и опциональным лейблом, летящая по изогнутой дуге
+            // (той же, что нарисована между двумя агентами). Используется для critique, revise, vote.
+            _sendArrowParticle(fromId, toId, color, label) {
+                const fromAgent = this.agents.find(x => x.id === fromId);
+                const toAgent = this.agents.find(x => x.id === toId);
+                if (!fromAgent || !toAgent) return;
+                const arc = this._arcGeometry(fromAgent, toAgent);
+                if (!arc) return;
+
+                const NS = 'http://www.w3.org/2000/svg';
+                const particlesG = this.svg.querySelector('#graphParticles');
+                if (!particlesG) return;
+
+                // Подсветить саму направленную дугу на время полёта
+                const edge = this.svg.querySelector(
+                    '.graph-edge.pair[data-from="' + CSS.escape(fromId) + '"][data-to="' + CSS.escape(toId) + '"]'
+                );
+                if (edge) {
+                    edge.classList.add('flowing');
+                    edge.style.stroke = color;
+                }
+
+                // Длина дуги — грубая оценка: хорда + часть кривизны. Замедление ~ ×1.5.
+                const chord = arc.len;
+                const arcLen = chord + Math.abs(arc.curvature) * 1.2;
+                const duration = Math.max(1500, Math.min(2400, arcLen * 4.5));
+
+                const g = document.createElementNS(NS, 'g');
+                g.setAttribute('class', 'graph-particle');
+                particlesG.appendChild(g);
+
+                // Хвост — 5 затухающих шариков вдоль кривой
+                const trailCount = 5;
+                const trail = [];
+                for (let i = 0; i < trailCount; i++) {
+                    const c = document.createElementNS(NS, 'circle');
+                    const r = Math.max(3.6 - i * 0.5, 1.1);
+                    c.setAttribute('r', String(r));
+                    c.setAttribute('fill', color);
+                    c.style.filter = 'drop-shadow(0 0 8px ' + color + ')';
+                    c.style.opacity = String(Math.max(0.62 - i * 0.1, 0.1));
+                    g.appendChild(c);
+                    trail.push(c);
+                }
+
+                // Голова — полигон-треугольник со смещённым хвостом (для ощущения стрелы)
+                const head = document.createElementNS(NS, 'polygon');
+                head.setAttribute('points', '-9,-7 11,0 -9,7 -5,0');
+                head.setAttribute('fill', color);
+                head.style.filter = 'drop-shadow(0 0 16px ' + color + ')';
+                g.appendChild(head);
+
+                // Лейбл — показывается на t≈0.45..0.75 и размещается рядом с вершиной дуги
+                let lblEl = null;
+                if (label) {
+                    lblEl = document.createElementNS(NS, 'text');
+                    lblEl.setAttribute('fill', color);
+                    lblEl.setAttribute('text-anchor', 'middle');
+                    lblEl.setAttribute('font-size', '10');
+                    lblEl.setAttribute('font-family', "'JetBrains Mono', monospace");
+                    lblEl.setAttribute('opacity', '0');
+                    lblEl.setAttribute('font-weight', '700');
+                    lblEl.setAttribute('letter-spacing', '0.5');
+                    lblEl.style.filter = 'drop-shadow(0 0 6px ' + color + ')';
+                    lblEl.textContent = label;
+                    g.appendChild(lblEl);
+                }
+
+                const start = performance.now();
+                const step = (t) => {
+                    const elapsed = t - start;
+                    const prog = Math.min(elapsed / duration, 1);
+                    const eased = prog < 0.5 ? 2 * prog * prog : 1 - Math.pow(-2 * prog + 2, 2) / 2;
+
+                    const p = this._bezPoint(arc, eased);
+                    const ang = this._bezAngle(arc, eased);
+                    head.setAttribute('transform', 'translate(' + p.x + ',' + p.y + ') rotate(' + ang + ')');
+
+                    trail.forEach((c, i) => {
+                        const pTrail = Math.max(0, eased - (i + 1) * 0.05);
+                        const pt = this._bezPoint(arc, pTrail);
+                        c.setAttribute('cx', pt.x);
+                        c.setAttribute('cy', pt.y);
+                    });
+
+                    if (lblEl) {
+                        let labelOp = 0;
+                        if (prog > 0.3 && prog < 0.78) {
+                            const lp = (prog - 0.3) / 0.48;
+                            labelOp = Math.sin(lp * Math.PI) * 0.95;
+                        }
+                        lblEl.setAttribute('opacity', String(labelOp));
+                        // Положение лейбла — в вершине дуги (t=0.5), немного приподнятое наружу
+                        const mid = this._bezPoint(arc, 0.5);
+                        const dx = arc.tx - arc.fx, dy = arc.ty - arc.fy;
+                        const clen = Math.sqrt(dx * dx + dy * dy) || 1;
+                        const nx = -dy / clen, ny = dx / clen;
+                        lblEl.setAttribute('x', String(mid.x + nx * 10));
+                        lblEl.setAttribute('y', String(mid.y + ny * 10));
+                    }
+
+                    if (prog < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        g.remove();
+                        if (edge) {
+                            edge.classList.remove('flowing');
+                            edge.style.stroke = '';
+                        }
+                    }
+                };
+                requestAnimationFrame(step);
+            },
+
+            // --- Drag-and-drop узлов агентов ---
+            _beginDrag(e, agentId) {
+                if (e.button !== undefined && e.button !== 0) return;
+                e.preventDefault();
+                e.stopPropagation();
+                const agent = this.agents.find(a => a.id === agentId);
+                if (!agent) return;
+                const nodeEl = this.svg.querySelector('[data-node="' + CSS.escape(agentId) + '"]');
+                if (!nodeEl) return;
+                const svgP = this._screenToSvg(e.clientX, e.clientY);
+                this._dragging = {
+                    agentId: agentId,
+                    nodeEl: nodeEl,
+                    pointerId: e.pointerId,
+                    dx: svgP.x - agent.x,
+                    dy: svgP.y - agent.y,
+                    moved: false,
+                };
+                nodeEl.classList.add('dragging');
+                const inbox = this.inboxLayerEl && this.inboxLayerEl.querySelector('[data-inbox="' + CSS.escape(agentId) + '"]');
+                if (inbox) inbox.classList.add('dragging-follow');
+                try { nodeEl.setPointerCapture(e.pointerId); } catch (_) {}
+                nodeEl.addEventListener('pointermove', this._dragMoveBound);
+                nodeEl.addEventListener('pointerup', this._dragEndBound);
+                nodeEl.addEventListener('pointercancel', this._dragEndBound);
+            },
+
+            _onDragMove(e) {
+                if (!this._dragging) return;
+                const d = this._dragging;
+                const agent = this.agents.find(a => a.id === d.agentId);
+                if (!agent) return;
+                const svgP = this._screenToSvg(e.clientX, e.clientY);
+                const margin = agent.r + 10;
+                const newX = Math.max(margin, Math.min(this.W - margin, svgP.x - d.dx));
+                const newY = Math.max(margin, Math.min(this.H - margin, svgP.y - d.dy));
+                if (!d.moved && (Math.abs(newX - agent.x) > 0.5 || Math.abs(newY - agent.y) > 0.5)) {
+                    d.moved = true;
+                }
+                agent.x = newX;
+                agent.y = newY;
+                d.nodeEl.setAttribute('transform', 'translate(' + newX + ',' + newY + ')');
+                this._refreshEdges();
+                this._updateInboxPositions();
+            },
+
+            _onDragEnd(e) {
+                if (!this._dragging) return;
+                const d = this._dragging;
+                const el = d.nodeEl;
+                el.classList.remove('dragging');
+                const inbox = this.inboxLayerEl && this.inboxLayerEl.querySelector('[data-inbox="' + CSS.escape(d.agentId) + '"]');
+                if (inbox) inbox.classList.remove('dragging-follow');
+                try { el.releasePointerCapture(d.pointerId); } catch (_) {}
+                el.removeEventListener('pointermove', this._dragMoveBound);
+                el.removeEventListener('pointerup', this._dragEndBound);
+                el.removeEventListener('pointercancel', this._dragEndBound);
+                this._dragging = null;
+            },
+
+            _refreshEdges() {
+                if (!this.svg) return;
+                const edges = this.svg.querySelectorAll('.graph-edge.pair');
+                edges.forEach(path => {
+                    const fromId = path.getAttribute('data-from');
+                    const toId = path.getAttribute('data-to');
+                    const from = this.agents.find(x => x.id === fromId);
+                    const to = this.agents.find(x => x.id === toId);
+                    if (!from || !to) return;
+                    const arc = this._arcGeometry(from, to);
+                    if (!arc) return;
+                    path.setAttribute('d', arc.d);
+                });
+            },
+
+            // Квадратичная Bezier-дуга от from к to со смещённой контрольной точкой.
+            // Поскольку dx/dy меняют знак при развороте from<->to, перпендикуляр
+            // тоже инвертируется — A→B и B→A получаются на противоположных сторонах хорды.
+            _arcGeometry(from, to) {
+                const dx = to.x - from.x, dy = to.y - from.y;
+                const len = Math.sqrt(dx * dx + dy * dy);
+                if (len < 1) return null;
+                const ux = dx / len, uy = dy / len;
+                const px = -uy, py = ux; // перпендикуляр по часовой
+                const margin = this.nodeR + 3;
+                const fx = from.x + ux * margin;
+                const fy = from.y + uy * margin;
+                const tx = to.x - ux * margin;
+                const ty = to.y - uy * margin;
+                // Кривизна пропорциональна длине, но ограничена снизу/сверху
+                const curvature = Math.max(28, Math.min(72, len * 0.22));
+                const mx = (fx + tx) / 2;
+                const my = (fy + ty) / 2;
+                const cx = mx + px * curvature;
+                const cy = my + py * curvature;
+                const d = 'M ' + fx + ' ' + fy + ' Q ' + cx + ' ' + cy + ' ' + tx + ' ' + ty;
+                return { fx, fy, cx, cy, tx, ty, d, len, curvature };
+            },
+
+            _bezPoint(arc, t) {
+                const u = 1 - t;
+                return {
+                    x: u * u * arc.fx + 2 * u * t * arc.cx + t * t * arc.tx,
+                    y: u * u * arc.fy + 2 * u * t * arc.cy + t * t * arc.ty,
+                };
+            },
+
+            _bezAngle(arc, t) {
+                const dxT = 2 * (1 - t) * (arc.cx - arc.fx) + 2 * t * (arc.tx - arc.cx);
+                const dyT = 2 * (1 - t) * (arc.cy - arc.fy) + 2 * t * (arc.ty - arc.cy);
+                return Math.atan2(dyT, dxT) * 180 / Math.PI;
+            },
+
+            _screenToSvg(cx, cy) {
+                if (!this.svg) return { x: 0, y: 0 };
+                const pt = this.svg.createSVGPoint();
+                pt.x = cx;
+                pt.y = cy;
+                const ctm = this.svg.getScreenCTM();
+                if (!ctm) return { x: cx, y: cy };
+                return pt.matrixTransform(ctm.inverse());
+            },
+        };
+
+        function switchArenaView(view) {
+            document.querySelectorAll('.view-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.view === view);
+            });
+            const tv = document.getElementById('timelineView');
+            const gv = document.getElementById('graphView');
+            if (tv) tv.style.display = view === 'timeline' ? 'block' : 'none';
+            if (gv) gv.style.display = view === 'graph' ? 'block' : 'none';
+
+            if (view === 'graph') {
+                if (!GraphView.svg) GraphView.init();
+                // Build if empty but we have agents configured
+                if (!GraphView.built && currentAgents && currentAgents.length > 0) {
+                    GraphView.build(currentAgents);
+                }
+            }
+        }
+
+        // Initialize GraphView on load
+        GraphView.init();
+
         // Connection
         socket.on('connect', () => {
             document.getElementById('statusDot').classList.add('connected');
@@ -1106,19 +2450,53 @@
                     status.classList.add('active');
                 }
             });
+
+            // Graph view
+            GraphView.setPhase(data.phase, data.round_num);
         });
 
         // Debate events
         socket.on('debate_starting', (data) => {
+            // Server confirmed debate start — now safe to clear UI
             document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').style.display = 'block';
             document.getElementById('roundStatus').textContent = 'Initializing...';
             document.getElementById('timeline').innerHTML = '';
+            document.getElementById('activityFeed').innerHTML = '';
+            document.getElementById('finalCode').style.display = 'none';
+            document.getElementById('roundNum').textContent = '-';
+            document.getElementById('phaseBadge').classList.remove('active');
+            document.getElementById('phaseBadge').textContent = 'propose';
+            document.getElementById('modalContent').innerHTML = '';
+            document.querySelectorAll('.agent-card.winner').forEach(c => c.classList.remove('winner'));
+            currentRoundEl = null;
+            agentData = {};
             createRoundBlock(1);
+
+            // Graph view — rebuild nodes for current agents, clear state
+            GraphView.build(currentAgents);
+            GraphView.onReset();
         });
 
         socket.on('debate_started', (data) => {
             document.getElementById('roundStatus').textContent = 'Debate running...';
+            // Show active enhancements in activity feed
+            const showAll = document.getElementById('showAllSolutions').checked;
+            const strategy = document.getElementById('revisionStrategy').value;
+            const adaptiveT = document.getElementById('adaptiveTemp').checked;
+            const critHist = document.getElementById('critiqueHistory').checked;
+            const tags = [];
+            tags.push(showAll ? 'All solutions' : 'Best only');
+            tags.push(strategy === 'diverse' ? 'Diverse strategies' : 'Uniform');
+            if (adaptiveT) tags.push('Adaptive temp');
+            if (critHist) tags.push('Critique history');
+            const feed = document.getElementById('activityFeed');
+            const notice = document.createElement('div');
+            notice.className = 'activity-item';
+            notice.style.cssText = 'background:var(--accent-light); border-left:3px solid var(--blue); font-size:12px; padding:8px 12px;';
+            notice.innerHTML = '<strong>Config:</strong> ' + tags.map(t => '<span style="background:var(--bg3);padding:1px 6px;border-radius:3px;margin:0 2px;font-size:11px;">' + esc(t) + '</span>').join(' ');
+            feed.prepend(notice);
         });
 
         socket.on('round_complete', (data) => {
@@ -1149,14 +2527,22 @@
 
             // Hide phase badge
             document.getElementById('phaseBadge').classList.remove('active');
+
+            // Graph view
+            GraphView.onRoundComplete(data);
         });
 
-        socket.on('agent_message', (data) => addActivity(data));
+        socket.on('agent_message', (data) => {
+            addActivity(data);
+            GraphView.onMessage(data);
+        });
 
         socket.on('debate_complete', (data) => {
             document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').style.display = 'none';
             document.getElementById('roundStatus').textContent = 'Done \u2014 ' + data.status;
+            document.getElementById('roundNum').textContent = data.total_rounds || '-';
             document.getElementById('phaseBadge').classList.remove('active');
 
             // Remove thinking
@@ -1165,6 +2551,35 @@
                 const status = c.querySelector('.agent-status');
                 if (status) { status.textContent = ''; status.classList.remove('active'); }
             });
+
+            // Rebuild all round blocks from round_history (fixes missed events on reconnect)
+            const rh = data.round_history || [];
+            if (rh.length > 0) {
+                document.getElementById('timeline').innerHTML = '';
+                currentRoundEl = null;
+                rh.forEach(round => {
+                    createRoundBlock(round.round_num);
+                    const block = document.getElementById('round-' + round.round_num);
+                    if (!block) return;
+                    const bestPct = (round.best_pass_rate * 100).toFixed(0);
+                    const rateEl = block.querySelector('.pass-rate');
+                    if (rateEl) rateEl.textContent = bestPct + '% best';
+                    // Update each agent card in this round
+                    for (const [agentId, info] of Object.entries(round.agents || {})) {
+                        const card = block.querySelector('[data-agent="' + agentId + '"]');
+                        if (!card) continue;
+                        const rate = (info.pass_rate * 100);
+                        const fill = card.querySelector('.progress-fill');
+                        if (fill) {
+                            fill.style.width = rate + '%';
+                            fill.className = 'progress-fill' + (rate < 30 ? ' low' : rate < 70 ? ' mid' : '');
+                        }
+                        const stats = card.querySelectorAll('.stat strong');
+                        if (stats[0]) stats[0].textContent = rate.toFixed(0) + '%';
+                        if (stats[1]) stats[1].textContent = info.tests_passed + '/' + info.tests_total;
+                    }
+                });
+            }
 
             if (data.final_solution) {
                 const fc = document.getElementById('finalCode');
@@ -1185,6 +2600,9 @@
 
             document.getElementById('modalTitle').textContent = data.is_solo ? 'Solo Run Complete' : 'Debate Complete';
             showResults(data);
+
+            // Graph view
+            GraphView.onDebateComplete(data);
         });
 
         socket.on('debate_stopped', (data) => {
@@ -1206,13 +2624,25 @@
                     status.classList.remove('active');
                 }
             });
+
+            // Graph view
+            GraphView.onReset();
         });
 
         socket.on('debate_error', (data) => {
             document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').style.display = 'none';
             document.getElementById('roundStatus').textContent = 'Error: ' + data.message;
             document.getElementById('phaseBadge').classList.remove('active');
+
+            // Graph view
+            GraphView.onReset();
+        });
+
+        socket.on('error', (data) => {
+            // Server rejected (e.g. "A debate is already running")
+            document.getElementById('startBtn').disabled = false;
         });
 
         // Functions
@@ -1222,6 +2652,8 @@
         }
 
         function createRoundBlock(roundNum) {
+            // Guard: don't create duplicate round blocks
+            if (document.getElementById('round-' + roundNum)) return;
             const timeline = document.getElementById('timeline');
             const block = document.createElement('div');
             block.className = 'timeline-round';
@@ -1280,16 +2712,24 @@
             const passEl = document.getElementById(sol.agent_id + '-r' + roundNum + '-pass');
             const testsEl = document.getElementById(sol.agent_id + '-r' + roundNum + '-tests');
             if (passEl) passEl.textContent = rate.toFixed(0) + '%';
-            if (testsEl && er) testsEl.textContent = er.tests_passed + '/' + er.tests_total;
+            if (testsEl && er) testsEl.textContent = er.tests_total === 0 ? 'err' : er.tests_passed + '/' + er.tests_total;
         }
 
         function addPhaseToActivity(phase, roundNum) {
             const feed = document.getElementById('activityFeed');
             if (feed.querySelector('.placeholder')) feed.innerHTML = '';
 
+            // Dedup: don't add the same phase marker twice
+            const label = 'Round ' + roundNum + ' \u2014 ' + phase.toUpperCase();
+            for (const existing of feed.querySelectorAll('.activity-phase')) {
+                if (existing.textContent === label) return;
+            }
+
             const item = document.createElement('div');
             item.className = 'activity-phase';
-            item.textContent = 'Round ' + roundNum + ' \u2014 ' + phase.toUpperCase();
+            item.setAttribute('data-round', roundNum);
+            item.setAttribute('data-phase', phase);
+            item.textContent = label;
             feed.insertBefore(item, feed.firstChild);
         }
 
@@ -1299,15 +2739,119 @@
 
             const item = document.createElement('div');
             item.className = 'activity-item';
+            item.setAttribute('data-round', data.round_num || '');
+            item.setAttribute('data-type', data.message_type || '');
+
+            const textId = 'act-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
             item.innerHTML = `
                 <div class="activity-top">
                     <span class="activity-agent">${esc(data.agent_id)}</span>
                     <span class="activity-tag ${data.message_type}">${data.message_type}</span>
                 </div>
-                <div class="activity-text">${esc(data.content)}</div>
+                <div class="activity-text" id="${textId}">${esc(data.content)}</div>
+                <div class="activity-expand" data-target="${textId}">Show more</div>
             `;
-            feed.insertBefore(item, feed.firstChild);
+
+            // Insert after the MATCHING phase marker so messages group
+            // under the correct round/phase even if delivered out of order.
+            // Phase markers have data-round and data-phase attributes.
+            const msgRound = String(data.round_num || '');
+            const msgType = (data.message_type || '').toLowerCase();
+            // Map message_type to phase: proposal→propose, critique→critique, revision→revise, vote→vote
+            const typeToPhase = {proposal: 'propose', critique: 'critique', revision: 'revise', vote: 'vote'};
+            const msgPhase = typeToPhase[msgType] || msgType;
+
+            const phaseMarkers = feed.querySelectorAll('.activity-phase');
+            let inserted = false;
+            // First pass: find exact match (same round + same phase)
+            for (const marker of phaseMarkers) {
+                if (marker.getAttribute('data-round') == msgRound &&
+                    marker.getAttribute('data-phase') === msgPhase) {
+                    // Insert right after this marker
+                    if (marker.nextSibling) {
+                        feed.insertBefore(item, marker.nextSibling);
+                    } else {
+                        feed.appendChild(item);
+                    }
+                    inserted = true;
+                    break;
+                }
+            }
+            // Fallback: insert after the first marker for the same round
+            if (!inserted) {
+                for (const marker of phaseMarkers) {
+                    if (marker.getAttribute('data-round') == msgRound) {
+                        if (marker.nextSibling) {
+                            feed.insertBefore(item, marker.nextSibling);
+                        } else {
+                            feed.appendChild(item);
+                        }
+                        inserted = true;
+                        break;
+                    }
+                }
+            }
+            // Last fallback: insert at top
+            if (!inserted) feed.insertBefore(item, feed.firstChild);
+
+            // Hide "Show more" if content is short enough
+            requestAnimationFrame(() => {
+                const textEl = document.getElementById(textId);
+                const expandEl = item.querySelector('.activity-expand');
+                if (textEl && textEl.scrollHeight <= 62) {
+                    expandEl.style.display = 'none';
+                } else if (expandEl) {
+                    expandEl.addEventListener('click', () => {
+                        textEl.classList.toggle('expanded');
+                        expandEl.textContent = textEl.classList.contains('expanded') ? 'Show less' : 'Show more';
+                    });
+                }
+            });
             while (feed.children.length > 50) feed.removeChild(feed.lastChild);
+        }
+
+        function buildActivityText() {
+            const feed = document.getElementById('activityFeed');
+            const items = feed.querySelectorAll('.activity-item, .activity-phase');
+            const lines = [];
+            // Items are newest-first in DOM, reverse for chronological order
+            const arr = Array.from(items).reverse();
+            for (const el of arr) {
+                if (el.classList.contains('activity-phase')) {
+                    lines.push('\n=== ' + el.textContent.trim() + ' ===\n');
+                } else {
+                    const agent = el.querySelector('.activity-agent')?.textContent.trim() || '';
+                    const tag = el.querySelector('.activity-tag')?.textContent.trim() || '';
+                    const text = el.querySelector('.activity-text')?.textContent.trim() || '';
+                    lines.push('[' + tag.toUpperCase() + '] ' + agent);
+                    lines.push(text);
+                    lines.push('');
+                }
+            }
+            return lines.join('\n').trim();
+        }
+
+        function copyActivity() {
+            const text = buildActivityText();
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.activity-export-btns button');
+                const orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = orig, 1500);
+            });
+        }
+
+        function downloadActivity() {
+            const text = buildActivityText();
+            if (!text) return;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            const ts = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
+            a.download = 'debate-activity-' + ts + '.txt';
+            a.click();
+            URL.revokeObjectURL(a.href);
         }
 
         function loadTasks() {
@@ -1325,41 +2869,129 @@
         }
 
         function loadModels() {
-            fetch('/api/models').then(r => r.json()).then(data => {
-                const sel = document.getElementById('addAgent');
-                (data.models || []).forEach(m => {
-                    const o = document.createElement('option');
-                    o.value = m; o.textContent = m;
-                    sel.appendChild(o);
+            // Populate both the "+ Add agent" dropdown and the "Judge" dropdown
+            // from the same model list. "Add agent" excludes the placeholder;
+            // "Judge" keeps its "No judge" default as the first option.
+            //
+            // Idempotent: clearing any previously-appended model options first
+            // means calling loadModels() twice (e.g. after a manual refresh)
+            // doesn't duplicate entries.
+            const fallback = ['qwen2.5-coder:7b','deepseek-coder:6.7b','codellama:7b-instruct','starcoder2:7b','llama3:latest','mistral:7b','qwen2.5-coder:32b'];
+            const applyModels = (models) => {
+                const agentSel = document.getElementById('addAgent');
+                const judgeSel = document.getElementById('judgeSelect');
+                // Preserve placeholder (<option value="">) on each select.
+                [agentSel, judgeSel].forEach(sel => {
+                    if (!sel) return;
+                    sel.querySelectorAll('option').forEach(o => {
+                        if (o.value !== '') o.remove();
+                    });
                 });
-            }).catch(() => {
-                const models = ['qwen2.5-coder:7b','deepseek-coder:6.7b','codellama:7b-instruct','starcoder2:7b','llama3:latest','mistral:7b'];
-                const sel = document.getElementById('addAgent');
                 models.forEach(m => {
-                    const o = document.createElement('option');
-                    o.value = m; o.textContent = m;
-                    sel.appendChild(o);
+                    if (agentSel) {
+                        const o = document.createElement('option');
+                        o.value = m; o.textContent = m;
+                        agentSel.appendChild(o);
+                    }
+                    if (judgeSel) {
+                        const o = document.createElement('option');
+                        o.value = m; o.textContent = m;
+                        judgeSel.appendChild(o);
+                    }
                 });
+            };
+            fetch('/api/models').then(r => r.json()).then(data => {
+                applyModels(data.models || fallback);
+            }).catch(() => {
+                applyModels(fallback);
             });
         }
 
-        function removeAgent(el) {
-            const chip = el.parentElement;
-            const model = chip.textContent.replace('\u00d7','').trim();
+        function renderAgents() {
+            const list = document.getElementById('agentList');
+            list.innerHTML = '';
+            const isDiverse = document.getElementById('revisionStrategy').value === 'diverse';
+            // Keep graph in sync with agent list (safe — doesn't affect timeline view)
+            if (window.GraphView && document.getElementById('graphView') &&
+                document.getElementById('graphView').style.display !== 'none') {
+                GraphView.build(currentAgents);
+            }
+            currentAgents.forEach((model, idx) => {
+                const chip = document.createElement('div');
+                chip.className = 'agent-chip';
+                chip.style.flexDirection = 'column';
+                chip.style.alignItems = 'stretch';
+                chip.style.gap = '4px';
+                // Top row: model name + remove button
+                const topRow = document.createElement('div');
+                topRow.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
+                topRow.innerHTML = `<span style="font-size:12px;">${model}</span><span class="x" onclick="removeAgent('${model}')" style="cursor:pointer;">&times;</span>`;
+                chip.appendChild(topRow);
+                // Strategy dropdown (only visible in diverse mode)
+                if (isDiverse) {
+                    const sel = document.createElement('select');
+                    sel.className = 'agent-strategy-select';
+                    sel.dataset.agent = model;
+                    sel.style.cssText = 'font-size:10px; padding:2px 4px; background:var(--bg2); color:var(--text2); border:1px solid var(--border); border-radius:3px;';
+                    STRATEGIES.forEach(s => {
+                        const o = document.createElement('option');
+                        o.value = s; o.textContent = STRATEGY_LABELS[s] || s;
+                        sel.appendChild(o);
+                    });
+                    chip.appendChild(sel);
+                }
+                list.appendChild(chip);
+            });
+        }
+
+        function removeAgent(model) {
             currentAgents = currentAgents.filter(a => a !== model);
-            chip.remove();
+            renderAgents();
         }
 
         document.getElementById('addAgent').addEventListener('change', function() {
             if (this.value && !currentAgents.includes(this.value)) {
                 currentAgents.push(this.value);
-                const chip = document.createElement('div');
-                chip.className = 'agent-chip';
-                chip.innerHTML = this.value + '<span class="x" onclick="removeAgent(this)">&times;</span>';
-                document.getElementById('agentList').appendChild(chip);
+                renderAgents();
             }
             this.value = '';
         });
+
+        // Judge selector — single-select. Empty value ("No judge") means null.
+        // The orchestrator treats a judge as an extra agent with role=JUDGE:
+        // it critiques every proposal and votes, but never proposes or revises.
+        document.getElementById('judgeSelect').addEventListener('change', function() {
+            currentJudge = this.value ? this.value : null;
+            const info = document.getElementById('judgeActiveInfo');
+            if (info) info.style.display = currentJudge ? 'flex' : 'none';
+        });
+
+        document.getElementById('revisionStrategy').addEventListener('change', function() {
+            renderAgents();  // re-render to show/hide strategy dropdowns
+        });
+
+        document.getElementById('showAllSolutions').addEventListener('change', function() {
+            document.getElementById('revisionModeHint').textContent =
+                this.checked ? 'All solutions (more tokens)' : 'Best only';
+        });
+
+        // Collect per-agent strategy assignments from UI
+        function getAgentStrategies() {
+            const strategies = {};
+            document.querySelectorAll('.agent-strategy-select').forEach(sel => {
+                if (sel.value && sel.value !== 'auto') {
+                    const model = sel.dataset.agent;
+                    // Build agent_id the same way server does: agent_{i+1}_{model.split(':')[0]}
+                    const idx = currentAgents.indexOf(model);
+                    const agentId = 'agent_' + (idx + 1) + '_' + model.split(':')[0];
+                    strategies[agentId] = sel.value;
+                }
+            });
+            return strategies;
+        }
+
+        // Initial render
+        renderAgents();
 
         function startDebate() {
             const taskPath = document.getElementById('taskSelect').value;
@@ -1368,22 +3000,20 @@
             if (!taskPath) { alert('Select a task'); return; }
             if (currentAgents.length < 2) { alert('Add at least 2 agents'); return; }
 
-            document.getElementById('timeline').innerHTML = '';
-            document.getElementById('activityFeed').innerHTML = '';
-            document.getElementById('finalCode').style.display = 'none';
-            document.getElementById('roundNum').textContent = '-';
+            // Only disable button here — actual UI clear happens in debate_starting
+            document.getElementById('startBtn').disabled = true;
             document.getElementById('roundStatus').textContent = 'Starting...';
-            document.getElementById('phaseBadge').classList.remove('active');
-            document.getElementById('phaseBadge').textContent = 'propose';
-            document.getElementById('modalContent').innerHTML = '';
-            document.querySelectorAll('.agent-card.winner').forEach(c => c.classList.remove('winner'));
-            currentRoundEl = null;
-            agentData = {};
 
             socket.emit('start_debate', {
                 task_path: taskPath,
                 agents: currentAgents,
-                max_rounds: maxRounds
+                judge: currentJudge,  // null when "No judge" is selected
+                max_rounds: maxRounds,
+                show_all_solutions: document.getElementById('showAllSolutions').checked,
+                revision_strategy: document.getElementById('revisionStrategy').value,
+                agent_strategies: getAgentStrategies(),
+                adaptive_temperature: document.getElementById('adaptiveTemp').checked,
+                critique_history: document.getElementById('critiqueHistory').checked,
             });
         }
 
@@ -1409,7 +3039,7 @@
             };
 
             // Agent colors for chart
-            const chartColors = ['#171717', '#4f46e5', '#06b6d4', '#ec4899'];
+            const chartColors = ['#818cf8', '#f472b6', '#22d3ee', '#a78bfa'];
             const agentIds = [...new Set(rh.flatMap(r => Object.keys(r.agents)))];
 
             // === Build round chart ===
@@ -1576,6 +3206,139 @@
 
         let allTasks = [];
 
+        let transcriptsData = [];
+        let transcriptSort = { col: 'mtime', dir: 'desc' };
+
+        function showTranscripts() {
+            document.getElementById('transcriptsModal').classList.add('active');
+            backToTranscriptList();
+            loadTranscripts();
+        }
+
+        function loadTranscripts() {
+            const wrap = document.getElementById('transcriptsTableWrap');
+            wrap.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text2);">Loading...</div>';
+            fetch('/api/transcripts')
+                .then(r => r.json())
+                .then(data => {
+                    transcriptsData = data.transcripts || [];
+                    renderTranscripts();
+                })
+                .catch(e => {
+                    wrap.innerHTML = '<div style="padding:20px; text-align:center; color:var(--red);">Error: ' + esc(String(e)) + '</div>';
+                });
+        }
+
+        function sortTranscripts(col) {
+            if (transcriptSort.col === col) {
+                transcriptSort.dir = transcriptSort.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                transcriptSort.col = col;
+                transcriptSort.dir = col === 'mtime' || col === 'pass_rate' ? 'desc' : 'asc';
+            }
+            renderTranscripts();
+        }
+
+        function renderTranscripts() {
+            const wrap = document.getElementById('transcriptsTableWrap');
+            const q = (document.getElementById('transcriptSearch').value || '').toLowerCase().trim();
+            const modeF = document.getElementById('transcriptModeFilter').value;
+            const diffF = document.getElementById('transcriptDifficultyFilter').value;
+
+            let rows = transcriptsData.slice();
+            if (q) rows = rows.filter(r =>
+                (r.task_name || '').toLowerCase().includes(q) ||
+                (r.task_id || '').toLowerCase().includes(q) ||
+                (r.filename || '').toLowerCase().includes(q)
+            );
+            if (modeF) rows = rows.filter(r => r.mode === modeF);
+            if (diffF) rows = rows.filter(r => r.difficulty === diffF);
+
+            const col = transcriptSort.col;
+            const dir = transcriptSort.dir === 'asc' ? 1 : -1;
+            rows.sort((a, b) => {
+                let av = a[col], bv = b[col];
+                if (av == null) av = col === 'pass_rate' ? -1 : '';
+                if (bv == null) bv = col === 'pass_rate' ? -1 : '';
+                if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
+                return String(av).localeCompare(String(bv)) * dir;
+            });
+
+            if (rows.length === 0) {
+                wrap.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text2);">No transcripts yet. Run a debate, solo, or batch experiment.</div>';
+                return;
+            }
+
+            const arrow = c => c === transcriptSort.col ? (transcriptSort.dir === 'asc' ? ' ↑' : ' ↓') : '';
+            let html = `
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                        <tr style="background:var(--bg3); position:sticky; top:0; z-index:1;">
+                            <th onclick="sortTranscripts('mtime')" style="cursor:pointer; padding:8px; text-align:left; border-bottom:1px solid var(--border);">Date${arrow('mtime')}</th>
+                            <th onclick="sortTranscripts('task_name')" style="cursor:pointer; padding:8px; text-align:left; border-bottom:1px solid var(--border);">Task${arrow('task_name')}</th>
+                            <th onclick="sortTranscripts('difficulty')" style="cursor:pointer; padding:8px; text-align:left; border-bottom:1px solid var(--border);">Difficulty${arrow('difficulty')}</th>
+                            <th onclick="sortTranscripts('mode')" style="cursor:pointer; padding:8px; text-align:left; border-bottom:1px solid var(--border);">Mode${arrow('mode')}</th>
+                            <th onclick="sortTranscripts('pass_rate')" style="cursor:pointer; padding:8px; text-align:right; border-bottom:1px solid var(--border);">Pass${arrow('pass_rate')}</th>
+                            <th onclick="sortTranscripts('rounds')" style="cursor:pointer; padding:8px; text-align:right; border-bottom:1px solid var(--border);">Rounds${arrow('rounds')}</th>
+                            <th onclick="sortTranscripts('size')" style="cursor:pointer; padding:8px; text-align:right; border-bottom:1px solid var(--border);">Size${arrow('size')}</th>
+                            <th style="padding:8px; text-align:right; border-bottom:1px solid var(--border);">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            rows.forEach(r => {
+                const dt = r.mtime ? new Date(r.mtime * 1000) : null;
+                const dateStr = dt ? dt.toISOString().slice(0, 16).replace('T', ' ') : '-';
+                const pass = r.pass_rate != null ? (r.pass_rate * 100).toFixed(0) + '%' : '-';
+                const passColor = r.pass_rate == null ? 'var(--text3)' : r.pass_rate >= 0.9 ? 'var(--green)' : r.pass_rate >= 0.5 ? 'var(--yellow)' : 'var(--red)';
+                const sizeKb = (r.size / 1024).toFixed(1) + ' KB';
+                const modeBadge = r.mode === 'solo'
+                    ? '<span style="background:rgba(96,165,250,0.15); color:var(--blue); padding:2px 8px; border-radius:4px; font-size:11px;">solo</span>'
+                    : r.mode === 'debate'
+                    ? '<span style="background:rgba(99,102,241,0.15); color:var(--accent); padding:2px 8px; border-radius:4px; font-size:11px;">debate</span>'
+                    : '-';
+                const fn = r.filename.replace(/'/g, "\\'");
+                html += `
+                    <tr style="border-bottom:1px solid var(--border);">
+                        <td style="padding:8px; color:var(--text2); font-family:'JetBrains Mono', monospace;">${esc(dateStr)}</td>
+                        <td style="padding:8px;">${esc(r.task_name || r.task_id || '-')}</td>
+                        <td style="padding:8px; color:var(--text2); text-transform:capitalize;">${esc(r.difficulty || '-')}</td>
+                        <td style="padding:8px;">${modeBadge}</td>
+                        <td style="padding:8px; text-align:right; color:${passColor}; font-weight:600;">${pass}</td>
+                        <td style="padding:8px; text-align:right; color:var(--text2);">${r.rounds != null ? r.rounds : '-'}</td>
+                        <td style="padding:8px; text-align:right; color:var(--text3);">${sizeKb}</td>
+                        <td style="padding:8px; text-align:right; white-space:nowrap;">
+                            <button class="btn btn-secondary" style="padding:3px 8px; font-size:11px;" onclick="viewTranscript('${fn}')">View</button>
+                            <a class="btn btn-secondary" style="padding:3px 8px; font-size:11px; text-decoration:none;" href="/api/transcripts/${encodeURIComponent(r.filename)}/download">Download</a>
+                        </td>
+                    </tr>`;
+            });
+
+            html += '</tbody></table>';
+            wrap.innerHTML = html;
+        }
+
+        function viewTranscript(filename) {
+            const viewer = document.getElementById('transcriptViewer');
+            const content = document.getElementById('transcriptViewerContent');
+            const nameEl = document.getElementById('transcriptViewerName');
+            const dlLink = document.getElementById('transcriptDownloadLink');
+            content.textContent = 'Loading...';
+            nameEl.textContent = filename;
+            dlLink.href = '/api/transcripts/' + encodeURIComponent(filename) + '/download';
+            document.getElementById('transcriptsList').style.display = 'none';
+            viewer.style.display = 'block';
+            fetch('/api/transcripts/' + encodeURIComponent(filename))
+                .then(r => r.text())
+                .then(txt => { content.textContent = txt; })
+                .catch(e => { content.textContent = 'Error: ' + String(e); });
+        }
+
+        function backToTranscriptList() {
+            document.getElementById('transcriptViewer').style.display = 'none';
+            document.getElementById('transcriptsList').style.display = 'block';
+        }
+
         function showClearConfirm() {
             document.getElementById('clearModal').classList.add('active');
         }
@@ -1603,9 +3366,55 @@
                 label.innerHTML = `<input type="checkbox" value="${esc(t.path)}" checked style="margin-right:6px;">[${esc(t.difficulty)}] ${esc(t.name)}`;
                 list.appendChild(label);
             });
+
+            // Build agent info with strategy labels
             const rounds = document.getElementById('maxRounds').value;
-            document.getElementById('batchAgentInfo').textContent =
-                (currentAgents.join(', ') || 'No agents selected') + '  |  Max rounds: ' + rounds;
+            const isDiverse = document.getElementById('revisionStrategy').value === 'diverse';
+            const strategies = getAgentStrategies();
+            const agentLines = currentAgents.map((model, idx) => {
+                const agentId = 'agent_' + (idx + 1) + '_' + model.split(':')[0];
+                let label = model;
+                if (isDiverse) {
+                    const strat = strategies[agentId];
+                    const stratLabel = strat ? (STRATEGY_LABELS[strat] || strat) : 'Auto';
+                    label += ' (' + stratLabel + ')';
+                }
+                return label;
+            });
+            const agentEl = document.getElementById('batchAgentInfo');
+            const mode = document.getElementById('batchMode').value;
+            const judgeChip = (mode === 'debate' && currentJudge)
+                ? '<div style="padding:3px 8px; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.35); border-radius:4px; font-family:\'JetBrains Mono\',monospace; font-size:11px; color:#fbbf24;">JUDGE: ' + esc(currentJudge) + '</div>'
+                : '';
+            agentEl.innerHTML = agentLines.map(a =>
+                '<div style="padding:3px 8px; background:var(--bg3); border-radius:4px; font-family:\'JetBrains Mono\',monospace; font-size:11px;">' + esc(a) + '</div>'
+            ).join('') + judgeChip + '<div style="margin-top:4px; font-size:11px; color:var(--text3); width:100%;">Max rounds: ' + esc(rounds) + '</div>';
+            agentEl.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px; font-size:12px; color:var(--text2);';
+
+            // Build config summary tags
+            const showAll = document.getElementById('showAllSolutions').checked;
+            const strategy = document.getElementById('revisionStrategy').value;
+            const adaptiveT = document.getElementById('adaptiveTemp').checked;
+            const critHist = document.getElementById('critiqueHistory').checked;
+            // `mode` was declared above (for judgeChip); reuse it here.
+
+            const tagStyle = (active) => active
+                ? 'padding:3px 10px; border-radius:4px; font-size:11px; font-weight:600; background:rgba(99,102,241,0.15); color:#818cf8;'
+                : 'padding:3px 10px; border-radius:4px; font-size:11px; font-weight:600; background:var(--bg3); color:var(--text3);';
+
+            const configEl = document.getElementById('batchConfigInfo');
+            let configHTML = '';
+            configHTML += '<span style="' + tagStyle(showAll) + '">' + (showAll ? '✓ All solutions' : 'Best only') + '</span>';
+            if (mode === 'debate') {
+                configHTML += '<span style="' + tagStyle(adaptiveT) + '">' + (adaptiveT ? '✓ Adaptive temp' : '✗ Adaptive temp') + '</span>';
+                configHTML += '<span style="' + tagStyle(critHist) + '">' + (critHist ? '✓ Critique history' : '✗ Critique history') + '</span>';
+                configHTML += '<span style="' + tagStyle(true) + '">Strategy: ' + (strategy === 'diverse' ? 'Diverse (DMAD)' : 'Uniform') + '</span>';
+            }
+            configEl.innerHTML = configHTML;
+
+            // Hide config section in solo mode
+            document.getElementById('batchConfigField').style.display = mode === 'solo' ? 'none' : 'block';
+
             document.getElementById('batchProgress').style.display = 'none';
             document.getElementById('batchLog').innerHTML = '';
             document.getElementById('batchStartBtn').disabled = false;
@@ -1633,8 +3442,14 @@
             socket.emit('start_batch', {
                 task_paths: taskPaths,
                 agents: currentAgents,
+                judge: mode === 'debate' ? currentJudge : null,  // judge only applies to debate mode
                 max_rounds: parseInt(document.getElementById('maxRounds').value),
                 mode: mode,
+                show_all_solutions: document.getElementById('showAllSolutions').checked,
+                revision_strategy: document.getElementById('revisionStrategy').value,
+                agent_strategies: getAgentStrategies(),
+                adaptive_temperature: document.getElementById('adaptiveTemp').checked,
+                critique_history: document.getElementById('critiqueHistory').checked,
             });
         }
 
@@ -1648,7 +3463,7 @@
             const passInfo = data.pass_rate != null ? ' (' + (data.pass_rate * 100).toFixed(0) + '%)' : '';
             const entry = document.createElement('div');
             entry.textContent = statusIcon + ' ' + data.task_name + passInfo;
-            entry.style.color = data.status === 'done' ? 'var(--green)' : '#ef4444';
+            entry.style.color = data.status === 'done' ? 'var(--green)' : 'var(--red)';
             log.appendChild(entry);
             log.scrollTop = log.scrollHeight;
         });
