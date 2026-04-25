@@ -9,7 +9,11 @@
     "def test_no_path():\n    assert ladder_length('hit', 'cog', ['hot', 'dot', 'dog', 'lot', 'log']) == 0",
     "def test_direct():\n    assert ladder_length('hot', 'dot', ['dot']) == 2",
     "def test_same():\n    assert ladder_length('hot', 'hot', ['hot']) == 1",
-    "def test_longer():\n    assert ladder_length('qa', 'sq', ['si', 'go', 'se', 'cm', 'so', 'ph', 'os', 'sq']) == 5"
+    "def test_longer():\n    assert ladder_length('cold', 'warm', ['cord', 'card', 'ward', 'warm']) == 5",
+    "def test_end_not_in_list():\n    assert ladder_length('hit', 'abc', ['hot', 'dot', 'dog']) == 0",
+    "def test_single_letter():\n    assert ladder_length('a', 'c', ['a', 'b', 'c']) == 3",
+    "def test_must_be_shortest():\n    # Multiple paths exist: hit->hot->dot->dog->cog (5) and hit->hot->lot->log->cog (5)\n    # A DFS might return a longer path if not careful\n    result = ladder_length('hit', 'cog', ['hot', 'dot', 'dog', 'lot', 'log', 'cog', 'hog'])\n    assert result == 4",
+    "def test_begin_equals_end_not_in_list():\n    assert ladder_length('abc', 'abc', []) == 1"
   ],
   "constraints": [
     "1 <= beginWord.length <= 10",
