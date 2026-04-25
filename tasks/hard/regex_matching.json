@@ -12,7 +12,11 @@
     "def test_empty_pattern():\n    assert is_match('', '') == True",
     "def test_empty_string():\n    assert is_match('', 'a*') == True",
     "def test_dot():\n    assert is_match('ab', '.b') == True",
-    "def test_multiple_stars():\n    assert is_match('aaa', 'a*a') == True"
+    "def test_multiple_stars():\n    assert is_match('aaa', 'a*a') == True",
+    "def test_star_zero_occurrences():\n    assert is_match('b', 'a*b') == True",
+    "def test_dot_star_prefix():\n    assert is_match('abcdef', '.*def') == True",
+    "def test_backtracking():\n    assert is_match('mississippi', 'mis*is*ip*.') == True",
+    "def test_full_dot_star():\n    assert is_match('anything', '.*') == True"
   ],
   "constraints": [
     "1 <= s.length <= 20",
