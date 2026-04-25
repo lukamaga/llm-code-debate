@@ -25,7 +25,7 @@ class LLMRequest:
     prompt: str
     system_prompt: str | None = None
     temperature: float = 0.3
-    max_tokens: int = 4096
+    max_tokens: int = 8192
     stop_sequences: list[str] | None = None
     
     def to_messages(self) -> list[dict[str, str]]:
