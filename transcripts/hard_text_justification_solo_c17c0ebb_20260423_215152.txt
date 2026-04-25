@@ -1,0 +1,128 @@
+==============================================================================
+DEBATE TRANSCRIPT  |  Text Justification  (hard)
+==============================================================================
+Debate ID:   solo_c17c0ebb
+Mode:        solo
+Status:      early_stop
+Started:     2026-04-23T21:51:52
+Ended:       2026-04-23T21:52:18
+Duration:    26.4s
+Max rounds:  1
+Rounds run:  1
+Agents:      agent_1_deepseek-coder-v2 (deepseek-coder-v2:16b)
+
+==============================================================================
+TASK
+==============================================================================
+ID: text_justification
+Difficulty: hard
+
+Description:
+Given an array of strings words and a width maxWidth, format the text such that each line has exactly maxWidth characters and is fully (left and right) justified. Pack as many words as you can in each line. Pad extra spaces when necessary. Extra spaces between words should be distributed as evenly as possible. The last line should be left-justified.
+
+Constraints:
+  - 1 <= words.length <= 300
+  - 1 <= words[i].length <= 20
+  - words[i] consists of only English letters and symbols
+  - 1 <= maxWidth <= 100
+  - words[i].length <= maxWidth
+
+Tests: 8
+
+==============================================================================
+ROUND 1  |  PROPOSAL
+==============================================================================
+Best pass rate: 100%  |  Avg: 100%  |  Bugs found: 0  |  Duration: 0.6s
+
+### Proposals
+
+------------------------------------------------------------------------------
+[agent_1_deepseek-coder-v2]  8/8 tests (100%)  gen=25.8s
+Quality: pylint=5.0/10, complexity=4.0, maintainability=50.2, LOC=30
+------------------------------------------------------------------------------
+def full_justify(words: list[str], max_width: int) -> list[str]:
+    def justify_line(line, width):
+        if len(line) == 1:
+            return line[0] + ' ' * (max_width - len(line[0]))
+        
+        total_spaces = max_width - sum(len(word) for word in line)
+        space_gaps = len(line) - 1
+        spaces_per_gap, extra_spaces = divmod(total_spaces, space_gaps)
+        
+        justified_line = []
+        for i, word in enumerate(line):
+            if i == 0:
+                justified_line.append(word)
+            else:
+                justified_line.append(' ' * (spaces_per_gap + (1 if extra_spaces > 0 else 0)))
+                extra_spaces -= 1
+                justified_line.append(word)
+        
+        return ''.join(justified_line)
+    
+    lines = []
+    current_line = []
+    current_length = 0
+    
+    for word in words:
+        if current_length + len(current_line) + len(word) > max_width:
+            lines.append(justify_line(current_line, max_width))
+            current_line = []
+            current_length = 0
+        
+        current_line.append(word)
+        current_length += len(word)
+    
+    if current_line:
+        last_line = ' '.join(current_line)
+        lines.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return lines
+
+==============================================================================
+FINAL RESULT
+==============================================================================
+Winner: agent_1_deepseek-coder-v2  (round 1, 100%)
+
+Final code:
+------------------------------------------------------------------------------
+def full_justify(words: list[str], max_width: int) -> list[str]:
+    def justify_line(line, width):
+        if len(line) == 1:
+            return line[0] + ' ' * (max_width - len(line[0]))
+        
+        total_spaces = max_width - sum(len(word) for word in line)
+        space_gaps = len(line) - 1
+        spaces_per_gap, extra_spaces = divmod(total_spaces, space_gaps)
+        
+        justified_line = []
+        for i, word in enumerate(line):
+            if i == 0:
+                justified_line.append(word)
+            else:
+                justified_line.append(' ' * (spaces_per_gap + (1 if extra_spaces > 0 else 0)))
+                extra_spaces -= 1
+                justified_line.append(word)
+        
+        return ''.join(justified_line)
+    
+    lines = []
+    current_line = []
+    current_length = 0
+    
+    for word in words:
+        if current_length + len(current_line) + len(word) > max_width:
+            lines.append(justify_line(current_line, max_width))
+            current_line = []
+            current_length = 0
+        
+        current_line.append(word)
+        current_length += len(word)
+    
+    if current_line:
+        last_line = ' '.join(current_line)
+        lines.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return lines
+
+Transcript generated: 2026-04-23T21:52:18

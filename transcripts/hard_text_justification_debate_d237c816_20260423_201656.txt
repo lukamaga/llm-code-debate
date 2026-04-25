@@ -1,0 +1,191 @@
+==============================================================================
+DEBATE TRANSCRIPT  |  Text Justification  (hard)
+==============================================================================
+Debate ID:   d237c816
+Mode:        debate
+Status:      early_stop
+Started:     2026-04-23T20:16:56
+Ended:       2026-04-23T20:17:16
+Duration:    19.8s
+Max rounds:  5
+Rounds run:  1
+Agents:      agent_1_qwen2.5-coder (qwen2.5-coder:7b), agent_2_deepseek-coder (deepseek-coder:6.7b), agent_3_codellama (codellama:7b-instruct)
+
+==============================================================================
+TASK
+==============================================================================
+ID: text_justification
+Difficulty: hard
+
+Description:
+Given an array of strings words and a width maxWidth, format the text such that each line has exactly maxWidth characters and is fully (left and right) justified. Pack as many words as you can in each line. Pad extra spaces when necessary. Extra spaces between words should be distributed as evenly as possible. The last line should be left-justified.
+
+Constraints:
+  - 1 <= words.length <= 300
+  - 1 <= words[i].length <= 20
+  - words[i] consists of only English letters and symbols
+  - 1 <= maxWidth <= 100
+  - words[i].length <= maxWidth
+
+Tests: 8
+
+==============================================================================
+ROUND 1  |  PROPOSAL
+==============================================================================
+Best pass rate: 100%  |  Avg: 50%  |  Bugs found: 0  |  Duration: 19.8s
+
+### Proposals
+
+------------------------------------------------------------------------------
+[agent_1_qwen2.5-coder]  4/8 tests (50%)  gen=17.9s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpdb2kakl7
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpdb2kakl7/test_solu
+Quality: pylint=4.5/10, complexity=3.0, maintainability=62.8, LOC=32
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_words = end - start + 1
+        spaces_needed = max_width - total_length
+        spaces_between_words = [0] * (num_words - 1)
+        extra_spaces = spaces_needed
+        
+        for i in range(num_words - 2, -1, -1):
+            spaces_between_words[i] = spaces_needed // (num_words - 1) + (extra_spaces > 0)
+            extra_spaces -= spaces_between_words[i]
+        
+        line = words[start]
+        for i in range(1, num_words):
+            line += ' ' * spaces_between_words[i-1] + words[start + i]
+        
+        return line.ljust(max_width)
+
+    result = []
+    start = 0
+    total_length = 0
+    
+    for end, word in enumerate(words):
+        if total_length + len(word) + (end - start) > max_width:
+            result.append(justify_line(words, start, end-1, total_length))
+            start = end
+            total_length = len(word)
+        else:
+            total_length += len(word)
+    
+    # Handle the last line which should be left-justified
+    last_line = ' '.join(words[start:])
+    result.append(last_line.ljust(max_width))
+    
+    return result
+
+# Example usage:
+words = ["This", "is", "an", "example", "of", "text", "justification."]
+maxWidth = 16
+print(full_justify(words, maxWidth))
+
+------------------------------------------------------------------------------
+[agent_2_deepseek-coder]  8/8 tests (100%)  gen=15.8s
+Quality: pylint=8.5/10, complexity=9.0, maintainability=66.8, LOC=27
+------------------------------------------------------------------------------
+def full_justify(words, max_width):
+    result = []
+    i = 0
+    while i < len(words):
+        total_length = len(words[i])
+        j = i + 1
+        while j < len(words) and (total_length + len(words[j]) + j - i - 1 < max_width):
+            total_length += len(words[j])
+            j += 1
+            
+        num_spaces = max_width - total_length
+        if j == len(words) or j - i == 1: # left justify the last line or one word per line
+            line = ' '.join(words[i:j]).ljust(max_width)
+            result.append(line[:max_width])
+        else: 
+            num_spaces_between = num_spaces // (j - i - 1)
+            num_extra_spaces = num_spaces % (j - i - 1)
+            line = ''
+            for k in range(i, j):
+                if k != i: # add extra spaces between words
+                    line += ' ' * num_spaces_between
+                    if num_extra_spaces > 0: # distribute remaining spaces evenly at the end
+                        line += ' '
+                        num_extra_spaces -= 1
+                line += words[k]
+            result.append(line)
+        i = j
+    return result
+
+------------------------------------------------------------------------------
+[agent_3_codellama]  0/8 tests (0%)  gen=13.1s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp9wvovlqv
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp9wvovlqv/test_solu
+Quality: pylint=9.5/10, complexity=3.0, maintainability=65.7, LOC=11
+------------------------------------------------------------------------------
+def full_justify(words: list[str], max_width: int) -> list[str]:
+    result = []
+    current_line = ""
+    for word in words:
+        if len(current_line) + len(word) > max_width:
+            result.append(current_line)
+            current_line = word
+        else:
+            current_line += " " + word
+    result.append(current_line)
+    return result
+
+==============================================================================
+FINAL RESULT
+==============================================================================
+Winner: agent_2_deepseek-coder  (round 1, 100%)
+
+Final code:
+------------------------------------------------------------------------------
+def full_justify(words, max_width):
+    result = []
+    i = 0
+    while i < len(words):
+        total_length = len(words[i])
+        j = i + 1
+        while j < len(words) and (total_length + len(words[j]) + j - i - 1 < max_width):
+            total_length += len(words[j])
+            j += 1
+            
+        num_spaces = max_width - total_length
+        if j == len(words) or j - i == 1: # left justify the last line or one word per line
+            line = ' '.join(words[i:j]).ljust(max_width)
+            result.append(line[:max_width])
+        else: 
+            num_spaces_between = num_spaces // (j - i - 1)
+            num_extra_spaces = num_spaces % (j - i - 1)
+            line = ''
+            for k in range(i, j):
+                if k != i: # add extra spaces between words
+                    line += ' ' * num_spaces_between
+                    if num_extra_spaces > 0: # distribute remaining spaces evenly at the end
+                        line += ' '
+                        num_extra_spaces -= 1
+                line += words[k]
+            result.append(line)
+        i = j
+    return result
+
+Transcript generated: 2026-04-23T20:17:16

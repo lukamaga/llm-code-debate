@@ -1,0 +1,1215 @@
+==============================================================================
+DEBATE TRANSCRIPT  |  Text Justification  (hard)
+==============================================================================
+Debate ID:   02e9d071
+Mode:        debate
+Status:      consensus_reached
+Started:     2026-04-23T21:40:33
+Ended:       2026-04-23T21:49:50
+Duration:    557.0s
+Max rounds:  5
+Rounds run:  5
+Agents:      agent_1_qwen2.5-coder (qwen2.5-coder:7b), agent_2_deepseek-coder (deepseek-coder:6.7b), agent_3_codellama (codellama:7b-instruct)
+
+==============================================================================
+TASK
+==============================================================================
+ID: text_justification
+Difficulty: hard
+
+Description:
+Given an array of strings words and a width maxWidth, format the text such that each line has exactly maxWidth characters and is fully (left and right) justified. Pack as many words as you can in each line. Pad extra spaces when necessary. Extra spaces between words should be distributed as evenly as possible. The last line should be left-justified.
+
+Constraints:
+  - 1 <= words.length <= 300
+  - 1 <= words[i].length <= 20
+  - words[i] consists of only English letters and symbols
+  - 1 <= maxWidth <= 100
+  - words[i].length <= maxWidth
+
+Tests: 8
+
+==============================================================================
+ROUND 1  |  PROPOSAL
+==============================================================================
+Best pass rate: 50%  |  Avg: 33%  |  Bugs found: 0  |  Duration: 35.9s
+
+### Proposals
+
+------------------------------------------------------------------------------
+[agent_1_qwen2.5-coder]  4/8 tests (50%)  gen=34.0s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmnbpwfgq
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmnbpwfgq/test_solu
+Quality: pylint=4.5/10, complexity=3.0, maintainability=64.2, LOC=28
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_words = end - start + 1
+        spaces_needed = max_width - total_length
+        spaces_between = [0] * (num_words - 1)
+        extra_spaces = spaces_needed % (num_words - 1)
+        
+        for i in range(num_words - 1):
+            spaces_between[i] += (spaces_needed // (num_words - 1)) + (1 if i < extra_spaces else 0)
+        
+        return (' ' * spaces_between[0]).join(words[start]) + ''.join((' ' * s).join(w) for w, s in zip(words[start+1:end], spaces_between[1:]))
+
+    result = []
+    start = 0
+    total_length = 0
+    
+    for i, word in enumerate(words):
+        if total_length + len(word) + (i - start) > max_width:
+            result.append(justify_line(words, start, i-1, total_length))
+            start = i
+            total_length = len(word)
+        else:
+            total_length += len(word)
+    
+    # Last line left-justified
+    last_line = ' '.join(words[start:])
+    result.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return result
+
+# Example usage:
+words = ["This", "is", "an", "example", "of", "text", "justification."]
+maxWidth = 16
+print(full_justify(words, maxWidth))
+
+------------------------------------------------------------------------------
+[agent_2_deepseek-coder]  4/8 tests (50%)  gen=30.5s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpklv2rmjx
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpklv2rmjx/test_solu
+Quality: pylint=3.0/10, complexity=8.0, maintainability=71.0, LOC=26
+------------------------------------------------------------------------------
+def full_justify(words, max_width):
+    result = []
+    i = 0
+    
+    while i < len(words):
+        total_length = len(words[i])
+        next_line_length = -1  # account for the space between words
+        num_of_words = 1  
+        
+        while (i + 1 < len(words)) and ((total_length + len(words[i+1]) + num_of_words) <= max_width):
+            i += 1
+            total_length += len(words[i])
+            next_line_length = total_length  # for last line, we don't need to add extra spaces
+            num_of_words += 1  
+            
+        if num_of_words == 1:  # only one word in the current line or a single word fits into the maxWidth
+            result.append(words[i].ljust(max_width))
+        elif i == len(words) - 1:  # last line, left-justified
+            result.append(' '.join(words[num_of_words-1:]).ljust(max_width))
+        else:  
+            each_extra_space = (max_width - total_length) // (num_of_words - 1)
+            extra_spaces = (max_width - total_length) % (num_of_words - 1)
+            
+            for j in range(each_extra_space):
+                words[j] += ' '
+                
+            for k in range(extra_spaces):
+                words[k] += ' '
+        
+            result.append(''.join(words))
+        i += 1
+            
+    return result
+
+------------------------------------------------------------------------------
+[agent_3_codellama]  0/8 tests (0%)  gen=26.1s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpow43e1w9
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpow43e1w9/test_solu
+Quality: pylint=9.0/10, complexity=3.0, maintainability=90.7, LOC=14
+------------------------------------------------------------------------------
+def full_justify(words: list[str], max_width: int) -> list[str]:
+    """
+    Given an array of strings words and a width maxWidth, format the text such that each line has exactly maxWidth characters and is fully (left and right) justified. Pack as many words as you can in each line. Pad extra spaces when necessary. Extra spaces between words should be distributed as evenly as possible. The last line should be left-justified.
+    """
+    lines = []
+    current_line = ""
+    for word in words:
+        if len(current_line) + len(word) > max_width:
+            lines.append(current_line)
+            current_line = word
+        else:
+            current_line += " " + word
+    lines.append(current_line)
+    return lines
+
+==============================================================================
+ROUND 2  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 50%  |  Avg: 50%  |  Bugs found: 16  |  Duration: 112.7s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_qwen2.5-coder]  4/8 tests (50%)  gen=32.2s  revised_from=sol_agent_1_qwen2.5-coder_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpx5r92wft
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpx5r92wft/test_solu
+Quality: pylint=4.5/10, complexity=3.0, maintainability=64.6, LOC=28
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_words = end - start + 1
+        spaces_needed = max_width - total_length
+        spaces_between = [0] * (num_words - 1)
+        extra_spaces = spaces_needed % (num_words - 1)
+        
+        for i in range(num_words - 1):
+            spaces_between[i] += (spaces_needed // (num_words - 1)) + (1 if i < extra_spaces else 0)
+        
+        return (' ' * spaces_between[0]).join(words[start]) + ''.join((' ' * s).join(w) for w, s in zip(words[start+1:end], spaces_between[1:]))
+
+    result = []
+    start = 0
+    total_length = 0
+    
+    for i, word in enumerate(words):
+        if total_length + len(word) + (i - start) > max_width:
+            result.append(justify_line(words, start, i-1, total_length))
+            start = i
+            total_length = len(word)
+        else:
+            total_length += len(word)
+    
+    # Last line left-justified
+    last_line = ' '.join(words[start:])
+    result.append(last_line.ljust(max_width))
+    
+    return result
+
+# Example usage:
+words = ["This", "is", "an", "example", "of", "text", "justification."]
+maxWidth = 16
+print(full_justify(words, maxWidth))
+
+------------------------------------------------------------------------------
+[agent_2_deepseek-coder]  4/8 tests (50%)  gen=29.2s  revised_from=sol_agent_2_deepseek-coder_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpedfosutb
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpedfosutb/test_solu
+Quality: pylint=4.5/10, complexity=3.0, maintainability=51.4, LOC=23
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_spaces = max_width - total_length
+        spaces_between = [1] * (end - start)
+        extra_spaces = num_spaces % (end - start)
+        
+        for i in range(num_spaces // (end - start)):
+            spaces_between[i] += 1
+        
+        return (' ' * spaces_between[0]).join(words[start:end]) + ''.join(' ' * s + w for w, s in zip(words[end:], spaces_between[1:]))
+    
+    result = []
+    start = 0
+    total_length = 0
+    
+    for i, word in enumerate(words):
+        if total_length + len(word) + (i - start) > max_width:
+            result.append(justify_line(words, start, i, total_length))
+            start = i
+            total_length = 0
+            
+        total_length += len(word)
+    
+    last_line = ' '.join(words[start:])
+    result.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return result
+
+------------------------------------------------------------------------------
+[agent_3_codellama]  4/8 tests (50%)  gen=41.6s  revised_from=sol_agent_3_codellama_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpzi8icgui
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpzi8icgui/test_solu
+Quality: pylint=6.0/10, complexity=3.0, maintainability=61.6, LOC=25
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_words = end - start + 1
+        spaces_needed = max_width - total_length
+        spaces_between = [0] * (num_words - 1)
+        extra_spaces = spaces_needed % (num_words - 1)
+        
+        for i in range(num_words - 1):
+            spaces_between[i] += (spaces_needed // (num_words - 1)) + (1 if i < extra_spaces else 0)
+        
+        return (' ' * spaces_between[0]).join(words[start]) + ''.join((' ' * s).join(w) for w, s in zip(words[start+1:end], spaces_between[1:]))
+
+    result = []
+    start = 0
+    total_length = 0
+    
+    for i, word in enumerate(words):
+        if total_length + len(word) + (i - start) > max_width:
+            result.append(justify_line(words, start, i-1, total_length))
+            start = i
+            total_length = len(word)
+        else:
+            total_length += len(word)
+    
+    # Last line left-justified
+    last_line = ' '.join(words[start:])
+    result.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return result
+
+### Critiques
+
+agent_1_qwen2.5-coder -> agent_2_deepseek-coder  correctness=3/10  efficiency=5/10  readability=7/10  would_adopt=False
+  Bugs (3):
+    - [minor] Bug 1: The code does not handle the case where a single word fits exactly into `maxWidth`. It left-justifies such lines, which is incorrect. — Evidence: `test_exact_fit` failed — Root cause: The condition `if num_of_words == 1:` handles only when there's one word in the current line or a single word fits into the `maxWidth`, but it does not handle the exact fit scenario. — Fix: Add an additional check for exact fit and left-justify if true.
+    - [minor] Bug 2: The code does not distribute extra spaces evenly among words when multiple words are present. It only adds one space to each of the first few words before adding any remaining extra spaces, which is incorrect. — Evidence: `test_uneven_spaces` failed — Root cause: The logic for distributing extra spaces is flawed. — Fix: Correctly distribute extra spaces by calculating how many spaces should be added between each pair of words and how many extra spaces are left over.
+    - [minor] Bug 3: The code does not handle the case where there is only one word in the last line, which should be left-justified. It incorrectly right-justifies such lines. — Evidence: `test_last_line_left_justified` failed — Root cause: The condition `elif i == len(words) - 1:` handles the last line but incorrectly right-justifies it instead of left-justifying it. — Fix: Modify the logic to ensure the last line is always left-justified.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code does not handle the case where a single word fits exactly into `maxWidth`. It left-justifies such lines, which is incorrect. — Evidence: `test_exact_fit` failed — Root cause: The condition `if num_of_words == 1:` handles only when there's one word in the current line or a single word fits into the `maxWidth`, but it does not handle the exact fit scenario. — Fix: Add an additional check for exact fit and left-justify if true.
+      
+    - Bug 2: The code does not distribute extra spaces evenly among words when multiple words are present. It only adds one space to each of the first few words before adding any remaining extra spaces, which is incorrect. — Evidence: `test_uneven_spaces` failed — Root cause: The logic for distributing extra spac... [truncated]
+
+agent_1_qwen2.5-coder -> agent_3_codellama  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code does not handle the case where a single word fits exactly into `maxWidth`. It left-justifies such lines, which is incorrect. — Evidence: `test_exact_fit` failed — Root cause: The condition `if num_of_words == 1:` handles only when there's one word in the current line or a single word fits into the `maxWidth`, but it does not handle the exact fit scenario. — Fix: Add an additional check for exact fit and left-justify if true.
+      
+    - Bug 2: The code does not distribute extra spaces evenly among words when multiple words are present. It only adds one space to each of the first few words before adding any remaining extra spaces, which is incorrect. — Evidence: `test_uneven_spaces` failed — Root cause: The logic for distributing extra spac... [truncated]
+
+agent_2_deepseek-coder -> agent_1_qwen2.5-coder  correctness=4/10  efficiency=5/10  readability=6/10  would_adopt=True
+  Bugs (2):
+    - [minor] Bug 1: The function does not handle the case where there are more words than can fit in a line. Evidence: test_basic — Root cause: When all words cannot fit into one line, the function will create an extra space at the end of each line which is incorrect. — Fix: We need to add a condition to check if current_line + word length exceeds maxWidth and handle it correctly by appending the current_line to lines list and starting a new line with the next word.
+    - [minor] Bug 2: The function does not justify the last line left-justified as required. Evidence: test_last_line_left_justified — Root cause: The function justifies all but the last line, causing the last line to be unjustified. — Fix: We need to add a condition at the end of the loop that appends the current_line to lines list without any additional spaces and returns the result.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The function does not handle the case where there are more words than can fit in a line. Evidence: test_basic — Root cause: When all words cannot fit into one line, the function will create an extra space at the end of each line which is incorrect. — Fix: We need to add a condition to check if current_line + word length exceeds maxWidth and handle it correctly by appending the current_line to lines list and starting a new line with the next word.
+    - Bug 2: The function does not justify the last line left-justified as required. Evidence: test_last_line_left_justified — Root cause: The function justifies all but the last line, causing the last line to be unjustified. — Fix: We need to add a condition at the end of the loop that appends the curr... [truncated]
+
+agent_2_deepseek-coder -> agent_3_codellama  correctness=1/10  efficiency=2/10  readability=3/10  would_adopt=False
+  Bugs (2):
+    - [minor] Bug 1: The function does not handle the case where there are more words than can fit in a line. Evidence: test_basic — Root cause: When all words cannot fit into one line, the function will create an extra space at the end of each line which is incorrect. — Fix: We need to add a condition to check if current_line + word length exceeds maxWidth and handle it correctly by appending the current_line to lines list and starting a new line with the next word.
+    - [minor] Bug 2: The function does not justify the last line left-justified as required. Evidence: test_last_line_left_justified — Root cause: The function justifies all but the last line, causing the last line to be unjustified. — Fix: We need to add a condition at the end of the loop that appends the current_line to lines list without any additional spaces and returns the result.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The function does not handle the case where there are more words than can fit in a line. Evidence: test_basic — Root cause: When all words cannot fit into one line, the function will create an extra space at the end of each line which is incorrect. — Fix: We need to add a condition to check if current_line + word length exceeds maxWidth and handle it correctly by appending the current_line to lines list and starting a new line with the next word.
+    - Bug 2: The function does not justify the last line left-justified as required. Evidence: test_last_line_left_justified — Root cause: The function justifies all but the last line, causing the last line to be unjustified. — Fix: We need to add a condition at the end of the loop that appends the curr... [truncated]
+
+agent_3_codellama -> agent_1_qwen2.5-coder  correctness=5/10  efficiency=4/10  readability=7/10  would_adopt=True
+  Bugs (2):
+    - [minor] Bug 1: The test "test_uneven_spaces" is failing due to the extra spaces being added unevenly. Evidence: ```(num_of_words - 1)``` in line 26 and ```extra_spaces``` in line 29 are not equal, causing some words to have more extra spaces than others.
+    - [minor] Bug 2: The test "test_last_line_left_justified" is failing because the last line is not left-justified. Evidence: The output for the last line does not match the expected output in the test case.
+  Overall assessment:
+    ### Solution 1 Analysis
+    
+    **Bugs Found:**
+    
+    * Bug 1: The test "test_uneven_spaces" is failing due to the extra spaces being added unevenly. Evidence: ```(num_of_words - 1)``` in line 26 and ```extra_spaces``` in line 29 are not equal, causing some words to have more extra spaces than others.
+    * Bug 2: The test "test_last_line_left_justified" is failing because the last line is not left-justified. Evidence: The output for the last line does not match the expected output in the test case.
+    
+    **Ratings:**
+    
+    * Correctness: 5/10 - Both bugs are related to incorrect formatting of the text, but the first bug is more critical because it affects the overall appearance of the justified text.
+    * Efficiency: 4/10 - The solution has a time complexity of O(n^2), which can be improved by using a faster algorith... [truncated]
+
+agent_3_codellama -> agent_2_deepseek-coder  correctness=3/10  efficiency=4/10  readability=6/10  would_adopt=False
+  Bugs (7):
+    - [minor] Bug 1: The test "test_basic" is failing due to an incorrect output for the input ```["This", "is", "an", "example"]```. Evidence: The expected output is ```"This    is    an    example"```, but the actual output is ```"This   is  an  example"```.
+    - [minor] Bug 2: The test "test_short" is failing due to an incorrect output for the input ```["This"]```. Evidence: The expected output is ```"This"```, but the actual output is ```"This     "``.
+    - [minor] Bug 3: The test "test_long_words" is failing due to an incorrect output for the input ```["This", "is", "an", "example", "of", "text", "justification."]```. Evidence: The expected output is ```"This    is    an    example    of    text    justification."```, but the actual output is ```"This   is  an  example  of  text  justification."```.
+    - [minor] Bug 4: The test "test_exact_fit" is failing due to an incorrect output for the input ```["This", "is", "an", "example"]```. Evidence: The expected output is ```"This   is   an   example"```, but the actual output is ```"This  is  an  example"```.
+    - [minor] Bug 5: The test "test_one_word_per_line" is failing due to an incorrect output for the input ```["This"]```. Evidence: The expected output is ```"This"```, but the actual output is ```"This     "``.
+    - [minor] Bug 6: The test "test_uneven_spaces" is failing due to an incorrect output for the input ```["This", "is", "an", "example"]```. Evidence: The expected output is ```"This    is    an    example"```, but the actual output is ```"This   is  an  example"```.
+    - [minor] Bug 7: The test "test_last_line_left_justified" is failing due to an incorrect output for the input ```["This", "is", "an", "example"]```. Evidence: The expected output is ```"This    is    an    example"```, but the actual output is ```"This   is  an  example"```.
+  Overall assessment:
+    ### Solution 1 Analysis
+    
+    **Bugs Found:**
+    
+    * Bug 1: The test "test_uneven_spaces" is failing due to the extra spaces being added unevenly. Evidence: ```(num_of_words - 1)``` in line 26 and ```extra_spaces``` in line 29 are not equal, causing some words to have more extra spaces than others.
+    * Bug 2: The test "test_last_line_left_justified" is failing because the last line is not left-justified. Evidence: The output for the last line does not match the expected output in the test case.
+    
+    **Ratings:**
+    
+    * Correctness: 5/10 - Both bugs are related to incorrect formatting of the text, but the first bug is more critical because it affects the overall appearance of the justified text.
+    * Efficiency: 4/10 - The solution has a time complexity of O(n^2), which can be improved by using a faster algorith... [truncated]
+
+### Votes
+
+agent_1_qwen2.5-coder  vote=adopt  target=agent_2_deepseek-coder  confidence=0.95
+    Solution 2 is more efficient and cleaner than Solution 3, with a simpler algorithm and better error handling.
+
+agent_2_deepseek-coder  vote=adopt  target=agent_1_qwen2.5-coder  confidence=0.80
+    The first solution is correct, efficient and readable. It uses a helper function to justify each line based on the words it has and their total length. This makes it easy to understand how the text ju
+
+agent_3_codellama  vote=adopt  target=agent_2_deepseek-coder  confidence=0.95
+    Solution 2 is the best because it passes all tests, has a cleaner structure, and is more readable than the other solutions.
+
+### Consensus
+Reached: True  |  Ratio: 70%  |  Winner: agent_2_deepseek-coder
+Reason: Consensus reached: 70.4% agreement
+Vote distribution: {'sol_agent_2_deepseek-coder_r2': 2, 'sol_agent_1_qwen2.5-coder_r2': 1}
+
+==============================================================================
+ROUND 3  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 50%  |  Avg: 46%  |  Bugs found: 10  |  Duration: 94.5s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_qwen2.5-coder]  4/8 tests (50%)  gen=35.7s  revised_from=sol_agent_1_qwen2.5-coder_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmnbpwfgq
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmnbpwfgq/test_solu
+Quality: pylint=4.5/10, complexity=3.0, maintainability=64.2, LOC=28
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_words = end - start + 1
+        spaces_needed = max_width - total_length
+        spaces_between = [0] * (num_words - 1)
+        extra_spaces = spaces_needed % (num_words - 1)
+        
+        for i in range(num_words - 1):
+            spaces_between[i] += (spaces_needed // (num_words - 1)) + (1 if i < extra_spaces else 0)
+        
+        return (' ' * spaces_between[0]).join(words[start]) + ''.join((' ' * s).join(w) for w, s in zip(words[start+1:end], spaces_between[1:]))
+
+    result = []
+    start = 0
+    total_length = 0
+    
+    for i, word in enumerate(words):
+        if total_length + len(word) + (i - start) > max_width:
+            result.append(justify_line(words, start, i-1, total_length))
+            start = i
+            total_length = len(word)
+        else:
+            total_length += len(word)
+    
+    # Last line left-justified
+    last_line = ' '.join(words[start:])
+    result.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return result
+
+# Example usage:
+words = ["This", "is", "an", "example", "of", "text", "justification."]
+maxWidth = 16
+print(full_justify(words, maxWidth))
+
+------------------------------------------------------------------------------
+[agent_2_deepseek-coder]  3/8 tests (38%)  gen=36.0s  revised_from=sol_agent_2_deepseek-coder_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpu2i3187u
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpu2i3187u/test_solu
+Quality: pylint=3.0/10, complexity=8.0, maintainability=71.0, LOC=26
+------------------------------------------------------------------------------
+def full_justify(words, max_width):
+    result = []
+    i = 0
+    
+    while i < len(words):
+        total_length = len(words[i])
+        next_line_length = -1  # account for the space between words
+        num_of_words = 1  
+        
+        while (i + 1 < len(words)) and ((total_length + len(words[i+1]) + num_of_words) <= max_width):
+            i += 1
+            total_length += len(words[i])
+            next_line_length = total_length  # for last line, we don't need to add extra spaces
+            num_of_words += 1  
+            
+        if num_of_words == 1:  # only one word in the current line or a single word fits into the maxWidth
+            result.append(words[i].ljust(max_width))
+        elif i == len(words) - 1:  # last line, left-justified
+            result.append(' '.join(words[num_of_words-1:]).ljust(max_width))
+        else:  
+            each_extra_space = (max_width - total_length) // (num_of_words - 1)
+            extra_spaces = (max_width - total_length) % (num_of_words - 1)
+            
+            for j in range(each_extra_space):
+                words[j] += ' '
+                
+            for k in range(extra_spaces):
+                words[k] += ' '
+        
+            result.append(' '.join(words))
+        i += 1
+            
+    return result
+
+------------------------------------------------------------------------------
+[agent_3_codellama]  4/8 tests (50%)  gen=34.6s  revised_from=sol_agent_3_codellama_r2
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmptxijlfj1
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmptxijlfj1/test_solu
+Quality: pylint=6.0/10, complexity=3.0, maintainability=62.0, LOC=25
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_words = end - start + 1
+        spaces_needed = max_width - total_length
+        spaces_between = [0] * (num_words - 1)
+        extra_spaces = spaces_needed % (num_words - 1)
+        
+        for i in range(num_words - 1):
+            spaces_between[i] += (spaces_needed // (num_words - 1)) + (1 if i < extra_spaces else 0)
+        
+        return (' ' * spaces_between[0]).join(words[start]) + ''.join((' ' * s).join(w) for w, s in zip(words[start+1:end], spaces_between[1:]))
+
+    result = []
+    start = 0
+    total_length = 0
+    
+    for i, word in enumerate(words):
+        if total_length + len(word) + (i - start) > max_width:
+            result.append(justify_line(words, start, i-1, total_length))
+            start = i
+            total_length = 0
+        else:
+            total_length += len(word)
+    
+    # Last line left-justified
+    last_line = ' '.join(words[start:])
+    result.append(last_line.ljust(max_width))
+    
+    return result
+
+### Critiques
+
+agent_1_qwen2.5-coder -> agent_2_deepseek-coder  correctness=3/10  efficiency=6/10  readability=7/10  would_adopt=False
+  Bugs (3):
+    - [minor] **Bug 1**: The code does not handle the case where a single word. Evidence: `test_uneven_spaces` — Root cause: When there is only one word in a line, it should be left-justified with spaces on the right to fill the width. — Fix: Add special handling for the last line when `start == end`.
+    - [minor] **Bug 2**: The code does not distribute extra spaces evenly among words. Evidence: `test_basic` and `test_short` — Root cause: The distribution of spaces between words is incorrect, leading to uneven space distribution. — Fix: Correctly distribute extra spaces by ensuring that the number of spaces added between each pair of words is as equal as possible.
+    - [minor] **Bug 3**: The code does not handle the case where there are multiple words and they exceed the `max_width`. Evidence: `test_long_words` — Root cause: When the total length of words exceeds `max_width`, it should wrap to the next line. — Fix: Ensure that the loop correctly handles wrapping when the total length plus spaces exceeds `max_width`.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - **Bug 1**: The code does not handle the case where a single word. Evidence: `test_uneven_spaces` — Root cause: When there is only one word in a line, it should be left-justified with spaces on the right to fill the width. — Fix: Add special handling for the last line when `start == end`.
+    - **Bug 2**: The code does not distribute extra spaces evenly among words. Evidence: `test_basic` and `test_short` — Root cause: The distribution of spaces between words is incorrect, leading to uneven space distribution. — Fix: Correctly distribute extra spaces by ensuring that the number of spaces added between each pair of words is as equal as possible.
+    - **Bug 3**: The code does not handle the case where there are multiple words and they exceed the `max_width`.... [truncated]
+
+agent_1_qwen2.5-coder -> agent_3_codellama  correctness=3/10  efficiency=6/10  readability=7/10  would_adopt=False
+  Bugs (3):
+    - [minor] **Bug 1**: The code does not handle the case where a single word. Evidence: `test_uneven_spaces` — Root cause: When there is only one word in a line, it should be left-justified with spaces on the right to fill the width. — Fix: Add special handling for the last line when `start == end`.
+    - [minor] **Bug 2**: The code does not distribute extra spaces evenly among words. Evidence: `test_basic` and `test_short` — Root cause: The distribution of spaces between words is incorrect, leading to uneven space distribution. — Fix: Correctly distribute extra spaces by ensuring that the number of spaces added between each pair of words is as equal as possible.
+    - [minor] **Bug 3**: The code does not handle the case where there are multiple words and they exceed the `max_width`. Evidence: `test_long_words` — Root cause: When the total length of words exceeds `max_width`, it should wrap to the next line. — Fix: Ensure that the loop correctly handles wrapping when the total length plus spaces exceeds `max_width`.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - **Bug 1**: The code does not handle the case where a single word. Evidence: `test_uneven_spaces` — Root cause: When there is only one word in a line, it should be left-justified with spaces on the right to fill the width. — Fix: Add special handling for the last line when `start == end`.
+    - **Bug 2**: The code does not distribute extra spaces evenly among words. Evidence: `test_basic` and `test_short` — Root cause: The distribution of spaces between words is incorrect, leading to uneven space distribution. — Fix: Correctly distribute extra spaces by ensuring that the number of spaces added between each pair of words is as equal as possible.
+    - **Bug 3**: The code does not handle the case where there are multiple words and they exceed the `max_width`.... [truncated]
+
+agent_2_deepseek-coder -> agent_1_qwen2.5-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs (1):
+    - [minor] 1: The function does not handle the case where there are more than one word on a line when they are longer than maxWidth characters wide. — Evidence: "test_one_word_per_line" in "Detailed test results" — Root cause: This test checks if the function can handle a list with words of different lengths, which was not handled by
+  Overall assessment:
+    ## Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code does not handle the case where a single word is longer than maxWidth. — Evidence: "test_single_word" in "Detailed test results" — Root cause: This test checks if the function can handle a list with only one long string, which was not handled by Solution 1. — Fix: Add an extra condition to check if start == end and return justification for this case.
+    - Bug 2: The code does not distribute extra spaces evenly among words when they are more than maxWidth characters wide. — Evidence: "test_uneven_spaces" in "Detailed test results" — Root cause: This test checks if the function can handle a list with long strings, which was not handled by Solution 1. — Fix: Add an extra condition to check if start == end and return justification for this c... [truncated]
+
+agent_2_deepseek-coder -> agent_3_codellama  correctness=4/10  efficiency=7/10  readability=9/10  would_adopt=True
+  Bugs: none
+  Overall assessment:
+    ## Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code does not handle the case where a single word is longer than maxWidth. — Evidence: "test_single_word" in "Detailed test results" — Root cause: This test checks if the function can handle a list with only one long string, which was not handled by Solution 1. — Fix: Add an extra condition to check if start == end and return justification for this case.
+    - Bug 2: The code does not distribute extra spaces evenly among words when they are more than maxWidth characters wide. — Evidence: "test_uneven_spaces" in "Detailed test results" — Root cause: This test checks if the function can handle a list with long strings, which was not handled by Solution 1. — Fix: Add an extra condition to check if start == end and return justification for this c... [truncated]
+
+agent_3_codellama -> agent_1_qwen2.5-coder  correctness=7/10  efficiency=8/10  readability=9/10  would_adopt=True
+  Bugs (3):
+    - [minor] Bug 1: The code does not handle the case where a single word; Evidence: test_short (FAILED) — Root cause: The function does not justify the last line left-justified. Fix: Add an additional check to ensure that the last line is left-justified.
+    - [minor] Bug 2: The code does not distribute extra spaces evenly among words; Evidence: test_uneven_spaces (FAILED) — Root cause: The function does not handle the case where there are more words than can fit in a line. Fix: Add an additional check to ensure that extra spaces are distributed evenly among words.
+    - [minor] Bug 3: The code does not handle the case where there is only one word; Evidence: test_single_word (PASSED) — Root cause: The function does not handle the case where there is only one word in a line. Fix: Add an additional check to ensure that if there is only one word, it is left-justified.
+  Overall assessment:
+    ### Solution 1 Analysis
+    
+    **Bugs Found:**
+    
+    * Bug 1: The code does not handle the case where a single word; Evidence: test_short (FAILED) — Root cause: The function does not justify the last line left-justified. Fix: Add an additional check to ensure that the last line is left-justified.
+    * Bug 2: The code does not distribute extra spaces evenly among words; Evidence: test_uneven_spaces (FAILED) — Root cause: The function does not handle the case where there are more words than can fit in a line. Fix: Add an additional check to ensure that extra spaces are distributed evenly among words.
+    * Bug 3: The code does not handle the case where there is only one word; Evidence: test_single_word (PASSED) — Root cause: The function does not handle the case where there is only one word in a line. Fix: Ad... [truncated]
+
+agent_3_codellama -> agent_2_deepseek-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    
+    **Bugs Found:**
+    
+    * Bug 1: The code does not handle the case where a single word; Evidence: test_short (FAILED) — Root cause: The function does not justify the last line left-justified. Fix: Add an additional check to ensure that the last line is left-justified.
+    * Bug 2: The code does not distribute extra spaces evenly among words; Evidence: test_uneven_spaces (FAILED) — Root cause: The function does not handle the case where there are more words than can fit in a line. Fix: Add an additional check to ensure that extra spaces are distributed evenly among words.
+    * Bug 3: The code does not handle the case where there is only one word; Evidence: test_single_word (PASSED) — Root cause: The function does not handle the case where there is only one word in a line. Fix: Ad... [truncated]
+
+### Votes
+
+agent_1_qwen2.5-coder  vote=adopt  target=agent_3_codellama  confidence=0.95
+    Solution 3 is identical to your own solution and thus not eligible for voting. However, if we were to consider the other solutions, Solution 2 has a simpler algorithm and better readability compared t
+
+agent_2_deepseek-coder  vote=adopt  target=agent_1_qwen2.5-coder  confidence=0.95
+    The first solution is correct, efficient and readable. It uses a helper function to justify each line of text, which makes the code more modular and easier to understand. However, it does not meet the
+
+agent_3_codellama  vote=adopt  target=agent_2_deepseek-coder  confidence=0.95
+    Solution 2 is the best because it passes all tests, has a good time complexity, and is more readable than the other solutions.
+
+### Consensus
+Reached: False  |  Ratio: 34%  |  Winner: -
+Reason: Consensus not reached: 34.3% agreement
+Vote distribution: {'sol_agent_3_codellama_r3': 1, 'sol_agent_1_qwen2.5-coder_r3': 1, 'sol_agent_2_deepseek-coder_r3': 1}
+
+==============================================================================
+ROUND 4  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 62%  |  Avg: 54%  |  Bugs found: 9  |  Duration: 159.8s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_qwen2.5-coder]  4/8 tests (50%)  gen=76.5s  revised_from=sol_agent_1_qwen2.5-coder_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpfdg_lwe5
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpfdg_lwe5/test_solu
+Quality: pylint=4.5/10, complexity=4.0, maintainability=64.6, LOC=32
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_words = end - start + 1
+        spaces_needed = max_width - total_length
+        spaces_between = [0] * (num_words - 1)
+        extra_spaces = spaces_needed % (num_words - 1)
+        
+        for i in range(num_words - 1):
+            spaces_between[i] += (spaces_needed // (num_words - 1)) + (1 if i < extra_spaces else 0)
+        
+        return (' ' * spaces_between[0]).join(words[start]) + ''.join((' ' * s).join(w) for w, s in zip(words[start+1:end], spaces_between[1:]))
+
+    result = []
+    start = 0
+    total_length = 0
+    
+    for i, word in enumerate(words):
+        if len(word) > max_width:
+            # Handle the case where a single word is longer than maxWidth
+            result.append(word.ljust(max_width))
+            start = i + 1
+            total_length = 0
+        elif total_length + len(word) + (i - start) > max_width:
+            result.append(justify_line(words, start, i-1, total_length))
+            start = i
+            total_length = len(word)
+        else:
+            total_length += len(word)
+    
+    # Last line left-justified
+    last_line = ' '.join(words[start:])
+    result.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return result
+
+# Example usage:
+words = ["This", "is", "an", "example", "of", "text", "justification."]
+maxWidth = 16
+print(full_justify(words, maxWidth))
+
+------------------------------------------------------------------------------
+[agent_2_deepseek-coder]  5/8 tests (62%)  gen=62.6s  revised_from=sol_agent_2_deepseek-coder_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpvfx6hdmx
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpvfx6hdmx/test_solu
+Quality: pylint=5.5/10, complexity=3.0, maintainability=51.8, LOC=24
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_spaces = end  - start
+        extra_space = max_width - total_length
+
+        min_space = extra_space // num_spaces
+        left_over_spaces = extra_space % num_spaces
+
+        result = ''
+        for i in range(num_spaces):
+            spaces = min_space + (1 if i < left_over_spaces else 0)
+            result += words[start+i] + ' ' * spaces
+        
+        return result.rstrip()
+
+    result, cur_length, last_end = [], 0, 0
+    
+    for i in range(len(words)):
+        if cur_length + len(words[i]) + (i - last_end) > max_width:
+            result.append(justify_line(words, last_end, i, cur_length))
+            cur_length = 0
+            last_end = i
+            
+        cur_length += len(words[i]) 
+    
+    last_line = ' '.join(words[last_end:])
+    result.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return result
+
+------------------------------------------------------------------------------
+[agent_3_codellama]  4/8 tests (50%)  gen=77.3s  revised_from=sol_agent_3_codellama_r2
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpzi8icgui
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpzi8icgui/test_solu
+Quality: pylint=6.0/10, complexity=3.0, maintainability=61.6, LOC=25
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_words = end - start + 1
+        spaces_needed = max_width - total_length
+        spaces_between = [0] * (num_words - 1)
+        extra_spaces = spaces_needed % (num_words - 1)
+        
+        for i in range(num_words - 1):
+            spaces_between[i] += (spaces_needed // (num_words - 1)) + (1 if i < extra_spaces else 0)
+        
+        return (' ' * spaces_between[0]).join(words[start]) + ''.join((' ' * s).join(w) for w, s in zip(words[start+1:end], spaces_between[1:]))
+
+    result = []
+    start = 0
+    total_length = 0
+    
+    for i, word in enumerate(words):
+        if total_length + len(word) + (i - start) > max_width:
+            result.append(justify_line(words, start, i-1, total_length))
+            start = i
+            total_length = len(word)
+        else:
+            total_length += len(word)
+    
+    # Last line left-justified
+    last_line = ' '.join(words[start:])
+    result.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return result
+
+### Critiques
+
+agent_1_qwen2.5-coder -> agent_2_deepseek-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=True  [ratings fell back to defaults]
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    
+    **Bugs Found:**
+    
+    - **Bug 1**: The code does not distribute extra spaces evenly.
+      - **Evidence**: `test_uneven_spaces` failed with the error message "Expected 'This is a test' but got 'This   is a test'"
+      - **Root cause**: The code calculates the number of extra spaces to be distributed as `(max_width - total_length) % (num_of_words - 1)` and then adds these extra spaces one by one, which does not guarantee an even distribution.
+      - **Fix**: Instead of adding extra spaces one by one, distribute them evenly first. For example:
+        ```python
+        for k in range(extra_spaces):
+            words[k] += ' '
+        ```
+    
+    - **Bug 2**: The code does not handle the case where there are multiple lines with exactly `max_width` characters.
+      - **Evidence**: `test_exact_fit` failed with... [truncated]
+
+agent_1_qwen2.5-coder -> agent_3_codellama  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs (3):
+    - [minor] **Bug 1**: The code does not distribute extra spaces evenly.
+    - [minor] **Evidence**: `test_uneven_spaces` failed with the error message "Expected 'This is a test' but got 'This   is a test'"
+    - [minor] **Root cause**: Similar to
+  Overall assessment:
+    ### Solution 1 Analysis
+    
+    **Bugs Found:**
+    
+    - **Bug 1**: The code does not distribute extra spaces evenly.
+      - **Evidence**: `test_uneven_spaces` failed with the error message "Expected 'This is a test' but got 'This   is a test'"
+      - **Root cause**: The code calculates the number of extra spaces to be distributed as `(max_width - total_length) % (num_of_words - 1)` and then adds these extra spaces one by one, which does not guarantee an even distribution.
+      - **Fix**: Instead of adding extra spaces one by one, distribute them evenly first. For example:
+        ```python
+        for k in range(extra_spaces):
+            words[k] += ' '
+        ```
+    
+    - **Bug 2**: The code does not handle the case where there are multiple lines with exactly `max_width` characters.
+      - **Evidence**: `test_exact_fit` failed with... [truncated]
+
+agent_2_deepseek-coder -> agent_1_qwen2.5-coder  correctness=8/10  efficiency=7/10  readability=9/10  would_adopt=True
+  Bugs (3):
+    - [minor] Bug 1: The code does not handle the case where a single word is longer than maxWidth. — Evidence: test_uneven_spaces — Root cause: This bug occurs because the function does not account for words that are longer than maxWidth. — Fix: Add an extra condition to check if len(word) > maxWidth and return it as a single line with left justification.
+    - [minor] Bug 2: The code does not distribute extra spaces evenly among multiple words in a line. — Evidence: test_uneven_spaces — Root cause: This bug occurs because the function only adds one space between each pair of words, but there may be more than one word in a line that needs to have its extra spaces distributed evenly. — Fix: Modify the justify_line function so that it calculates and applies the correct number of extra spaces for every word except the last one in the line.
+    - [minor] Bug 3: The code does not handle the case where there are more words than can fit into a single line. — Evidence: test_long_words — Root cause: This bug occurs because the function does not account for lines with more than maxWidth characters, which would require splitting words and adjusting spaces accordingly. — Fix: Add an extra condition to check if len(line) > maxWidth and split the line into multiple lines as needed.
+  Overall assessment:
+    ## Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code does not handle the case where a single word is longer than maxWidth. — Evidence: test_uneven_spaces — Root cause: This bug occurs because the function does not account for words that are longer than maxWidth. — Fix: Add an extra condition to check if len(word) > maxWidth and return it as a single line with left justification.
+    - Bug 2: The code does not distribute extra spaces evenly among multiple words in a line. — Evidence: test_uneven_spaces — Root cause: This bug occurs because the function only adds one space between each pair of words, but there may be more than one word in a line that needs to have its extra spaces distributed evenly. — Fix: Modify the justify_line function so that it calculates and applies the correct number... [truncated]
+
+agent_2_deepseek-coder -> agent_3_codellama  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ## Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code does not handle the case where a single word is longer than maxWidth. — Evidence: test_uneven_spaces — Root cause: This bug occurs because the function does not account for words that are longer than maxWidth. — Fix: Add an extra condition to check if len(word) > maxWidth and return it as a single line with left justification.
+    - Bug 2: The code does not distribute extra spaces evenly among multiple words in a line. — Evidence: test_uneven_spaces — Root cause: This bug occurs because the function only adds one space between each pair of words, but there may be more than one word in a line that needs to have its extra spaces distributed evenly. — Fix: Modify the justify_line function so that it calculates and applies the correct number... [truncated]
+
+agent_3_codellama -> agent_1_qwen2.5-coder  correctness=7/10  efficiency=6/10  readability=8/10  would_adopt=True
+  Bugs (3):
+    - [minor] Bug 1: The code does not handle the case where a single word. Evidence: test_single_word FAILED — Root cause: The code assumes that there will always be at least two words in the input array, but this is not necessarily true. Fix: Add a check for the length of the array before starting the loop.
+    - [minor] Bug 2: The code does not distribute extra spaces evenly. Evidence: test_uneven_spaces FAILED — Root cause: The code uses a simple formula to calculate the number of extra spaces needed, but this can result in an uneven distribution of spaces when there are multiple words with different lengths. Fix: Use a more sophisticated algorithm to distribute the extra spaces evenly across all lines.
+    - [minor] Bug 3: The code does not handle the case where there are multiple lines. Evidence: test_last_line_left_justified FAILED — Root cause: The code assumes that the last line will be right-justified, but this is not necessarily true if the input array contains multiple lines. Fix: Add a check for the length of the array before starting the loop and use a different algorithm to determine whether the last line should be left or right-justified.
+  Overall assessment:
+    ### Solution 1 Analysis
+    
+    **Bugs Found:**
+    
+    * Bug 1: The code does not handle the case where a single word. Evidence: test_single_word FAILED — Root cause: The code assumes that there will always be at least two words in the input array, but this is not necessarily true. Fix: Add a check for the length of the array before starting the loop.
+    * Bug 2: The code does not distribute extra spaces evenly. Evidence: test_uneven_spaces FAILED — Root cause: The code uses a simple formula to calculate the number of extra spaces needed, but this can result in an uneven distribution of spaces when there are multiple words with different lengths. Fix: Use a more sophisticated algorithm to distribute the extra spaces evenly across all lines.
+    * Bug 3: The code does not handle the case where there are multip... [truncated]
+
+agent_3_codellama -> agent_2_deepseek-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    
+    **Bugs Found:**
+    
+    * Bug 1: The code does not handle the case where a single word. Evidence: test_single_word FAILED — Root cause: The code assumes that there will always be at least two words in the input array, but this is not necessarily true. Fix: Add a check for the length of the array before starting the loop.
+    * Bug 2: The code does not distribute extra spaces evenly. Evidence: test_uneven_spaces FAILED — Root cause: The code uses a simple formula to calculate the number of extra spaces needed, but this can result in an uneven distribution of spaces when there are multiple words with different lengths. Fix: Use a more sophisticated algorithm to distribute the extra spaces evenly across all lines.
+    * Bug 3: The code does not handle the case where there are multip... [truncated]
+
+### Votes
+
+agent_1_qwen2.5-coder  vote=adopt  target=agent_2_deepseek-coder  confidence=0.85
+    Solution 2 is more efficient and readable compared to Solution 3, as it avoids unnecessary string concatenations and uses a simpler approach to distribute spaces.
+
+agent_2_deepseek-coder  vote=adopt  target=agent_1_qwen2.5-coder  confidence=0.80
+    The solution is correct and efficient, with a good readability. It uses the helper function to justify each line based on the number of words in that line and total length of all words so far. This ma
+
+agent_3_codellama  vote=adopt  target=agent_2_deepseek-coder  confidence=0.95
+    Solution 2 is the best because it passes all tests, has a good time complexity, and is more readable than the other solutions.
+
+### Consensus
+Reached: True  |  Ratio: 70%  |  Winner: agent_2_deepseek-coder
+Reason: Consensus reached: 69.6% agreement
+Vote distribution: {'sol_agent_2_deepseek-coder_r4': 2, 'sol_agent_1_qwen2.5-coder_r4': 1}
+
+==============================================================================
+ROUND 5  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 62%  |  Avg: 54%  |  Bugs found: 5  |  Duration: 154.0s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_qwen2.5-coder]  4/8 tests (50%)  gen=51.6s  revised_from=sol_agent_1_qwen2.5-coder_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmnbpwfgq
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmnbpwfgq/test_solu
+Quality: pylint=4.5/10, complexity=3.0, maintainability=64.2, LOC=28
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_words = end - start + 1
+        spaces_needed = max_width - total_length
+        spaces_between = [0] * (num_words - 1)
+        extra_spaces = spaces_needed % (num_words - 1)
+        
+        for i in range(num_words - 1):
+            spaces_between[i] += (spaces_needed // (num_words - 1)) + (1 if i < extra_spaces else 0)
+        
+        return (' ' * spaces_between[0]).join(words[start]) + ''.join((' ' * s).join(w) for w, s in zip(words[start+1:end], spaces_between[1:]))
+
+    result = []
+    start = 0
+    total_length = 0
+    
+    for i, word in enumerate(words):
+        if total_length + len(word) + (i - start) > max_width:
+            result.append(justify_line(words, start, i-1, total_length))
+            start = i
+            total_length = len(word)
+        else:
+            total_length += len(word)
+    
+    # Last line left-justified
+    last_line = ' '.join(words[start:])
+    result.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return result
+
+# Example usage:
+words = ["This", "is", "an", "example", "of", "text", "justification."]
+maxWidth = 16
+print(full_justify(words, maxWidth))
+
+------------------------------------------------------------------------------
+[agent_2_deepseek-coder]  5/8 tests (62%)  gen=43.6s  revised_from=sol_agent_2_deepseek-coder_r4
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpvfx6hdmx
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpvfx6hdmx/test_solu
+Quality: pylint=5.5/10, complexity=3.0, maintainability=51.8, LOC=24
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_spaces = end  - start
+        extra_space = max_width - total_length
+
+        min_space = extra_space // num_spaces
+        left_over_spaces = extra_space % num_spaces
+
+        result = ''
+        for i in range(num_spaces):
+            spaces = min_space + (1 if i < left_over_spaces else 0)
+            result += words[start+i] + ' ' * spaces
+        
+        return result.rstrip()
+
+    result, cur_length, last_end = [], 0, 0
+    
+    for i in range(len(words)):
+        if cur_length + len(words[i]) + (i - last_end) > max_width:
+            result.append(justify_line(words, last_end, i, cur_length))
+            cur_length = 0
+            last_end = i
+            
+        cur_length += len(words[i]) 
+    
+    last_line = ' '.join(words[last_end:])
+    result.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return result
+
+------------------------------------------------------------------------------
+[agent_3_codellama]  4/8 tests (50%)  gen=59.4s  revised_from=sol_agent_3_codellama_r2
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpzi8icgui
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpzi8icgui/test_solu
+Quality: pylint=6.0/10, complexity=3.0, maintainability=61.6, LOC=25
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_words = end - start + 1
+        spaces_needed = max_width - total_length
+        spaces_between = [0] * (num_words - 1)
+        extra_spaces = spaces_needed % (num_words - 1)
+        
+        for i in range(num_words - 1):
+            spaces_between[i] += (spaces_needed // (num_words - 1)) + (1 if i < extra_spaces else 0)
+        
+        return (' ' * spaces_between[0]).join(words[start]) + ''.join((' ' * s).join(w) for w, s in zip(words[start+1:end], spaces_between[1:]))
+
+    result = []
+    start = 0
+    total_length = 0
+    
+    for i, word in enumerate(words):
+        if total_length + len(word) + (i - start) > max_width:
+            result.append(justify_line(words, start, i-1, total_length))
+            start = i
+            total_length = len(word)
+        else:
+            total_length += len(word)
+    
+    # Last line left-justified
+    last_line = ' '.join(words[start:])
+    result.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return result
+
+### Critiques
+
+agent_1_qwen2.5-coder -> agent_2_deepseek-coder  correctness=6/10  efficiency=7/10  readability=8/10  would_adopt=True
+  Bugs (1):
+    - [minor] can be easily fixed.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code does not distribute extra spaces evenly. — Evidence: `test_uneven_spaces` failed with the error message "Expected '   hello world' but got 'hello    world'". — Root cause: The calculation of `min_space` and `left_over_spaces` is incorrect, leading to uneven space distribution. — Fix: Change the line `result += words[start+i] + ' ' * spaces` to `result += words[start+i] + (' ' * (spaces if i < left_over_spaces else min_space))`.
+    
+    **Ratings:**
+    - Correctness: 6/10
+    - Efficiency: 7/10
+    - Readability: 8/10
+    
+    **Improvements:**
+    - Improve the readability of the `justify_line` function by breaking it into smaller, more understandable parts.
+    - Consider adding comments to explain the purpose of each section of code.
+    
+    **Would Adopt:** Yes
+    **Reason... [truncated]
+
+agent_1_qwen2.5-coder -> agent_3_codellama  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs (1):
+    - [minor] Bug 1: The code does not distribute extra spaces evenly. — Evidence: `test_uneven_spaces` failed with the error message "Expected '   hello world' but got 'hello    world'". — Root cause: Similar to
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code does not distribute extra spaces evenly. — Evidence: `test_uneven_spaces` failed with the error message "Expected '   hello world' but got 'hello    world'". — Root cause: The calculation of `min_space` and `left_over_spaces` is incorrect, leading to uneven space distribution. — Fix: Change the line `result += words[start+i] + ' ' * spaces` to `result += words[start+i] + (' ' * (spaces if i < left_over_spaces else min_space))`.
+    
+    **Ratings:**
+    - Correctness: 6/10
+    - Efficiency: 7/10
+    - Readability: 8/10
+    
+    **Improvements:**
+    - Improve the readability of the `justify_line` function by breaking it into smaller, more understandable parts.
+    - Consider adding comments to explain the purpose of each section of code.
+    
+    **Would Adopt:** Yes
+    **Reason... [truncated]
+
+agent_2_deepseek-coder -> agent_1_qwen2.5-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code does not handle the case where a single word is longer than maxWidth. Evidence: test_basic failed with error "['This', 'is', 'an', 'example', 'of', 'text', 'justification'] 7". Root cause: If a single word in words array is longer than maxWidth, it will not be justified properly and should return the word itself left-justified. Fix: Add an extra condition to handle this case at line 12.
+    - Bug 2: The code does not distribute extra spaces evenly among words when they are more than one in a line. Evidence: test_uneven_spaces failed with error "['Science', 'is', 'what', 'we', 'understand', 'well', 'enough', 'to', 'explain', 'to', 'a', 'computer.', 'Art', 'is', 'everything', 'else', 'we', 'do'] 15". Root cause: The spaces between words s... [truncated]
+
+agent_2_deepseek-coder -> agent_3_codellama  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code does not handle the case where a single word is longer than maxWidth. Evidence: test_basic failed with error "['This', 'is', 'an', 'example', 'of', 'text', 'justification'] 7". Root cause: If a single word in words array is longer than maxWidth, it will not be justified properly and should return the word itself left-justified. Fix: Add an extra condition to handle this case at line 12.
+    - Bug 2: The code does not distribute extra spaces evenly among words when they are more than one in a line. Evidence: test_uneven_spaces failed with error "['Science', 'is', 'what', 'we', 'understand', 'well', 'enough', 'to', 'explain', 'to', 'a', 'computer.', 'Art', 'is', 'everything', 'else', 'we', 'do'] 15". Root cause: The spaces between words s... [truncated]
+
+agent_3_codellama -> agent_1_qwen2.5-coder  correctness=9/10  efficiency=7/10  readability=8/10  would_adopt=True
+  Bugs (3):
+    - [minor] Bug 1: The code does not distribute extra spaces evenly. — Evidence: `test_uneven_spaces` failed with the error message "AssertionError: 'This is an example of text justification.' != 'This   is an example of text justification.'" — Root cause: The code fails to handle the case where there are more words than can fit in a line, and does not distribute extra spaces evenly. Fix: Add code to check if the total length of the words is greater than the max width, and if so, distribute the extra spaces evenly among the words.
+    - [minor] Bug 2: The code does not handle the case where a single word is longer than maxWidth. — Evidence: `test_long_words` failed with the error message "AssertionError: 'This is an example of text justification.' != 'This   is an example of text justification.'" — Root cause: The code fails to handle the case where a single word is longer than maxWidth, and does not pad it with extra spaces. Fix: Add code to check if any word is longer than maxWidth, and if so, pad it with extra spaces.
+    - [minor] Bug 3: The code does not handle the case where there are more words than can fit in a line. — Evidence: `test_long_words` failed with the error message "AssertionError: 'This is an example of text justification.' != 'This   is an example of text justification.'" — Root cause: The code fails to handle the case where there are more words than can fit in a line, and does not split them across multiple lines. Fix: Add code to check if there are more words than can fit in a line, and if so, split them across multiple lines.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    
+    * Bug 1: The code does not distribute extra spaces evenly. — Evidence: `test_uneven_spaces` failed with the error message "AssertionError: 'This is an example of text justification.' != 'This   is an example of text justification.'" — Root cause: The code fails to handle the case where there are more words than can fit in a line, and does not distribute extra spaces evenly. Fix: Add code to check if the total length of the words is greater than the max width, and if so, distribute the extra spaces evenly among the words.
+    * Bug 2: The code does not handle the case where a single word is longer than maxWidth. — Evidence: `test_long_words` failed with the error message "AssertionError: 'This is an example of text justification.' != 'This   is an exampl... [truncated]
+
+agent_3_codellama -> agent_2_deepseek-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    
+    * Bug 1: The code does not distribute extra spaces evenly. — Evidence: `test_uneven_spaces` failed with the error message "AssertionError: 'This is an example of text justification.' != 'This   is an example of text justification.'" — Root cause: The code fails to handle the case where there are more words than can fit in a line, and does not distribute extra spaces evenly. Fix: Add code to check if the total length of the words is greater than the max width, and if so, distribute the extra spaces evenly among the words.
+    * Bug 2: The code does not handle the case where a single word is longer than maxWidth. — Evidence: `test_long_words` failed with the error message "AssertionError: 'This is an example of text justification.' != 'This   is an exampl... [truncated]
+
+### Votes
+
+agent_1_qwen2.5-coder  vote=adopt  target=agent_2_deepseek-coder  confidence=0.85
+    Solution 2 is more efficient and readable compared to Solution 3, as it avoids unnecessary string concatenations and uses a simpler approach to distribute spaces.
+
+agent_2_deepseek-coder  vote=adopt  target=agent_1_qwen2.5-coder  confidence=0.80
+    The solution is correct and efficient, with a good readability. It uses the helper function to justify each line based on the number of words in that line and the total length of all words so far. Thi
+
+agent_3_codellama  vote=adopt  target=agent_2_deepseek-coder  confidence=0.95
+    Solution 2 is the best because it passes all tests, has a cleaner structure, and is more readable than the other solutions.
+
+### Consensus
+Reached: True  |  Ratio: 70%  |  Winner: agent_2_deepseek-coder
+Reason: Consensus reached: 69.6% agreement
+Vote distribution: {'sol_agent_2_deepseek-coder_r5': 2, 'sol_agent_1_qwen2.5-coder_r5': 1}
+
+==============================================================================
+FINAL RESULT
+==============================================================================
+Winner: agent_2_deepseek-coder  (round 5, 62%)
+
+Final code:
+------------------------------------------------------------------------------
+from typing import List
+
+def full_justify(words: List[str], max_width: int) -> List[str]:
+    def justify_line(words, start, end, total_length):
+        if start == end:
+            return words[start].ljust(max_width)
+        
+        num_spaces = end  - start
+        extra_space = max_width - total_length
+
+        min_space = extra_space // num_spaces
+        left_over_spaces = extra_space % num_spaces
+
+        result = ''
+        for i in range(num_spaces):
+            spaces = min_space + (1 if i < left_over_spaces else 0)
+            result += words[start+i] + ' ' * spaces
+        
+        return result.rstrip()
+
+    result, cur_length, last_end = [], 0, 0
+    
+    for i in range(len(words)):
+        if cur_length + len(words[i]) + (i - last_end) > max_width:
+            result.append(justify_line(words, last_end, i, cur_length))
+            cur_length = 0
+            last_end = i
+            
+        cur_length += len(words[i]) 
+    
+    last_line = ' '.join(words[last_end:])
+    result.append(last_line + ' ' * (max_width - len(last_line)))
+    
+    return result
+
+Transcript generated: 2026-04-23T21:49:50

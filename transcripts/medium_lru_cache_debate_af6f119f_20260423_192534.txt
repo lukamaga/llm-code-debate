@@ -1,0 +1,190 @@
+==============================================================================
+DEBATE TRANSCRIPT  |  LRU Cache  (medium)
+==============================================================================
+Debate ID:   af6f119f
+Mode:        debate
+Status:      early_stop
+Started:     2026-04-23T19:25:34
+Ended:       2026-04-23T19:26:00
+Duration:    25.6s
+Max rounds:  5
+Rounds run:  1
+Agents:      agent_1_qwen2.5-coder (qwen2.5-coder:7b), agent_2_deepseek-coder (deepseek-coder:6.7b), agent_3_codellama (codellama:7b-instruct)
+
+==============================================================================
+TASK
+==============================================================================
+ID: lru_cache
+Difficulty: medium
+
+Description:
+Design a data structure that follows the constraints of a Least Recently Used (LRU) cache. Implement the LRUCache class: LRUCache(int capacity) initializes the cache with positive size capacity. int get(int key) returns the value of the key if it exists, otherwise returns -1. void put(int key, int value) updates the value if the key exists, otherwise adds the key-value pair. If the number of keys exceeds the capacity, evict the least recently used key.
+
+Constraints:
+  - 1 <= capacity <= 3000
+  - 0 <= key <= 10^4
+  - 0 <= value <= 10^5
+  - get and put must run in O(1) average time complexity
+
+Tests: 8
+
+==============================================================================
+ROUND 1  |  PROPOSAL
+==============================================================================
+Best pass rate: 100%  |  Avg: 88%  |  Bugs found: 0  |  Duration: 25.6s
+
+### Proposals
+
+------------------------------------------------------------------------------
+[agent_1_qwen2.5-coder]  8/8 tests (100%)  gen=23.4s
+Quality: pylint=8.0/10, complexity=2.2, maintainability=85.1, LOC=27
+------------------------------------------------------------------------------
+from collections import OrderedDict
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+    
+    def get(self, key: int) -> int:
+        if key not in self.cache:
+            return -1
+        else:
+            # Move the recently accessed item to the end
+            self.cache.move_to_end(key)
+            return self.cache[key]
+    
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            # Update the value and move it to the end
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            # Evict the first item (least recently used)
+            self.cache.popitem(last=False)
+
+# Example usage:
+cache = LRUCache(2)
+cache.put(1, 1)
+cache.put(2, 2)
+print(cache.get(1))       # returns 1
+cache.put(3, 3)          # evicts key 2
+print(cache.get(2))       # returns -1 (not found)
+cache.put(4, 4)          # evicts key 1
+print(cache.get(1))       # returns -1 (not found)
+print(cache.get(3))       # returns 3
+print(cache.get(4))       # returns 4
+
+------------------------------------------------------------------------------
+[agent_2_deepseek-coder]  8/8 tests (100%)  gen=17.2s
+Quality: pylint=7.0/10, complexity=2.2, maintainability=84.6, LOC=16
+------------------------------------------------------------------------------
+from collections import OrderedDict
+
+class LRUCache(OrderedDict):
+    def __init__(self, capacity: int):
+        super().__init__()
+        self.capacity = capacity
+    
+    def get(self, key: int) -> int:
+        if key not in self: 
+            return -1
+        self.move_to_end(key) # move the accessed key to end
+        return self[key]
+        
+    def put(self, key: int, value: int) -> None:
+        if key in self: 
+            self.move_to_end(key) # move the updated key to end
+        elif len(self) == self.capacity: 
+            self.popitem(last=False) # remove the least recently used item
+        self[key] = value
+
+------------------------------------------------------------------------------
+[agent_3_codellama]  5/8 tests (62%)  gen=7.2s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpl_tzxr_2
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpl_tzxr_2/test_solu
+Quality: pylint=7.0/10, complexity=2.2, maintainability=55.8, LOC=26
+------------------------------------------------------------------------------
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.cache = {}
+        self.order = []
+    
+    def get(self, key: int) -> int:
+        if key not in self.cache:
+            return -1
+        
+        value = self.cache[key]
+        self._move_to_front(key)
+        return value
+    
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            self.cache[key] = value
+            self._move_to_front(key)
+        else:
+            self.cache[key] = value
+            self.order.append(key)
+            if len(self.order) > self.capacity:
+                oldest_key = self.order.pop(0)
+                del self.cache[oldest_key]
+    
+    def _move_to_front(self, key):
+        if key == self.order[0]:
+            return
+        
+        self.order.remove(key)
+        self.order.append(key)
+
+==============================================================================
+FINAL RESULT
+==============================================================================
+Winner: agent_1_qwen2.5-coder  (round 1, 100%)
+
+Final code:
+------------------------------------------------------------------------------
+from collections import OrderedDict
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+    
+    def get(self, key: int) -> int:
+        if key not in self.cache:
+            return -1
+        else:
+            # Move the recently accessed item to the end
+            self.cache.move_to_end(key)
+            return self.cache[key]
+    
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            # Update the value and move it to the end
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            # Evict the first item (least recently used)
+            self.cache.popitem(last=False)
+
+# Example usage:
+cache = LRUCache(2)
+cache.put(1, 1)
+cache.put(2, 2)
+print(cache.get(1))       # returns 1
+cache.put(3, 3)          # evicts key 2
+print(cache.get(2))       # returns -1 (not found)
+cache.put(4, 4)          # evicts key 1
+print(cache.get(1))       # returns -1 (not found)
+print(cache.get(3))       # returns 3
+print(cache.get(4))       # returns 4
+
+Transcript generated: 2026-04-23T19:26:00

@@ -1,0 +1,408 @@
+==============================================================================
+DEBATE TRANSCRIPT  |  Course Schedule with Parallel Execution  (hard)
+==============================================================================
+Debate ID:   62eca7d1
+Mode:        debate
+Status:      early_stop
+Started:     2026-04-25T01:20:22
+Ended:       2026-04-25T01:21:02
+Duration:    39.8s
+Max rounds:  3
+Rounds run:  1
+Agents:      agent_1_qwen2.5-coder (qwen2.5-coder:7b), agent_2_deepseek-coder (deepseek-coder:6.7b), agent_3_codellama (codellama:7b-instruct)
+
+==============================================================================
+TASK
+==============================================================================
+ID: topological_sort
+Difficulty: hard
+
+Description:
+Given a list of courses with prerequisites, implement functions to: (1) detect if all courses can be completed (no cycles), (2) return a valid order to take courses, and (3) compute the minimum number of semesters needed if you can take unlimited courses per semester but must respect prerequisites.
+
+Constraints:
+  - 0 <= prerequisite[i][j] < num_courses
+  - [a, b] means course b is prerequisite for course a
+  - find_order returns [] if impossible
+  - min_semesters returns -1 if impossible
+
+Tests: 8
+
+==============================================================================
+ROUND 1  |  PROPOSAL
+==============================================================================
+Best pass rate: 100%  |  Avg: 92%  |  Bugs found: 0  |  Duration: 39.8s
+
+### Proposals
+
+------------------------------------------------------------------------------
+[agent_1_qwen2.5-coder]  8/8 tests (100%)  gen=34.7s
+Quality: pylint=3.5/10, complexity=8.0, maintainability=69.4, LOC=69
+------------------------------------------------------------------------------
+from collections import defaultdict, deque
+from typing import List
+
+def can_finish(num_courses: int, prerequisites: List[List[int]]) -> bool:
+    """
+    Determine if all courses can be completed.
+    
+    :param num_courses: Number of courses
+    :param prerequisites: List of prerequisite pairs [a, b] where a is dependent on b
+    :return: True if all courses can be completed, False otherwise
+    """
+    graph = defaultdict(list)
+    in_degree = [0] * num_courses
+    
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        in_degree[course] += 1
+    
+    queue = deque([i for i in range(num_courses) if in_degree[i] == 0])
+    
+    while queue:
+        node = queue.popleft()
+        num_courses -= 1
+        for neighbor in graph[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+    
+    return num_courses == 0
+
+def find_order(num_courses: int, prerequisites: List[List[int]]) -> List[int]:
+    """
+    Return a valid order to take courses.
+    
+    :param num_courses: Number of courses
+    :param prerequisites: List of prerequisite pairs [a, b] where a is dependent on b
+    :return: A list of course IDs in a valid order or an empty list if impossible
+    """
+    graph = defaultdict(list)
+    in_degree = [0] * num_courses
+    
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        in_degree[course] += 1
+    
+    queue = deque([i for i in range(num_courses) if in_degree[i] == 0])
+    order = []
+    
+    while queue:
+        node = queue.popleft()
+        order.append(node)
+        for neighbor in graph[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+    
+    return order if len(order) == num_courses else []
+
+def min_semesters(num_courses: int, prerequisites: List[List[int]]) -> int:
+    """
+    Compute the minimum number of semesters needed to complete all courses.
+    
+    :param num_courses: Number of courses
+    :param prerequisites: List of prerequisite pairs [a, b] where a is dependent on b
+    :return: Minimum number of semesters or -1 if impossible
+    """
+    graph = defaultdict(list)
+    in_degree = [0] * num_courses
+    
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        in_degree[course] += 1
+    
+    queue = deque([i for i in range(num_courses) if in_degree[i] == 0])
+    semesters = 0
+    
+    while queue:
+        num_nodes = len(queue)
+        for _ in range(num_nodes):
+            node = queue.popleft()
+            for neighbor in graph[node]:
+                in_degree[neighbor] -= 1
+                if in_degree[neighbor] == 0:
+                    queue.append(neighbor)
+        semesters += 1
+    
+    return semesters if sum(in_degree) == 0 else -1
+
+------------------------------------------------------------------------------
+[agent_2_deepseek-coder]  8/8 tests (100%)  gen=31.0s
+Quality: pylint=3.0/10, complexity=8.7, maintainability=40.9, LOC=58
+------------------------------------------------------------------------------
+from collections import defaultdict, deque
+
+def can_finish(num_courses: int, prerequisites: list[list[int]]) -> bool:
+    graph = [[] for _ in range(num_courses)]
+    indegree = [0] * num_courses
+    
+    for pair in prerequisites:
+        x, y = pair
+        graph[y].append(x)
+        indegree[x] += 1
+        
+    queue = deque([i for i in range(num_courses) if indegree[i] == 0])
+    
+    count = 0
+    while queue:
+        node = queue.popleft()
+        count += 1
+        for neighbor in graph[node]:
+            indegree[neighbor] -= 1
+            if indegree[neighbor] == 0:
+                queue.append(neighbor)
+                
+    return count == num_courses
+
+def find_order(num_courses: int, prerequisites: list[list[int]]) -> list[int]:
+    if not can_finish(num_courses, prerequisites):
+        return []
+    
+    graph = [[] for _ in range(num_courses)]
+    indegree = [0] * num_courses
+    
+    for pair in prerequisites:
+        x, y = pair
+        graph[y].append(x)
+        indegree[x] += 1
+        
+    queue = deque([i for i in range(num_courses) if indegree[i] == 0])
+    
+    order = []
+    while queue:
+        node = queue.popleft()
+        order.append(node)
+        for neighbor in graph[node]:
+            indegree[neighbor] -= 1
+            if indegree[neighbor] == 0:
+                queue.append(neighbor)
+                
+    return order
+
+def min_semesters(num_courses: int, prerequisites: list[list[int]]) -> int:
+    if not can_finish(num_courses, prerequisites):
+        return -1
+    
+    graph = defaultdict(list)
+    indegree = [0] * num_courses
+    for pair in prerequisites:
+        x, y = pair
+        graph[y].append(x)
+        indegree[x] += 1
+        
+    queue = deque([i for i in range(num_courses) if indegree[i] == 0])
+    
+    semester = 0
+    while queue:
+        size = len(queue)
+        for _ in range(size):
+            node = queue.popleft()
+            for neighbor in graph[node]:
+                indegree[neighbor] -= 1
+                if indegree[neighbor] == 0:
+                    queue.append(neighbor)
+        semester += 1
+        
+    return semester
+
+------------------------------------------------------------------------------
+[agent_3_codellama]  6/8 tests (75%)  gen=37.3s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpntp61ajm
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpntp61ajm/test_solu
+Quality: pylint=9.5/10, complexity=10.0, maintainability=70.7, LOC=58
+------------------------------------------------------------------------------
+def can_finish(num_courses: int, prerequisites: list[list[int]]) -> bool:
+    """
+    Detect if all courses can be completed (no cycles)
+    """
+    # Initialize a dictionary to keep track of the number of incoming edges for each course
+    incoming_edges = {i: 0 for i in range(num_courses)}
+
+    # Iterate over the prerequisites and update the dictionary
+    for course, prereq in prerequisites:
+        incoming_edges[prereq] += 1
+
+    # Initialize a queue to store the courses that have no incoming edges
+    queue = [i for i in range(num_courses) if incoming_edges[i] == 0]
+
+    # While the queue is not empty, pop a course and add its prerequisites to the queue
+    while queue:
+        course = queue.pop(0)
+        for prereq in range(num_courses):
+            if incoming_edges[prereq] > 0:
+                incoming_edges[prereq] -= 1
+                queue.append(prereq)
+
+    # If there are still courses with incoming edges, return False
+    for course in range(num_courses):
+        if incoming_edges[course] > 0:
+            return False
+
+    return True
+
+def find_order(num_courses: int, prerequisites: list[list[int]]) -> list[int]:
+    """
+    Return a valid order to take courses (empty list if impossible)
+    """
+    # Initialize a dictionary to keep track of the number of incoming edges for each course
+    incoming_edges = {i: 0 for i in range(num_courses)}
+
+    # Iterate over the prerequisites and update the dictionary
+    for course, prereq in prerequisites:
+        incoming_edges[prereq] += 1
+
+    # Initialize a queue to store the courses that have no incoming edges
+    queue = [i for i in range(num_courses) if incoming_edges[i] == 0]
+
+    # While the queue is not empty, pop a course and add its prerequisites to the queue
+    order = []
+    while queue:
+        course = queue.pop(0)
+        order.append(course)
+        for prereq in range(num_courses):
+            if incoming_edges[prereq] > 0:
+                incoming_edges[prereq] -= 1
+                queue.append(prereq)
+
+    # If there are still courses with incoming edges, return an empty list
+    for course in range(num_courses):
+        if incoming_edges[course] > 0:
+            return []
+
+    return order
+
+def min_semesters(num_courses: int, prerequisites: list[list[int]]) -> int:
+    """
+    Compute the minimum number of semesters needed to take all courses (or -1 if impossible)
+    """
+    # Initialize a dictionary to keep track of the number of incoming edges for each course
+    incoming_edges = {i: 0 for i in range(num_courses)}
+
+    # Iterate over the prerequisites and update the dictionary
+    for course, prereq in prerequisites:
+        incoming_edges[prereq] += 1
+
+    # Initialize a queue to store the courses that have no incoming edges
+    queue = [i for i in range(num_courses) if incoming_edges[i] == 0]
+
+    # While the queue is not empty, pop a course and add its prerequisites to the queue
+    semesters = 0
+    while queue:
+        course = queue.pop(0)
+        for prereq in range(num_courses):
+            if incoming_edges[prereq] > 0:
+                incoming_edges[prereq] -= 1
+                queue.append(prereq)
+        semesters += 1
+
+    # If there are still courses with incoming edges, return -1
+    for course in range(num_courses):
+        if incoming_edges[course] > 0:
+            return -1
+
+    return semesters
+
+==============================================================================
+FINAL RESULT
+==============================================================================
+Winner: agent_1_qwen2.5-coder  (round 1, 100%)
+
+Final code:
+------------------------------------------------------------------------------
+from collections import defaultdict, deque
+from typing import List
+
+def can_finish(num_courses: int, prerequisites: List[List[int]]) -> bool:
+    """
+    Determine if all courses can be completed.
+    
+    :param num_courses: Number of courses
+    :param prerequisites: List of prerequisite pairs [a, b] where a is dependent on b
+    :return: True if all courses can be completed, False otherwise
+    """
+    graph = defaultdict(list)
+    in_degree = [0] * num_courses
+    
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        in_degree[course] += 1
+    
+    queue = deque([i for i in range(num_courses) if in_degree[i] == 0])
+    
+    while queue:
+        node = queue.popleft()
+        num_courses -= 1
+        for neighbor in graph[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+    
+    return num_courses == 0
+
+def find_order(num_courses: int, prerequisites: List[List[int]]) -> List[int]:
+    """
+    Return a valid order to take courses.
+    
+    :param num_courses: Number of courses
+    :param prerequisites: List of prerequisite pairs [a, b] where a is dependent on b
+    :return: A list of course IDs in a valid order or an empty list if impossible
+    """
+    graph = defaultdict(list)
+    in_degree = [0] * num_courses
+    
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        in_degree[course] += 1
+    
+    queue = deque([i for i in range(num_courses) if in_degree[i] == 0])
+    order = []
+    
+    while queue:
+        node = queue.popleft()
+        order.append(node)
+        for neighbor in graph[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+    
+    return order if len(order) == num_courses else []
+
+def min_semesters(num_courses: int, prerequisites: List[List[int]]) -> int:
+    """
+    Compute the minimum number of semesters needed to complete all courses.
+    
+    :param num_courses: Number of courses
+    :param prerequisites: List of prerequisite pairs [a, b] where a is dependent on b
+    :return: Minimum number of semesters or -1 if impossible
+    """
+    graph = defaultdict(list)
+    in_degree = [0] * num_courses
+    
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        in_degree[course] += 1
+    
+    queue = deque([i for i in range(num_courses) if in_degree[i] == 0])
+    semesters = 0
+    
+    while queue:
+        num_nodes = len(queue)
+        for _ in range(num_nodes):
+            node = queue.popleft()
+            for neighbor in graph[node]:
+                in_degree[neighbor] -= 1
+                if in_degree[neighbor] == 0:
+                    queue.append(neighbor)
+        semesters += 1
+    
+    return semesters if sum(in_degree) == 0 else -1
+
+Transcript generated: 2026-04-25T01:21:02
