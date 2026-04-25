@@ -25,8 +25,12 @@ class AgentConfig:
     model: str
     role: AgentRole = AgentRole.GENERAL
     temperature: float = 0.3
-    max_tokens: int = 4096
-    
+    # 8192 was too tight for multi-file / extreme tasks (e.g. calculator with
+    # tokenizer.py + evaluator.py): revisions and judge critiques were
+    # truncated mid-function, corrupting downstream critique/vote/judge. 7B
+    # models rarely emit > ~10k tokens of code in practice, so 12288 is safe.
+    max_tokens: int = 12288
+
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> AgentConfig:
         """Create AgentConfig from dictionary."""
@@ -35,7 +39,7 @@ class AgentConfig:
             model=data.get("model", data.get("name", "")),
             role=AgentRole(data.get("role", "general")),
             temperature=data.get("temperature", 0.3),
-            max_tokens=data.get("max_tokens", 4096),
+            max_tokens=data.get("max_tokens", 12288),
         )
 
 
@@ -144,7 +148,7 @@ class Agent:
         elif message.message_type == "revision":
             self.stats.solutions_revised += 1
         elif message.message_type == "critique":
-            self.stats.critiques_given += 1
+            # critiques_given is updated in orchestrator (one per target solution)
             if "bugs" in message.metadata:
                 self.stats.bugs_found += len(message.metadata["bugs"])
             if "improvements" in message.metadata:
