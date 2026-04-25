@@ -140,7 +140,8 @@ class TestAgent:
             content="review", metadata={"bugs": ["bug1", "bug2"]},
         )
         sample_agent.add_message(msg)
-        assert sample_agent.stats.critiques_given == 1
+        # critiques_given is updated in orchestrator, not add_message
+        assert sample_agent.stats.critiques_given == 0
         assert sample_agent.stats.bugs_found == 2
 
     def test_add_message_revision_updates_stats(self, sample_agent):
