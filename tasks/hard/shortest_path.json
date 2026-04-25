@@ -10,7 +10,9 @@
     "def test_single_node():\n    g = WeightedGraph()\n    g.add_edge('A', 'B', 1)\n    dist, path = g.shortest_path('A', 'A')\n    assert dist == 0\n    assert path == ['A']",
     "def test_all_shortest():\n    g = WeightedGraph()\n    g.add_edge('A', 'B', 1)\n    g.add_edge('A', 'C', 4)\n    g.add_edge('B', 'C', 2)\n    dists = g.all_shortest_from('A')\n    assert dists['A'] == 0\n    assert dists['B'] == 1\n    assert dists['C'] == 3",
     "def test_has_path():\n    g = WeightedGraph()\n    g.add_edge('A', 'B', 1)\n    g.add_edge('B', 'C', 1)\n    assert g.has_path('A', 'C') == True\n    assert g.has_path('C', 'A') == False",
-    "def test_complex_graph():\n    g = WeightedGraph()\n    g.add_edge('S', 'A', 7)\n    g.add_edge('S', 'B', 2)\n    g.add_edge('A', 'C', 1)\n    g.add_edge('B', 'A', 3)\n    g.add_edge('B', 'C', 8)\n    dist, path = g.shortest_path('S', 'C')\n    assert dist == 6\n    assert path == ['S', 'B', 'A', 'C']"
+    "def test_complex_graph():\n    g = WeightedGraph()\n    g.add_edge('S', 'A', 7)\n    g.add_edge('S', 'B', 2)\n    g.add_edge('A', 'C', 1)\n    g.add_edge('B', 'A', 3)\n    g.add_edge('B', 'C', 8)\n    dist, path = g.shortest_path('S', 'C')\n    assert dist == 6\n    assert path == ['S', 'B', 'A', 'C']",
+    "def test_zero_weight_edge():\n    g = WeightedGraph()\n    g.add_edge('A', 'B', 0)\n    g.add_edge('B', 'C', 3)\n    dist, path = g.shortest_path('A', 'C')\n    assert dist == 3\n    assert path == ['A', 'B', 'C']",
+    "def test_unknown_node():\n    g = WeightedGraph()\n    g.add_edge('A', 'B', 1)\n    dist, path = g.shortest_path('A', 'Z')\n    assert dist == float('inf')\n    assert path == []"
   ],
   "constraints": [
     "All edge weights are non-negative",
