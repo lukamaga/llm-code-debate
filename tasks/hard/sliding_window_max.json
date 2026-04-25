@@ -10,7 +10,9 @@
     "def test_k_equals_length():\n    assert max_sliding_window([1,3,2], 3) == [3]",
     "def test_decreasing():\n    assert max_sliding_window([9,8,7,6,5], 2) == [9,8,7,6]",
     "def test_increasing():\n    assert max_sliding_window([1,2,3,4,5], 2) == [2,3,4,5]",
-    "def test_all_same():\n    assert max_sliding_window([5,5,5,5], 2) == [5,5,5]"
+    "def test_all_same():\n    assert max_sliding_window([5,5,5,5], 2) == [5,5,5]",
+    "def test_k_equals_one():\n    assert max_sliding_window([4,2,7,1,3], 1) == [4,2,7,1,3]",
+    "def test_negatives():\n    assert max_sliding_window([-1,-3,-5,-2,-4], 3) == [-1,-2,-2]"
   ],
   "constraints": [
     "1 <= nums.length <= 10^5",
