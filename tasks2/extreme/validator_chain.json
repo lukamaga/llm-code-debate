@@ -1,0 +1,34 @@
+{
+  "id": "validator_chain",
+  "name": "Composable Validation Chain",
+  "difficulty": "extreme",
+  "description": "Implement a composable validation framework across two modules. Module validator_types.py must define: ValidationError dataclass with fields field (str), message (str), code (str); ValidationResult dataclass with fields valid (bool), errors (list[ValidationError]); Validator abstract base class with abstract method validate(value, field_name: str = '') -> ValidationResult. Module validators.py must import from validator_types.py and implement: Required(); MinLength(n: int); MaxLength(n: int); Range(min_val, max_val) for numbers; Regex(pattern: str); All(*validators) succeeds only if all pass (collects all errors); Any(*validators) succeeds if any pass (returns first failure errors only when all fail); Schema(fields: dict[str, Validator]) validates a dict where each key has its own validator, returning combined errors with proper field paths.",
+  "required_files": ["validator_types.py", "validators.py"],
+  "test_imports": ["from validator_types import ValidationError, ValidationResult, Validator", "from validators import Required, MinLength, MaxLength, Range, Regex, All, Any, Schema"],
+  "signature": "# validator_types.py\nfrom dataclasses import dataclass, field\nfrom abc import ABC, abstractmethod\n\n@dataclass\nclass ValidationError:\n    field: str\n    message: str\n    code: str\n\n@dataclass\nclass ValidationResult:\n    valid: bool\n    errors: list = field(default_factory=list)\n\nclass Validator(ABC):\n    @abstractmethod\n    def validate(self, value, field_name: str = '') -> ValidationResult: ...\n\n# validators.py\nfrom validator_types import Validator, ValidationResult, ValidationError\n\nclass Required(Validator): ...\nclass MinLength(Validator): ...\nclass MaxLength(Validator): ...\nclass Range(Validator): ...\nclass Regex(Validator): ...\nclass All(Validator): ...\nclass Any(Validator): ...\nclass Schema(Validator): ...",
+  "tests": [
+    "def test_required_pass():\n    r = Required().validate('hello')\n    assert r.valid is True",
+    "def test_required_fail_none():\n    r = Required().validate(None)\n    assert r.valid is False",
+    "def test_required_fail_empty():\n    r = Required().validate('')\n    assert r.valid is False",
+    "def test_min_length():\n    assert MinLength(3).validate('abc').valid is True\n    assert MinLength(3).validate('ab').valid is False",
+    "def test_max_length():\n    assert MaxLength(3).validate('ab').valid is True\n    assert MaxLength(3).validate('abcd').valid is False",
+    "def test_range():\n    assert Range(0, 10).validate(5).valid is True\n    assert Range(0, 10).validate(-1).valid is False\n    assert Range(0, 10).validate(11).valid is False",
+    "def test_regex():\n    assert Regex(r'^\\d+$').validate('12345').valid is True\n    assert Regex(r'^\\d+$').validate('abc').valid is False",
+    "def test_all_combinator():\n    v = All(Required(), MinLength(3))\n    assert v.validate('abc').valid is True\n    assert v.validate('').valid is False\n    r = v.validate('ab')\n    assert r.valid is False",
+    "def test_all_collects_errors():\n    v = All(MinLength(5), Regex(r'^\\d+$'))\n    r = v.validate('ab')\n    assert r.valid is False\n    assert len(r.errors) == 2",
+    "def test_any_combinator():\n    v = Any(Range(0, 10), Range(100, 200))\n    assert v.validate(5).valid is True\n    assert v.validate(150).valid is True\n    assert v.validate(50).valid is False",
+    "def test_schema_pass():\n    s = Schema({'name': Required(), 'age': Range(0, 120)})\n    r = s.validate({'name': 'Alice', 'age': 30})\n    assert r.valid is True",
+    "def test_schema_field_errors():\n    s = Schema({'name': Required(), 'age': Range(0, 120)})\n    r = s.validate({'name': '', 'age': 200})\n    assert r.valid is False\n    fields = [e.field for e in r.errors]\n    assert 'name' in fields\n    assert 'age' in fields",
+    "def test_schema_field_path():\n    s = Schema({'email': Regex(r'^.+@.+$')})\n    r = s.validate({'email': 'invalid'})\n    assert r.valid is False\n    assert r.errors[0].field == 'email'"
+  ],
+  "constraints": [
+    "ValidationResult.errors is empty when valid is True",
+    "All combinator collects errors from every failing inner validator",
+    "Any returns valid=True if at least one inner validator passes",
+    "Required treats None and empty string '' as invalid; non-empty values valid",
+    "Schema reports field name as the dict key in error.field",
+    "ValidationError.code is a short string identifier (e.g. 'required', 'min_length')"
+  ],
+  "helper_code": {},
+  "tags": ["validation", "multi-file", "composable", "design-pattern"]
+}
