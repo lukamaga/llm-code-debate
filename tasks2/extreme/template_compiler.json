@@ -1,0 +1,33 @@
+{
+  "id": "template_compiler",
+  "name": "Template Compiler with Caching",
+  "difficulty": "extreme",
+  "description": "Implement a template compiler with AST-based rendering and caching across two modules. Module template_ast.py must define: TemplateNode abstract base class with method render(context: dict) -> str; subclasses TextNode(text), VarNode(name) renders context.get(name, ''), IfNode(var_name, body: list[TemplateNode]) renders body if context[var_name] is truthy, ForNode(var_name, iterable_name, body: list[TemplateNode]) iterates and binds var_name in inner context. Module template_engine.py must import from template_ast.py and implement Engine class with methods: compile(source: str) returns a compiled Template object exposing render(context) -> str; render(source: str, context: dict) -> str (uses internal cache so repeated identical sources reuse compiled template); cache_size() -> int. Syntax: {{ var }} for variables, {% if cond %}...{% endif %}, {% for x in items %}...{% endfor %}.",
+  "required_files": ["template_ast.py", "template_engine.py"],
+  "test_imports": ["from template_ast import TemplateNode, TextNode, VarNode, IfNode, ForNode", "from template_engine import Engine"],
+  "signature": "# template_ast.py\nfrom abc import ABC, abstractmethod\n\nclass TemplateNode(ABC):\n    @abstractmethod\n    def render(self, context: dict) -> str: ...\n\nclass TextNode(TemplateNode): ...\nclass VarNode(TemplateNode): ...\nclass IfNode(TemplateNode): ...\nclass ForNode(TemplateNode): ...\n\n# template_engine.py\nfrom template_ast import TemplateNode\n\nclass Engine:\n    def __init__(self): ...\n    def compile(self, source: str): ...\n    def render(self, source: str, context: dict) -> str: ...\n    def cache_size(self) -> int: ...",
+  "tests": [
+    "def test_plain_text():\n    e = Engine()\n    assert e.render('Hello world', {}) == 'Hello world'",
+    "def test_variable():\n    e = Engine()\n    assert e.render('Hello {{ name }}!', {'name': 'Alice'}) == 'Hello Alice!'",
+    "def test_missing_var_empty():\n    e = Engine()\n    assert e.render('{{ missing }}', {}) == ''",
+    "def test_if_truthy():\n    e = Engine()\n    out = e.render('{% if show %}visible{% endif %}', {'show': True})\n    assert out == 'visible'",
+    "def test_if_falsy():\n    e = Engine()\n    out = e.render('{% if show %}visible{% endif %}', {'show': False})\n    assert out == ''",
+    "def test_for_basic():\n    e = Engine()\n    out = e.render('{% for x in items %}{{ x }},{% endfor %}', {'items': ['a', 'b', 'c']})\n    assert out == 'a,b,c,'",
+    "def test_for_empty():\n    e = Engine()\n    out = e.render('{% for x in items %}X{% endfor %}', {'items': []})\n    assert out == ''",
+    "def test_compile_returns_reusable():\n    e = Engine()\n    t = e.compile('Hi {{ name }}')\n    assert t.render({'name': 'A'}) == 'Hi A'\n    assert t.render({'name': 'B'}) == 'Hi B'",
+    "def test_cache_reuses():\n    e = Engine()\n    e.render('Hello {{ x }}', {'x': 1})\n    e.render('Hello {{ x }}', {'x': 2})\n    assert e.cache_size() == 1",
+    "def test_cache_distinct_sources():\n    e = Engine()\n    e.render('{{ a }}', {'a': 1})\n    e.render('{{ b }}', {'b': 2})\n    assert e.cache_size() == 2",
+    "def test_mixed():\n    e = Engine()\n    src = '{% if greet %}Hello {{ name }}{% endif %}'\n    out = e.render(src, {'greet': True, 'name': 'World'})\n    assert out == 'Hello World'",
+    "def test_for_with_var_inside():\n    e = Engine()\n    out = e.render('Start{% for n in nums %} {{ n }}{% endfor %} End', {'nums': [1, 2, 3]})\n    assert out == 'Start 1 2 3 End'"
+  ],
+  "constraints": [
+    "Whitespace inside {{ }} and {% %} around tag content is trimmed",
+    "Missing variables render as empty string, not error",
+    "if/endif and for/endfor blocks must be properly paired",
+    "Engine.cache uses raw source string as cache key",
+    "compile() always produces a Template; render() may go through cache",
+    "Use the AST classes defined in template_ast.py for compiled output"
+  ],
+  "helper_code": {},
+  "tags": ["template", "parser", "multi-file", "ast"]
+}
