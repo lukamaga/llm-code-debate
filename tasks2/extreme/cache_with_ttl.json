@@ -1,0 +1,30 @@
+{
+  "id": "cache_with_ttl",
+  "name": "LRU Cache with TTL and Stats",
+  "difficulty": "extreme",
+  "description": "Implement an LRU cache with time-to-live support and statistics tracking across two modules. Module cache_types.py must define: CacheEntry dataclass with fields value (Any), expires_at (float, absolute monotonic timestamp), created_at (float); CacheStats dataclass with fields hits (int, default 0), misses (int, default 0), evictions (int, default 0), expirations (int, default 0). Module ttl_cache.py must import from cache_types.py and implement TTLCache class with constructor TTLCache(capacity: int, default_ttl: float | None = None) and methods: get(key) returns value or None (also returns None for expired entries and increments stats), set(key, value, ttl: float | None = None) inserts or updates an entry (evicts LRU when at capacity), delete(key) removes an entry returning True if existed, clear() empties cache and resets stats, stats() returns CacheStats snapshot. Time source must be time.monotonic(). When ttl is None in set(), use default_ttl; if default_ttl is also None, entry never expires. Lookups of expired entries must increment expirations and misses, then remove the entry.",
+  "required_files": ["cache_types.py", "ttl_cache.py"],
+  "test_imports": ["from cache_types import CacheEntry, CacheStats", "from ttl_cache import TTLCache"],
+  "signature": "# cache_types.py\nfrom dataclasses import dataclass\nfrom typing import Any\n\n@dataclass\nclass CacheEntry:\n    value: Any\n    expires_at: float\n    created_at: float\n\n@dataclass\nclass CacheStats:\n    hits: int = 0\n    misses: int = 0\n    evictions: int = 0\n    expirations: int = 0\n\n# ttl_cache.py\nfrom cache_types import CacheEntry, CacheStats\n\nclass TTLCache:\n    def __init__(self, capacity: int, default_ttl: float | None = None): ...\n    def get(self, key): ...\n    def set(self, key, value, ttl: float | None = None) -> None: ...\n    def delete(self, key) -> bool: ...\n    def clear(self) -> None: ...\n    def stats(self) -> CacheStats: ...",
+  "tests": [
+    "def test_basic_set_get():\n    c = TTLCache(capacity=3)\n    c.set('a', 1)\n    assert c.get('a') == 1",
+    "def test_miss_returns_none():\n    c = TTLCache(capacity=3)\n    assert c.get('missing') is None\n    assert c.stats().misses == 1",
+    "def test_lru_eviction():\n    c = TTLCache(capacity=2)\n    c.set('a', 1)\n    c.set('b', 2)\n    c.get('a')\n    c.set('c', 3)\n    assert c.get('b') is None\n    assert c.get('a') == 1\n    assert c.get('c') == 3\n    assert c.stats().evictions == 1",
+    "def test_ttl_expiration():\n    import time\n    c = TTLCache(capacity=3, default_ttl=0.05)\n    c.set('x', 1)\n    assert c.get('x') == 1\n    time.sleep(0.1)\n    assert c.get('x') is None\n    assert c.stats().expirations == 1",
+    "def test_per_call_ttl():\n    import time\n    c = TTLCache(capacity=3)\n    c.set('a', 1, ttl=0.05)\n    c.set('b', 2)\n    time.sleep(0.1)\n    assert c.get('a') is None\n    assert c.get('b') == 2",
+    "def test_delete():\n    c = TTLCache(capacity=2)\n    c.set('a', 1)\n    assert c.delete('a') is True\n    assert c.delete('a') is False\n    assert c.get('a') is None",
+    "def test_update_refreshes_lru():\n    c = TTLCache(capacity=2)\n    c.set('a', 1)\n    c.set('b', 2)\n    c.set('a', 10)\n    c.set('c', 3)\n    assert c.get('a') == 10\n    assert c.get('b') is None",
+    "def test_stats_hits_misses():\n    c = TTLCache(capacity=3)\n    c.set('a', 1)\n    c.get('a')\n    c.get('a')\n    c.get('missing')\n    s = c.stats()\n    assert s.hits == 2\n    assert s.misses == 1",
+    "def test_clear_resets():\n    c = TTLCache(capacity=2)\n    c.set('a', 1)\n    c.get('a')\n    c.get('missing')\n    c.clear()\n    assert c.get('a') is None\n    s = c.stats()\n    assert s.hits == 0 and s.misses == 1",
+    "def test_no_ttl_never_expires():\n    import time\n    c = TTLCache(capacity=3)\n    c.set('forever', 42)\n    time.sleep(0.05)\n    assert c.get('forever') == 42"
+  ],
+  "constraints": [
+    "Use time.monotonic() as time source",
+    "Eviction policy is strict LRU based on access order (get and set both count as access)",
+    "Expired entries must be removed when accessed and counted in expirations",
+    "set() with capacity exceeded must evict exactly one LRU entry and increment evictions",
+    "stats() returns a snapshot, not a live reference"
+  ],
+  "helper_code": {},
+  "tags": ["cache", "multi-file", "design"]
+}
