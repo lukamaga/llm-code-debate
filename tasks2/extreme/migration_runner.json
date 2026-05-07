@@ -1,0 +1,31 @@
+{
+  "id": "migration_runner",
+  "name": "Schema Migration Runner with Rollback",
+  "difficulty": "extreme",
+  "description": "Implement a database-style migration runner across two modules. Module migration_types.py must define: Migration dataclass with fields version (int), name (str), up (callable taking dict state, mutating it), down (callable taking dict state, mutating it); MigrationRecord dataclass with fields version (int), name (str), applied_at (float). Module migration_runner.py must import from migration_types.py and implement Runner class with constructor Runner(state: dict) and methods: register(migration: Migration); migrate_to(target_version: int) applies up()/down() in order to move from current to target version (stepwise, not skipping); current_version() -> int (0 if none applied); applied() -> list[MigrationRecord] in application order; pending(target_version: int) -> list[Migration] (those that would be applied/rolled back to reach target). Migrations applied with strictly increasing version numbers.",
+  "required_files": ["migration_types.py", "migration_runner.py"],
+  "test_imports": ["from migration_types import Migration, MigrationRecord", "from migration_runner import Runner"],
+  "signature": "# migration_types.py\nfrom dataclasses import dataclass\nfrom typing import Callable\n\n@dataclass\nclass Migration:\n    version: int\n    name: str\n    up: Callable\n    down: Callable\n\n@dataclass\nclass MigrationRecord:\n    version: int\n    name: str\n    applied_at: float\n\n# migration_runner.py\nfrom migration_types import Migration, MigrationRecord\n\nclass Runner:\n    def __init__(self, state: dict): ...\n    def register(self, migration: Migration) -> None: ...\n    def migrate_to(self, target_version: int) -> None: ...\n    def current_version(self) -> int: ...\n    def applied(self) -> list[MigrationRecord]: ...\n    def pending(self, target_version: int) -> list[Migration]: ...",
+  "tests": [
+    "def test_initial_version_zero():\n    r = Runner({})\n    assert r.current_version() == 0",
+    "def test_apply_single():\n    state = {}\n    r = Runner(state)\n    r.register(Migration(1, 'init', lambda s: s.update({'a': 1}), lambda s: s.pop('a', None)))\n    r.migrate_to(1)\n    assert r.current_version() == 1\n    assert state == {'a': 1}",
+    "def test_apply_multiple_in_order():\n    state = {}\n    log = []\n    r = Runner(state)\n    r.register(Migration(1, 'a', lambda s: log.append('up1'), lambda s: log.append('down1')))\n    r.register(Migration(2, 'b', lambda s: log.append('up2'), lambda s: log.append('down2')))\n    r.migrate_to(2)\n    assert log == ['up1', 'up2']",
+    "def test_rollback():\n    state = {}\n    log = []\n    r = Runner(state)\n    r.register(Migration(1, 'a', lambda s: log.append('up1'), lambda s: log.append('down1')))\n    r.register(Migration(2, 'b', lambda s: log.append('up2'), lambda s: log.append('down2')))\n    r.migrate_to(2)\n    log.clear()\n    r.migrate_to(0)\n    assert log == ['down2', 'down1']\n    assert r.current_version() == 0",
+    "def test_rollback_partial():\n    r = Runner({})\n    r.register(Migration(1, 'a', lambda s: None, lambda s: None))\n    r.register(Migration(2, 'b', lambda s: None, lambda s: None))\n    r.register(Migration(3, 'c', lambda s: None, lambda s: None))\n    r.migrate_to(3)\n    r.migrate_to(1)\n    assert r.current_version() == 1",
+    "def test_state_mutation():\n    state = {'count': 0}\n    r = Runner(state)\n    r.register(Migration(1, 'inc', lambda s: s.__setitem__('count', s['count']+1), lambda s: s.__setitem__('count', s['count']-1)))\n    r.migrate_to(1)\n    assert state['count'] == 1\n    r.migrate_to(0)\n    assert state['count'] == 0",
+    "def test_applied_records():\n    r = Runner({})\n    r.register(Migration(1, 'first', lambda s: None, lambda s: None))\n    r.register(Migration(2, 'second', lambda s: None, lambda s: None))\n    r.migrate_to(2)\n    apps = r.applied()\n    assert [a.version for a in apps] == [1, 2]\n    assert [a.name for a in apps] == ['first', 'second']",
+    "def test_pending_forward():\n    r = Runner({})\n    r.register(Migration(1, 'a', lambda s: None, lambda s: None))\n    r.register(Migration(2, 'b', lambda s: None, lambda s: None))\n    pend = r.pending(2)\n    assert [m.version for m in pend] == [1, 2]",
+    "def test_pending_backward():\n    r = Runner({})\n    r.register(Migration(1, 'a', lambda s: None, lambda s: None))\n    r.register(Migration(2, 'b', lambda s: None, lambda s: None))\n    r.migrate_to(2)\n    pend = r.pending(0)\n    assert [m.version for m in pend] == [2, 1]",
+    "def test_idempotent_target():\n    log = []\n    r = Runner({})\n    r.register(Migration(1, 'a', lambda s: log.append('up'), lambda s: log.append('down')))\n    r.migrate_to(1)\n    r.migrate_to(1)\n    assert log == ['up']"
+  ],
+  "constraints": [
+    "Migrations are registered with unique version numbers, but not necessarily in order",
+    "migrate_to applies migrations stepwise; never skip versions",
+    "Rolling back invokes down() in reverse application order",
+    "applied() preserves insertion order of applied migrations",
+    "Calling migrate_to with current version is a no-op",
+    "current_version is the highest applied version (0 when none applied)"
+  ],
+  "helper_code": {},
+  "tags": ["migration", "multi-file", "versioning", "design"]
+}
