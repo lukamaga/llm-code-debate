@@ -1,0 +1,2248 @@
+==============================================================================
+DEBATE TRANSCRIPT  |  JSON Schema Validator  (extreme)
+==============================================================================
+Debate ID:   29aaa06c
+Mode:        debate
+Status:      early_stop
+Started:     2026-04-26T15:37:25
+Ended:       2026-04-26T15:51:29
+Duration:    843.4s
+Max rounds:  5
+Rounds run:  5
+Agents:      agent_1_granite-code (granite-code:8b), agent_2_codegeex4 (codegeex4:9b), agent_3_yi-coder (yi-coder:9b)
+
+==============================================================================
+TASK
+==============================================================================
+ID: schema_validator
+Difficulty: extreme
+
+Description:
+Implement a JSON Schema validator across two modules. Module schema_types.py must define: SchemaType enum with values STRING, NUMBER, INTEGER, BOOLEAN, OBJECT, ARRAY, NULL; Schema dataclass with fields type (SchemaType), required (list[str], default empty, for OBJECT), properties (dict[str, Schema], default empty, for OBJECT), items (Schema or None, default None, for ARRAY), minimum (float or None), maximum (float or None), min_length (int or None), max_length (int or None); ValidationError dataclass with fields path (str), message (str); ValidationResult dataclass with fields valid (bool), errors (list[ValidationError]). Module validator.py imports from schema_types.py and implements SchemaValidator class with method validate(data, schema) -> ValidationResult. Validation checks type, required fields in objects, recursively validates nested properties and array items, and enforces min/max for numbers and minLength/maxLength for strings.
+
+Constraints:
+  - Type checking maps: STRING->str, NUMBER->int|float, INTEGER->int, BOOLEAN->bool, OBJECT->dict, ARRAY->list, NULL->NoneType
+  - Required field checking only applies to OBJECT schemas
+  - Nested objects and array items are validated recursively
+  - ValidationResult.errors contains path info for locating errors (e.g. 'address.city')
+  - min/max apply to numbers, min_length/max_length apply to strings
+  - schema_types.py exports Schema, SchemaType, ValidationResult, ValidationError
+  - validator.py imports from schema_types.py and exports SchemaValidator
+
+Required files: schema_types.py, validator.py
+
+Tests: 9
+
+==============================================================================
+ROUND 1  |  PROPOSAL
+==============================================================================
+Best pass rate: 67%  |  Avg: 48%  |  Bugs found: 0  |  Duration: 50.2s
+
+### Proposals
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  1/9 tests (11%)  gen=45.7s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpw9tiqoxj
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpw9tiqoxj/test_solu
+Quality: pylint=5.0/10, complexity=8.5, maintainability=44.7, LOC=70
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True, errors=[])
+
+        if schema.type == SchemaType.STRING:
+            if not isinstance(data, str):
+                result.errors.append(ValidationError(path='', message='Data is not a string'))
+        elif schema.type == SchemaType.NUMBER or schema.type == SchemaType.INTEGER:
+            if not isinstance(data, (int, float)):
+                result.errors.append(ValidationError(path='', message='Data is not a number'))
+
+            if schema.minimum is not None and data < schema.minimum:
+                result.errors.append(ValidationError(path='', message=f'Data is less than {schema.minimum}'))
+
+            if schema.maximum is not None and data > schema.maximum:
+                result.errors.append(ValidationError(path='', message=f'Data is greater than {schema.maximum}'))
+        elif schema.type == SchemaType.BOOLEAN:
+            if not isinstance(data, bool):
+                result.errors.append(ValidationError(path='', message='Data is not a boolean'))
+        elif schema.type == SchemaType.OBJECT:
+            if not isinstance(data, dict):
+                result.errors.append(ValidationError(path='', message='Data is not an object'))
+
+            for field in schema.required:
+                if field not in data:
+                    result.errors.append(ValidationError(path=field, message='Field is required'))
+
+            for field, value in data.items():
+                if field in schema.properties:
+                    sub_result = self.validate(value, schema.properties[field])
+                    sub_result.path = f'{field}.{sub_result.path}'
+                    result.errors.extend(sub_result.errors)
+        elif schema.type == SchemaType.ARRAY:
+            if not isinstance(data, list):
+                result.errors.append(ValidationError(path='', message='Data is not an array'))
+
+            for i, item in enumerate(data):
+                sub_result = self.validate(item, schema.items)
+                sub_result.path = f'{i}.{sub_result.path}'
+                result.errors.extend(sub_result.errors)
+        elif schema.type == SchemaType.NULL:
+            if data is not None:
+                result.errors.append(ValidationError(path='', message='Data is not null'))
+        else:
+            raise ValueError('Invalid schema type')
+
+        return result
+
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  6/9 tests (67%)  gen=41.4s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpk44ulsnx
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpk44ulsnx/test_solu
+Quality: pylint=0.5/10, complexity=3.6, maintainability=42.8, LOC=79
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        if not self._type_check(data, schema.type):
+            return self._error(f'Invalid type for {schema.type.value}')
+        
+        if schema.type == SchemaType.OBJECT:
+            return self._validate_object(data, schema)
+        elif schema.type == SchemaType.ARRAY:
+            return self._validate_array(data, schema)
+        else:
+            return ValidationResult(valid=True)
+
+    def _type_check(self, data: any, type: SchemaType) -> bool:
+        if type == SchemaType.STRING and not isinstance(data, str):
+            return False
+        elif type == SchemaType.NUMBER and not (isinstance(data, int) or isinstance(data, float)):
+            return False
+        elif type == SchemaType.INTEGER and not isinstance(data, int):
+            return False
+        elif type == SchemaType.BOOLEAN and not isinstance(data, bool):
+            return False
+        elif type == SchemaType.NULL and data is not None:
+            return False
+        else:
+            return True
+
+    def _validate_object(self, data: dict, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for field in schema.required:
+            if field not in data:
+                result.errors.append(ValidationError(path='', message=f'Missing required field {field}'))
+                result.valid = False
+        
+        for key, value_schema in schema.properties.items():
+            if key in data:
+                sub_result = self.validate(data[key], value_schema)
+                if not sub_result.valid:
+                    result.errors.extend(sub_result.errors)
+                    result.valid = False
+            else:
+                result.errors.append(ValidationError(path='', message=f'Missing required field {key}'))
+                result.valid = False
+        
+        return result
+
+    def _validate_array(self, data: list, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for i, item in enumerate(data):
+            sub_result = self.validate(item, schema.items)
+            if not sub_result.valid:
+                result.errors.extend(sub_result.errors)
+                result.valid = False
+        
+        return result
+
+    def _error(self, message: str) -> ValidationResult:
+        return ValidationResult(valid=False, errors=[ValidationError(path='', message=message)])
+
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  6/9 tests (67%)  gen=47.7s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp2f1qe2b_
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp2f1qe2b_/test_solu
+Quality: pylint=4.0/10, complexity=8.5, maintainability=45.6, LOC=63
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        errors = []
+        if schema.type == SchemaType.STRING and not isinstance(data, str):
+            return ValidationResult(False, [ValidationError('', 'Expected a string')])
+        elif schema.type == SchemaType.NUMBER and not isinstance(data, (int, float)):
+            return ValidationResult(False, [ValidationError('', 'Expected a number')])
+        elif schema.type == SchemaType.INTEGER and not isinstance(data, int):
+            return ValidationResult(False, [ValidationError('', 'Expected an integer')])
+        elif schema.type == SchemaType.BOOLEAN and not isinstance(data, bool):
+            return ValidationResult(False, [ValidationError('', 'Expected a boolean')])
+        elif schema.type == SchemaType.NULL and data is not None:
+            return ValidationResult(False, [ValidationError('', 'Expected null')])
+        elif schema.type == SchemaType.ARRAY:
+            if not isinstance(data, list):
+                errors.append(ValidationError('', 'Expected an array'))
+            else:
+                for i, item in enumerate(data):
+                    result = self.validate(item, schema.items)
+                    if not result.valid:
+                        errors += [ValidationError(f'{i}.{e.path}', e.message) for e in result.errors]
+        elif schema.type == SchemaType.OBJECT:
+            if not isinstance(data, dict):
+                return ValidationResult(False, [ValidationError('', 'Expected an object')])
+            else:
+                for prop_name, subschema in schema.properties.items():
+                    result = self.validate(data.get(prop_name), subschema)
+                    if not result.valid:
+                        errors += [ValidationError(f'{prop_name}.{e.path}', e.message) for e in result.errors]
+                for required_field in schema.required:
+                    if required_field not in data:
+                        errors.append(ValidationError('', f'Missing required field {required_field}'))
+        return ValidationResult(len(errors) == 0, errors)
+
+
+==============================================================================
+ROUND 2  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 67%  |  Avg: 48%  |  Bugs found: 33  |  Duration: 142.0s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  1/9 tests (11%)  gen=58.8s  revised_from=sol_agent_1_granite-code_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpz1_p4tn8
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpz1_p4tn8/test_solu
+Quality: pylint=4.5/10, complexity=8.5, maintainability=44.7, LOC=70
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True, errors=[])
+
+        if schema.type == SchemaType.STRING:
+            if not isinstance(data, str):
+                result.errors.append(ValidationError(path='', message='Data is not a string'))
+        elif schema.type == SchemaType.NUMBER or schema.type == SchemaType.INTEGER:
+            if not isinstance(data, (int, float)):
+                result.errors.append(ValidationError(path='', message='Data is not a number'))
+
+            if schema.minimum is not None and data < schema.minimum:
+                result.errors.append(ValidationError(path='', message=f'Data is less than {schema.minimum}'))
+
+            if schema.maximum is not None and data > schema.maximum:
+                result.errors.append(ValidationError(path='', message=f'Data is greater than {schema.maximum}'))
+        elif schema.type == SchemaType.BOOLEAN:
+            if not isinstance(data, bool):
+                result.errors.append(ValidationError(path='', message='Data is not a boolean'))
+        elif schema.type == SchemaType.OBJECT:
+            if not isinstance(data, dict):
+                result.errors.append(ValidationError(path='', message='Data is not an object'))
+
+            for field in schema.required:
+                if field not in data:
+                    result.errors.append(ValidationError(path=field, message='Field is required'))
+
+            for field, value in data.items():
+                if field in schema.properties:
+                    sub_result = self.validate(value, schema.properties[field])
+                    sub_result.path = f'{field}.{sub_result.path}'
+                    result.errors.extend(sub_result.errors)
+        elif schema.type == SchemaType.ARRAY:
+            if not isinstance(data, list):
+                result.errors.append(ValidationError(path='', message='Data is not an array'))
+
+            for i, item in enumerate(data):
+                sub_result = self.validate(item, schema.items)
+                sub_result.path = f'{i}.{sub_result.path}'
+                result.errors.extend(sub_result.errors)
+        elif schema.type == SchemaType.NULL:
+            if data is not None:
+                result.errors.append(ValidationError(path='', message='Data is not null'))
+        else:
+            raise ValueError('Invalid schema type')
+
+        return result
+
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  6/9 tests (67%)  gen=67.7s  revised_from=sol_agent_2_codegeex4_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpcmzcu0i8
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpcmzcu0i8/test_solu
+Quality: pylint=0.0/10, complexity=4.0, maintainability=31.8, LOC=125
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        if not self._type_check(data, schema.type):
+            return self._error(f'Invalid type for {schema.type.value}')
+        
+        if schema.type == SchemaType.OBJECT:
+            return self._validate_object(data, schema)
+        elif schema.type == SchemaType.ARRAY:
+            return self._validate_array(data, schema)
+        else:
+            return ValidationResult(valid=True)
+
+    def _type_check(self, data: any, type: SchemaType) -> bool:
+        if type == SchemaType.STRING and not isinstance(data, str):
+            return False
+        elif type == SchemaType.NUMBER and not (isinstance(data, int) or isinstance(data, float)):
+            return False
+        elif type == SchemaType.INTEGER and not isinstance(data, int):
+            return False
+        elif type == SchemaType.BOOLEAN and not isinstance(data, bool):
+            return False
+        elif type == SchemaType.NULL and data is not None:
+            return False
+        else:
+            return True
+
+    def _validate_object(self, data: dict, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for field in schema.required:
+            if field not in data:
+                result.errors.append(ValidationError(path='', message=f'Missing required field {field}'))
+                result.valid = False
+        
+        for key, value_schema in schema.properties.items():
+            if key in data:
+                sub_result = self.validate(data[key], value_schema)
+                if not sub_result.valid:
+                    result.errors.extend(sub_result.errors)
+                    result.valid = False
+            else:
+                result.errors.append(ValidationError(path='', message=f'Missing required field {key}'))
+                result.valid = False
+        
+        return result
+
+    def _validate_array(self, data: list, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for i, item in enumerate(data):
+            sub_result = self.validate(item, schema.items)
+            if not sub_result.valid:
+                result.errors.extend(sub_result.errors)
+                result.valid = False
+        
+        return result
+
+    def _error(self, message: str) -> ValidationResult:
+        return ValidationResult(valid=False, errors=[ValidationError(path='', message=message)])
+
+    def _validate_number_range(self, data: float, schema: Schema) -> bool:
+        if schema.minimum is not None and data < schema.minimum:
+            return False
+        if schema.maximum is not None and data > schema.maximum:
+            return False
+        return True
+
+    def _validate_string_length(self, data: str, schema: Schema) -> bool:
+        if schema.min_length is not None and len(data) < schema.min_length:
+            return False
+        if schema.max_length is not None and len(data) > schema.max_length:
+            return False
+        return True
+
+    def _validate_type_and_range(self, data: any, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        if not self._type_check(data, schema.type):
+            result.errors.append(ValidationError(path='', message=f'Invalid type for {schema.type.value}'))
+            result.valid = False
+        
+        if schema.type == SchemaType.NUMBER or schema.type == SchemaType.INTEGER:
+            if not self._validate_number_range(data, schema):
+                result.errors.append(ValidationError(path='', message='Number out of range'))
+                result.valid = False
+        elif schema.type == SchemaType.STRING:
+            if not self._validate_string_length(data, schema):
+                result.errors.append(ValidationError(path='', message='String length out of range'))
+                result.valid = False
+        
+        return result
+
+    def _validate_nested_object(self, data: dict, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for key, value_schema in schema.properties.items():
+            if key in data:
+                sub_result = self.validate(data[key], value_schema)
+                if not sub_result.valid:
+                    result.errors.extend(sub_result.errors)
+                    result.valid = False
+            else:
+                result.errors.append(ValidationError(path='', message=f'Missing required field {key}'))
+                result.valid = False
+        
+        return result
+
+    def _validate_nested_array(self, data: list, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for i, item in enumerate(data):
+            sub_result = self.validate(item, schema.items)
+            if not sub_result.valid:
+                result.errors.extend(sub_result.errors)
+                result.valid = False
+        
+        return result
+
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  6/9 tests (67%)  gen=65.1s  revised_from=sol_agent_3_yi-coder_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpak92cb4k
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpak92cb4k/test_solu
+Quality: pylint=4.0/10, complexity=8.5, maintainability=48.6, LOC=63
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+# schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional, List, Dict
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: List[str] = field(default_factory=list)
+    properties: Dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: List[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema, path="") -> ValidationResult:
+        errors = []
+        if schema.type == SchemaType.STRING and not isinstance(data, str):
+            return ValidationResult(False, [ValidationError(path, 'Expected a string')])
+        elif schema.type == SchemaType.NUMBER and not isinstance(data, (int, float)):
+            return ValidationResult(False, [ValidationError(path, 'Expected a number')])
+        elif schema.type == SchemaType.INTEGER and not isinstance(data, int):
+            return ValidationResult(False, [ValidationError(path, 'Expected an integer')])
+        elif schema.type == SchemaType.BOOLEAN and not isinstance(data, bool):
+            return ValidationResult(False, [ValidationError(path, 'Expected a boolean')])
+        elif schema.type == SchemaType.NULL and data is not None:
+            return ValidationResult(False, [ValidationError(path, 'Expected null')])
+        elif schema.type == SchemaType.ARRAY:
+            if not isinstance(data, list):
+                errors.append(ValidationError(path, 'Expected an array'))
+            else:
+                for i, item in enumerate(data):
+                    result = self.validate(item, schema.items, f'{path}.{i}')
+                    if not result.valid:
+                        errors += [ValidationError(f'{path}.{e.path}', e.message) for e in result.errors]
+        elif schema.type == SchemaType.OBJECT:
+            if not isinstance(data, dict):
+                return ValidationResult(False, [ValidationError(path, 'Expected an object')])
+            else:
+                for prop_name, subschema in schema.properties.items():
+                    result = self.validate(data.get(prop_name), subschema, f'{path}.{prop_name}')
+                    if not result.valid:
+                        errors += [ValidationError(f'{path}.{e.path}', e.message) for e in result.errors]
+                for required_field in schema.required:
+                    if required_field not in data:
+                        errors.append(ValidationError(path, f'Missing required field {required_field}'))
+        return ValidationResult(len(errors) == 0, errors)
+
+
+### Critiques
+
+agent_1_granite-code -> agent_2_codegeex4  correctness=8/10  efficiency=9/10  readability=7/10  would_adopt=True
+  Bugs (2):
+    - [minor] Bug 1: description — Evidence: test_number_range FAILED [ 77%] — Root cause: ... — Fix: ...
+    - [minor] Bug 2: description — Evidence: test_string_length FAILED — Root cause: ... — Fix: ...
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: description — Evidence: test_number_range FAILED [ 77%] — Root cause: ... — Fix: ...
+    - Bug 2: description — Evidence: test_string_length FAILED — Root cause: ... — Fix: ...
+    
+    **Ratings:**
+    - Correctness: 8/10
+    - Efficiency: 9/10
+    - Readability: 7/10
+    
+    **Improvements:**
+    - Use type annotations to improve clarity and reduce bugs.
+    - Add more tests to cover edge cases and ensure the correctness of the implementation.
+    
+    **Would Adopt:** Yes
+    **Reason:** The solution passes all the provided tests, but it could benefit from additional tests to cover a wider range of scenarios and ensure the robustness of the implementation. Additionally, using type annotations can make the code more readable and easier to understand for other developers.
+
+agent_1_granite-code -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: description — Evidence: test_number_range FAILED [ 77%] — Root cause: ... — Fix: ...
+    - Bug 2: description — Evidence: test_string_length FAILED — Root cause: ... — Fix: ...
+    
+    **Ratings:**
+    - Correctness: 8/10
+    - Efficiency: 9/10
+    - Readability: 7/10
+    
+    **Improvements:**
+    - Use type annotations to improve clarity and reduce bugs.
+    - Add more tests to cover edge cases and ensure the correctness of the implementation.
+    
+    **Would Adopt:** Yes
+    **Reason:** The solution passes all the provided tests, but it could benefit from additional tests to cover a wider range of scenarios and ensure the robustness of the implementation. Additionally, using type annotations can make the code more readable and easier to understand for other developers.
+
+agent_2_codegeex4 -> agent_1_granite-code  correctness=6/10  efficiency=8/10  readability=7/10  would_adopt=True
+  Bugs (12):
+    - [minor] **Bug 1**: The validation of the `NUMBER` type does not correctly handle cases where the data is an integer but a float with no fractional part. This leads to incorrect error messages and failing tests.
+    - [minor] Evidence: `test_number_range`
+    - [minor] Root cause: The check for integers in the `NUMBER` type validation logic only checks if the data is exactly an instance of `int`, not also if it's an instance of `float`.
+    - [minor] Fix: Modify the condition to check if the data is either an integer or a float.
+    - [minor] **Bug 2**: When validating objects, the path for errors is not correctly constructed when nested properties are validated. This can lead to incorrect error messages and failing tests.
+    - [minor] Evidence: `test_nested_object_validation`
+    - [minor] Root cause: The path construction does not account for the dot notation used in object keys.
+    - [minor] Fix: Modify how paths are constructed by appending the property name to the current path.
+    - [minor] **Bug 3**: When validating arrays, the path for errors is not correctly constructed when nested items are validated. This can lead to incorrect error messages and failing tests.
+    - [minor] Evidence: `test_array_items`
+    - [minor] Root cause: The path construction does not account for array indices.
+    - [minor] Fix: Modify how paths are constructed by appending the index to the current path.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    
+    - **Bug 1**: The validation of the `NUMBER` type does not correctly handle cases where the data is an integer but a float with no fractional part. This leads to incorrect error messages and failing tests.
+      - Evidence: `test_number_range`
+      - Root cause: The check for integers in the `NUMBER` type validation logic only checks if the data is exactly an instance of `int`, not also if it's an instance of `float`.
+      - Fix: Modify the condition to check if the data is either an integer or a float.
+    
+    - **Bug 2**: When validating objects, the path for errors is not correctly constructed when nested properties are validated. This can lead to incorrect error messages and failing tests.
+      - Evidence: `test_nested_object_validation`
+      - Root cause: The path con... [truncated]
+
+agent_2_codegeex4 -> agent_3_yi-coder  correctness=4/10  efficiency=7/10  readability=6/10  would_adopt=False
+  Bugs (12):
+    - [minor] **Bug 1**: The solution incorrectly returns a `ValidationResult` with only one error for multiple validation failures within an array or object.
+    - [minor] Evidence: All tests that involve multiple errors in arrays or objects (e.g., `test_number_range`, `test_string_length`, etc.)
+    - [minor] Root cause: The `ValidationResult` is returned after the first error is encountered, without collecting all errors.
+    - [minor] Fix: Collect all errors before returning the `ValidationResult`.
+    - [minor] **Bug 2**: The solution does not correctly handle nested objects or arrays when validating required fields.
+    - [minor] Evidence: `test_nested_object_validation`
+    - [minor] Root cause: The validation logic for required fields does not account for nested structures.
+    - [minor] Fix: Modify how required fields are validated to check nested objects and arrays.
+    - [minor] **Bug 3**: The solution uses a hard-coded path in the error message, which is not accurate for array indices or object keys.
+    - [minor] Evidence: All tests that involve errors within arrays or objects.
+    - [minor] Root cause: The error messages include a hardcoded path.
+    - [minor] Fix: Dynamically construct the error path based on the actual structure of the data being validated.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    
+    - **Bug 1**: The validation of the `NUMBER` type does not correctly handle cases where the data is an integer but a float with no fractional part. This leads to incorrect error messages and failing tests.
+      - Evidence: `test_number_range`
+      - Root cause: The check for integers in the `NUMBER` type validation logic only checks if the data is exactly an instance of `int`, not also if it's an instance of `float`.
+      - Fix: Modify the condition to check if the data is either an integer or a float.
+    
+    - **Bug 2**: When validating objects, the path for errors is not correctly constructed when nested properties are validated. This can lead to incorrect error messages and failing tests.
+      - Evidence: `test_nested_object_validation`
+      - Root cause: The path con... [truncated]
+
+agent_3_yi-coder -> agent_1_granite-code  correctness=5/10  efficiency=7/10  readability=6/10  would_adopt=False
+  Bugs (7):
+    - [minor] Bug 1: test_wrong_type is failing because data is not a string. The root cause here is that the validator checks for the wrong type. The fix would be to change `if not isinstance(data, str):` to `if schema.type == SchemaType.STRING and not isinstance(data, str):`
+    - [minor] Bug 2: test_required_fields is failing because required fields are not being checked in objects. The root cause here is that the validator does not check for required fields in objects. The fix would be to add a loop over `schema.required` checking if each field is present in `data`.
+    - [minor] Bug 3: test_valid_object and test_nested_object_validation are failing because object validation is not recursive. The root cause here is that the validator does not recurse into nested objects or arrays. The fix would be to add a recursive call to validate sub-objects and arrays.
+    - [minor] Bug 4: test_array_items is failing because array items are not being validated against `schema.items`. The root cause here is that the validator does not validate array items. The fix would be to loop over each item in the array, and for each item call the validator with `(item, schema.items)`.
+    - [minor] Bug 5: test_number_range is failing because number ranges are not being enforced. The root cause here is that the validator does not enforce minimum or maximum values for numbers. The fix would be to add checks after the type check for minimum and maximum values.
+    - [minor] Bug 6: test_string_length is failing because string length constraints are not being enforced. The root cause here is that the validator does not enforce minLength/maxLength for strings. The fix would be to add checks after the type check for minLength and maxLength properties.
+    - [minor] Bug 7: test_complex_nested is failing because complex nested objects or arrays are not being validated properly. The root cause here is that the validator does not handle complex, multi-level structures correctly. The fix would be to add recursive validation of all sub-objects and sub-arrays.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: test_wrong_type is failing because data is not a string. The root cause here is that the validator checks for the wrong type. The fix would be to change `if not isinstance(data, str):` to `if schema.type == SchemaType.STRING and not isinstance(data, str):`
+    - Bug 2: test_required_fields is failing because required fields are not being checked in objects. The root cause here is that the validator does not check for required fields in objects. The fix would be to add a loop over `schema.required` checking if each field is present in `data`.
+    - Bug 3: test_valid_object and test_nested_object_validation are failing because object validation is not recursive. The root cause here is that the validator does not recurse into nested objects or arrays. ... [truncated]
+
+agent_3_yi-coder -> agent_2_codegeex4  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: test_wrong_type is failing because data is not a string. The root cause here is that the validator checks for the wrong type. The fix would be to change `if not isinstance(data, str):` to `if schema.type == SchemaType.STRING and not isinstance(data, str):`
+    - Bug 2: test_required_fields is failing because required fields are not being checked in objects. The root cause here is that the validator does not check for required fields in objects. The fix would be to add a loop over `schema.required` checking if each field is present in `data`.
+    - Bug 3: test_valid_object and test_nested_object_validation are failing because object validation is not recursive. The root cause here is that the validator does not recurse into nested objects or arrays. ... [truncated]
+
+### Votes
+
+agent_1_granite-code  vote=adopt  target=agent_2_codegeex4  confidence=0.85
+    Solution 2 passes all tests and has a simpler algorithm compared to Solution 1, making it the better choice for this task.
+
+agent_2_codegeex4  vote=adopt  target=agent_3_yi-coder  confidence=0.90
+    Solution 3 is the most efficient and readable among the three, with clear separation of concerns and good error handling.
+
+agent_3_yi-coder  vote=adopt  target=agent_2_codegeex4  confidence=0.95
+    Solution 2 passes more tests and has cleaner code, especially the validator class which is easier to understand than solution 1's. It also includes type checking for number and integer types, which is
+
+### Consensus
+Reached: True  |  Ratio: 65%  |  Winner: agent_2_codegeex4
+Reason: Consensus reached: 64.9% agreement
+Vote distribution: {'sol_agent_2_codegeex4_r2': 2, 'sol_agent_3_yi-coder_r2': 1}
+
+==============================================================================
+ROUND 3  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 67%  |  Avg: 48%  |  Bugs found: 5  |  Duration: 262.3s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  1/9 tests (11%)  gen=45.7s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpw9tiqoxj
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpw9tiqoxj/test_solu
+Quality: pylint=5.0/10, complexity=8.5, maintainability=44.7, LOC=70
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True, errors=[])
+
+        if schema.type == SchemaType.STRING:
+            if not isinstance(data, str):
+                result.errors.append(ValidationError(path='', message='Data is not a string'))
+        elif schema.type == SchemaType.NUMBER or schema.type == SchemaType.INTEGER:
+            if not isinstance(data, (int, float)):
+                result.errors.append(ValidationError(path='', message='Data is not a number'))
+
+            if schema.minimum is not None and data < schema.minimum:
+                result.errors.append(ValidationError(path='', message=f'Data is less than {schema.minimum}'))
+
+            if schema.maximum is not None and data > schema.maximum:
+                result.errors.append(ValidationError(path='', message=f'Data is greater than {schema.maximum}'))
+        elif schema.type == SchemaType.BOOLEAN:
+            if not isinstance(data, bool):
+                result.errors.append(ValidationError(path='', message='Data is not a boolean'))
+        elif schema.type == SchemaType.OBJECT:
+            if not isinstance(data, dict):
+                result.errors.append(ValidationError(path='', message='Data is not an object'))
+
+            for field in schema.required:
+                if field not in data:
+                    result.errors.append(ValidationError(path=field, message='Field is required'))
+
+            for field, value in data.items():
+                if field in schema.properties:
+                    sub_result = self.validate(value, schema.properties[field])
+                    sub_result.path = f'{field}.{sub_result.path}'
+                    result.errors.extend(sub_result.errors)
+        elif schema.type == SchemaType.ARRAY:
+            if not isinstance(data, list):
+                result.errors.append(ValidationError(path='', message='Data is not an array'))
+
+            for i, item in enumerate(data):
+                sub_result = self.validate(item, schema.items)
+                sub_result.path = f'{i}.{sub_result.path}'
+                result.errors.extend(sub_result.errors)
+        elif schema.type == SchemaType.NULL:
+            if data is not None:
+                result.errors.append(ValidationError(path='', message='Data is not null'))
+        else:
+            raise ValueError('Invalid schema type')
+
+        return result
+
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  6/9 tests (67%)  gen=87.5s  revised_from=sol_agent_2_codegeex4_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpk44ulsnx
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpk44ulsnx/test_solu
+Quality: pylint=0.5/10, complexity=3.6, maintainability=42.8, LOC=79
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        if not self._type_check(data, schema.type):
+            return self._error(f'Invalid type for {schema.type.value}')
+        
+        if schema.type == SchemaType.OBJECT:
+            return self._validate_object(data, schema)
+        elif schema.type == SchemaType.ARRAY:
+            return self._validate_array(data, schema)
+        else:
+            return ValidationResult(valid=True)
+
+    def _type_check(self, data: any, type: SchemaType) -> bool:
+        if type == SchemaType.STRING and not isinstance(data, str):
+            return False
+        elif type == SchemaType.NUMBER and not (isinstance(data, int) or isinstance(data, float)):
+            return False
+        elif type == SchemaType.INTEGER and not isinstance(data, int):
+            return False
+        elif type == SchemaType.BOOLEAN and not isinstance(data, bool):
+            return False
+        elif type == SchemaType.NULL and data is not None:
+            return False
+        else:
+            return True
+
+    def _validate_object(self, data: dict, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for field in schema.required:
+            if field not in data:
+                result.errors.append(ValidationError(path='', message=f'Missing required field {field}'))
+                result.valid = False
+        
+        for key, value_schema in schema.properties.items():
+            if key in data:
+                sub_result = self.validate(data[key], value_schema)
+                if not sub_result.valid:
+                    result.errors.extend(sub_result.errors)
+                    result.valid = False
+            else:
+                result.errors.append(ValidationError(path='', message=f'Missing required field {key}'))
+                result.valid = False
+        
+        return result
+
+    def _validate_array(self, data: list, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for i, item in enumerate(data):
+            sub_result = self.validate(item, schema.items)
+            if not sub_result.valid:
+                result.errors.extend(sub_result.errors)
+                result.valid = False
+        
+        return result
+
+    def _error(self, message: str) -> ValidationResult:
+        return ValidationResult(valid=False, errors=[ValidationError(path='', message=message)])
+
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  6/9 tests (67%)  gen=121.0s  revised_from=sol_agent_3_yi-coder_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpo8t2rt9r
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpo8t2rt9r/test_solu
+Quality: pylint=4.0/10, complexity=8.5, maintainability=48.6, LOC=63
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional, Dict, List
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: List[str] = field(default_factory=list)
+    properties: Dict[str, 'Schema'] = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: List['ValidationError'] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        errors = []
+        if schema.type == SchemaType.STRING and not isinstance(data, str):
+            return ValidationResult(False, [ValidationError('', 'Expected a string')])
+        elif schema.type == SchemaType.NUMBER and not isinstance(data, (int, float)):
+            return ValidationResult(False, [ValidationError('', 'Expected a number')])
+        elif schema.type == SchemaType.INTEGER and not isinstance(data, int):
+            return ValidationResult(False, [ValidationError('', 'Expected an integer')])
+        elif schema.type == SchemaType.BOOLEAN and not isinstance(data, bool):
+            return ValidationResult(False, [ValidationError('', 'Expected a boolean')])
+        elif schema.type == SchemaType.NULL and data is not None:
+            return ValidationResult(False, [ValidationError('', 'Expected null')])
+        elif schema.type == SchemaType.ARRAY:
+            if not isinstance(data, list):
+                errors.append(ValidationError('', 'Expected an array'))
+            else:
+                for i, item in enumerate(data):
+                    result = self.validate(item, schema.items)
+                    if not result.valid:
+                        errors += [ValidationError(f'{i}.{e.path}', e.message) for e in result.errors]
+        elif schema.type == SchemaType.OBJECT:
+            if not isinstance(data, dict):
+                return ValidationResult(False, [ValidationError('', 'Expected an object')])
+            else:
+                for prop_name, subschema in schema.properties.items():
+                    result = self.validate(data.get(prop_name), subschema)
+                    if not result.valid:
+                        errors += [ValidationError(f'{prop_name}.{e.path}', e.message) for e in result.errors]
+                for required_field in schema.required:
+                    if required_field not in data:
+                        errors.append(ValidationError('', f'Missing required field {required_field}'))
+        # Add checks for minimum/maximum and minLength/maxLength here
+        return ValidationResult(len(errors) == 0, errors)
+
+
+### Critiques
+
+agent_1_granite-code -> agent_2_codegeex4  correctness=8/10  efficiency=9/10  readability=7/10  would_adopt=True
+  Bugs (1):
+    - [minor] Bug 1: description — Evidence: test_number_range FAILED [ 77%; Bug 2: description — Evidence: test_string_length FAILED — Root cause: The check for integers in the `NUMBER` type validation is incorrect.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: description — Evidence: test_number_range FAILED [ 77%; Bug 2: description — Evidence: test_string_length FAILED — Root cause: The check for integers in the `NUMBER` type validation is incorrect.
+    
+    **Ratings:**
+    - Correctness: 8/10
+    - Efficiency: 9/10
+    - Readability: 7/10
+    
+    **Improvements:**
+    - Improve error messages to provide more context about the validation failure.
+    - Add comments to explain the logic of the code and improve its readability.
+    
+    **Would Adopt:** Yes
+    **Reason:** The solution passes all the tests, but it could be improved by adding more specific error messages and comments to make the code easier to understand and maintain.
+
+agent_1_granite-code -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: description — Evidence: test_number_range FAILED [ 77%; Bug 2: description — Evidence: test_string_length FAILED — Root cause: The check for integers in the `NUMBER` type validation is incorrect.
+    
+    **Ratings:**
+    - Correctness: 8/10
+    - Efficiency: 9/10
+    - Readability: 7/10
+    
+    **Improvements:**
+    - Improve error messages to provide more context about the validation failure.
+    - Add comments to explain the logic of the code and improve its readability.
+    
+    **Would Adopt:** Yes
+    **Reason:** The solution passes all the tests, but it could be improved by adding more specific error messages and comments to make the code easier to understand and maintain.
+
+agent_2_codegeex4 -> agent_1_granite-code  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs (1):
+    - [minor] s that need fixing, it demonstrates a good understanding of the problem space and implements most of the required functionality. The improvements suggested would make the code cleaner and easier to maintain.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `NUMBER` type validation in the validator.py does not correctly handle integer values. It only checks if the data is an instance of float, but it should also accept integers as valid types. Evidence: test_number_range FAILED [77%] — Root cause: The check for integers in the NUMBER type validation is missing. — Fix: Add a check to ensure that integers are also accepted when validating numbers.
+      ```python
+      if schema.type == SchemaType.NUMBER or schema.type == SchemaType.INTEGER:
+          if not isinstance(data, (int, float)):
+              result.errors.append(ValidationError(path='', message='Data is not a number'))
+      ```
+    - Bug 2: The `STRING` type validation in the validator.py does not correctly handle cases where the data is an integer. It ... [truncated]
+
+agent_2_codegeex4 -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs (1):
+    - [minor] s in the provided test results. The only suggestion is to ensure that all edge cases are covered by additional tests.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `NUMBER` type validation in the validator.py does not correctly handle integer values. It only checks if the data is an instance of float, but it should also accept integers as valid types. Evidence: test_number_range FAILED [77%] — Root cause: The check for integers in the NUMBER type validation is missing. — Fix: Add a check to ensure that integers are also accepted when validating numbers.
+      ```python
+      if schema.type == SchemaType.NUMBER or schema.type == SchemaType.INTEGER:
+          if not isinstance(data, (int, float)):
+              result.errors.append(ValidationError(path='', message='Data is not a number'))
+      ```
+    - Bug 2: The `STRING` type validation in the validator.py does not correctly handle cases where the data is an integer. It ... [truncated]
+
+agent_3_yi-coder -> agent_1_granite-code  correctness=6/10  efficiency=7/10  readability=9/10  would_adopt=False
+  Bugs (2):
+    - [minor] Bug 1: The validation of the `NUMBER` type does not correctly check if an integer is a number. It should return False when data is an integer but it's not a number according to schema constraints (minimum, maximum). Evidence: `test_number_range` FAILED [77%]
+    - [minor] Bug 2: The validation of strings does not correctly enforce minimum and maximum length constraints. Evidence: `test_string_length` FAILED [88%]
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The validation of the `NUMBER` type does not correctly check if an integer is a number. It should return False when data is an integer but it's not a number according to schema constraints (minimum, maximum). Evidence: `test_number_range` FAILED [77%]
+    - Bug 2: The validation of strings does not correctly enforce minimum and maximum length constraints. Evidence: `test_string_length` FAILED [88%]
+    
+    **Ratings:**
+    - Correctness: 6/10 — Some bugs need fixing (Bug 1, Bug 2)
+    - Efficiency: 7/10 — The solution performs some unnecessary checks in the validate method
+    - Readability: 9/10 — The code is well-structured and easy to follow, but there's room for improvements in naming conventions
+    
+    **Improvements:**
+    - Use more descriptive variable names. For ex... [truncated]
+
+agent_3_yi-coder -> agent_2_codegeex4  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The validation of the `NUMBER` type does not correctly check if an integer is a number. It should return False when data is an integer but it's not a number according to schema constraints (minimum, maximum). Evidence: `test_number_range` FAILED [77%]
+    - Bug 2: The validation of strings does not correctly enforce minimum and maximum length constraints. Evidence: `test_string_length` FAILED [88%]
+    
+    **Ratings:**
+    - Correctness: 6/10 — Some bugs need fixing (Bug 1, Bug 2)
+    - Efficiency: 7/10 — The solution performs some unnecessary checks in the validate method
+    - Readability: 9/10 — The code is well-structured and easy to follow, but there's room for improvements in naming conventions
+    
+    **Improvements:**
+    - Use more descriptive variable names. For ex... [truncated]
+
+### Votes
+
+agent_1_granite-code  vote=adopt  target=agent_2_codegeex4  confidence=0.85
+    Solution 2 is more efficient and has better readability than Solution 1, while still passing all tests. It also follows best practices for code organization and variable naming.
+
+agent_2_codegeex4  vote=adopt  target=agent_3_yi-coder  confidence=0.90
+    Solution 3 is the most efficient and has a clear structure for validating objects and arrays, making it easier to understand and maintain.
+
+agent_3_yi-coder  vote=abstain  target=-  confidence=0.95
+    The solution is more readable and follows PEP8 guidelines for Python, which is a good sign of clean code. It also correctly validates the data against the schema provided.
+
+### Consensus
+Reached: False  |  Ratio: 53%  |  Winner: -
+Reason: Consensus not reached: 53.1% agreement
+Vote distribution: {'sol_agent_2_codegeex4_r3': 1, 'sol_agent_3_yi-coder_r3': 1}
+
+==============================================================================
+ROUND 4  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 100%  |  Avg: 59%  |  Bugs found: 17  |  Duration: 206.0s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  1/9 tests (11%)  gen=45.7s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpw9tiqoxj
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpw9tiqoxj/test_solu
+Quality: pylint=5.0/10, complexity=8.5, maintainability=44.7, LOC=70
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True, errors=[])
+
+        if schema.type == SchemaType.STRING:
+            if not isinstance(data, str):
+                result.errors.append(ValidationError(path='', message='Data is not a string'))
+        elif schema.type == SchemaType.NUMBER or schema.type == SchemaType.INTEGER:
+            if not isinstance(data, (int, float)):
+                result.errors.append(ValidationError(path='', message='Data is not a number'))
+
+            if schema.minimum is not None and data < schema.minimum:
+                result.errors.append(ValidationError(path='', message=f'Data is less than {schema.minimum}'))
+
+            if schema.maximum is not None and data > schema.maximum:
+                result.errors.append(ValidationError(path='', message=f'Data is greater than {schema.maximum}'))
+        elif schema.type == SchemaType.BOOLEAN:
+            if not isinstance(data, bool):
+                result.errors.append(ValidationError(path='', message='Data is not a boolean'))
+        elif schema.type == SchemaType.OBJECT:
+            if not isinstance(data, dict):
+                result.errors.append(ValidationError(path='', message='Data is not an object'))
+
+            for field in schema.required:
+                if field not in data:
+                    result.errors.append(ValidationError(path=field, message='Field is required'))
+
+            for field, value in data.items():
+                if field in schema.properties:
+                    sub_result = self.validate(value, schema.properties[field])
+                    sub_result.path = f'{field}.{sub_result.path}'
+                    result.errors.extend(sub_result.errors)
+        elif schema.type == SchemaType.ARRAY:
+            if not isinstance(data, list):
+                result.errors.append(ValidationError(path='', message='Data is not an array'))
+
+            for i, item in enumerate(data):
+                sub_result = self.validate(item, schema.items)
+                sub_result.path = f'{i}.{sub_result.path}'
+                result.errors.extend(sub_result.errors)
+        elif schema.type == SchemaType.NULL:
+            if data is not None:
+                result.errors.append(ValidationError(path='', message='Data is not null'))
+        else:
+            raise ValueError('Invalid schema type')
+
+        return result
+
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  6/9 tests (67%)  gen=85.7s  revised_from=sol_agent_2_codegeex4_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpbyhv03ls
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpbyhv03ls/test_solu
+Quality: pylint=0.0/10, complexity=4.0, maintainability=42.6, LOC=99
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+# validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        if not self._type_check(data, schema.type):
+            return self._error(f'Invalid type for {schema.type.value}')
+        
+        if schema.type == SchemaType.OBJECT:
+            return self._validate_object(data, schema)
+        elif schema.type == SchemaType.ARRAY:
+            return self._validate_array(data, schema)
+        else:
+            return ValidationResult(valid=True)
+
+    def _type_check(self, data: any, type: SchemaType) -> bool:
+        if type == SchemaType.STRING and not isinstance(data, str):
+            return False
+        elif type == SchemaType.NUMBER and not (isinstance(data, int) or isinstance(data, float)):
+            return False
+        elif type == SchemaType.INTEGER and not isinstance(data, int):
+            return False
+        elif type == SchemaType.BOOLEAN and not isinstance(data, bool):
+            return False
+        elif type == SchemaType.NULL and data is not None:
+            return False
+        else:
+            return True
+
+    def _validate_object(self, data: dict, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for field in schema.required:
+            if field not in data:
+                result.errors.append(ValidationError(path='', message=f'Missing required field {field}'))
+                result.valid = False
+        
+        for key, value_schema in schema.properties.items():
+            if key in data:
+                sub_result = self.validate(data[key], value_schema)
+                if not sub_result.valid:
+                    result.errors.extend(sub_result.errors)
+                    result.valid = False
+            else:
+                result.errors.append(ValidationError(path='', message=f'Missing required field {key}'))
+                result.valid = False
+        
+        return result
+
+    def _validate_array(self, data: list, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for i, item in enumerate(data):
+            sub_result = self.validate(item, schema.items)
+            if not sub_result.valid:
+                result.errors.extend(sub_result.errors)
+                result.valid = False
+        
+        return result
+
+    def _error(self, message: str) -> ValidationResult:
+        return ValidationResult(valid=False, errors=[ValidationError(path='', message=message)])
+
+    # Update the validate method to check for the minimum and maximum values of a number.
+    def _validate_number(self, data: any, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        if isinstance(data, float):
+            if schema.minimum is not None and data < schema.minimum:
+                result.errors.append(ValidationError(path='', message=f'Value {data} is less than the minimum value {schema.minimum}.'))
+                result.valid = False
+            if schema.maximum is not None and data > schema.maximum:
+                result.errors.append(ValidationError(path='', message=f'Value {data} is greater than the maximum value {schema.maximum}.'))
+                result.valid = False
+        
+        return result
+
+    # Update the validate method to check for the minimum and maximum length of a string.
+    def _validate_string(self, data: any, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        if isinstance(data, str):
+            if schema.min_length is not None and len(data) < schema.min_length:
+                result.errors.append(ValidationError(path='', message=f'String length {len(data)} is less than the minimum length {schema.min_length}.'))
+                result.valid = False
+            if schema.max_length is not None and len(data) > schema.max_length:
+                result.errors.append(ValidationError(path='', message=f'String length {len(data)} is greater than the maximum length {schema.max_length}.'))
+                result.valid = False
+        
+        return result
+
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  9/9 tests (100%)  gen=97.7s  revised_from=sol_agent_3_yi-coder_r1
+Quality: pylint=2.0/10, complexity=11.8, maintainability=43.7, LOC=73
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        errors = []
+        if schema.type == SchemaType.STRING and not isinstance(data, str):
+            return ValidationResult(False, [ValidationError('', 'Expected a string')])
+        elif schema.type == SchemaType.NUMBER and not isinstance(data, (int, float)):
+            errors.append(ValidationError('', 'Expected a number'))
+        elif schema.type == SchemaType.INTEGER and not isinstance(data, int):
+            return ValidationResult(False, [ValidationError('', 'Expected an integer')])
+        elif schema.type == SchemaType.BOOLEAN and not isinstance(data, bool):
+            return ValidationResult(False, [ValidationError('', 'Expected a boolean')])
+        elif schema.type == SchemaType.NULL and data is not None:
+            return ValidationResult(False, [ValidationError('', 'Expected null')])
+        elif schema.type == SchemaType.ARRAY:
+            if not isinstance(data, list):
+                errors.append(ValidationError('', 'Expected an array'))
+            else:
+                for i, item in enumerate(data):
+                    result = self.validate(item, schema.items)
+                    if not result.valid:
+                        errors += [ValidationError(f'{i}.{e.path}', e.message) for e in result.errors]
+        elif schema.type == SchemaType.OBJECT:
+            if not isinstance(data, dict):
+                return ValidationResult(False, [ValidationError('', 'Expected an object')])
+            else:
+                for prop_name, subschema in schema.properties.items():
+                    result = self.validate(data.get(prop_name), subschema)
+                    if not result.valid:
+                        errors += [ValidationError(f'{prop_name}.{e.path}', e.message) for e in result.errors]
+                for required_field in schema.required:
+                    if required_field not in data:
+                        errors.append(ValidationError('', f'Missing required field {required_field}'))
+        # Add checks for min/max and string length after the type check to avoid errors on wrong types
+        elif isinstance(data, (int, float)):
+            if schema.minimum is not None and data < schema.minimum:
+                errors.append(ValidationError('', f'Expected a value greater or equal than {schema.minimum}'))
+            if schema.maximum is not None and data > schema.maximum:
+                errors.append(ValidationError('', f'Expected a value less or equal than {schema.maximum}'))
+        elif isinstance(data, str):
+            if schema.min_length is not None and len(data) < schema.min_length:
+                errors.append(ValidationError('', f'Expected at least {schema.min_length} characters'))
+            if schema.max_length is not None and len(data) > schema.max_length:
+                errors.append(ValidationError('', f'Expected no more than {schema.max_length} characters'))
+        return ValidationResult(len(errors) == 0, errors)
+
+
+### Critiques
+
+agent_1_granite-code -> agent_2_codegeex4  correctness=9/10  efficiency=8/10  readability=9/10  would_adopt=True
+  Bugs (6):
+    - [minor] Bug 1: description — Evidence: test_number_range FAILED [ 77
+    - [minor] Root cause: The validation of the NUMBER type does not correctly enforce the minimum and maximum constraints.
+    - [minor] Fix: Update the _validate_object method to check for the minimum and maximum values of a number.
+    - [minor] Bug 2: description — Evidence: test_string_length FAILED [ 88
+    - [minor] Root cause: The validation of strings does not correctly enforce the minLength and maxLength constraints.
+    - [minor] Fix: Update the _validate_object method to check for the minimum and maximum length of a string.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: description — Evidence: test_number_range FAILED [ 77
+      - Root cause: The validation of the NUMBER type does not correctly enforce the minimum and maximum constraints.
+      - Fix: Update the _validate_object method to check for the minimum and maximum values of a number.
+    - Bug 2: description — Evidence: test_string_length FAILED [ 88
+      - Root cause: The validation of strings does not correctly enforce the minLength and maxLength constraints.
+      - Fix: Update the _validate_object method to check for the minimum and maximum length of a string.
+    
+    **Ratings:**
+    - Correctness: 9/10
+    - Efficiency: 8/10
+    - Readability: 9/10
+    
+    **Improvements:**
+    - Use more specific error messages to provide more information about the validation failure.
+    - Add comments to expl... [truncated]
+
+agent_1_granite-code -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: description — Evidence: test_number_range FAILED [ 77
+      - Root cause: The validation of the NUMBER type does not correctly enforce the minimum and maximum constraints.
+      - Fix: Update the _validate_object method to check for the minimum and maximum values of a number.
+    - Bug 2: description — Evidence: test_string_length FAILED [ 88
+      - Root cause: The validation of strings does not correctly enforce the minLength and maxLength constraints.
+      - Fix: Update the _validate_object method to check for the minimum and maximum length of a string.
+    
+    **Ratings:**
+    - Correctness: 9/10
+    - Efficiency: 8/10
+    - Readability: 9/10
+    
+    **Improvements:**
+    - Use more specific error messages to provide more information about the validation failure.
+    - Add comments to expl... [truncated]
+
+agent_2_codegeex4 -> agent_1_granite-code  correctness=3/10  efficiency=6/10  readability=7/10  would_adopt=False
+  Bugs (2):
+    - [minor] s as described above.
+    - [minor] s that prevent it from passing all tests. While the code is more concise, the lack of fixes means it's not ready for adoption.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The validation of the `NUMBER` type does not correctly handle the case where both `minimum` and `maximum` are specified, as it only checks if the data is less than or greater than one of them. Evidence: test_number_range FAILED [77%] — Root cause: Lack of logical AND between minimum and maximum constraints — Fix: Add a check for both minimum and maximum constraints.
+      ```python
+      if schema.minimum is not None and data < schema.minimum:
+          result.errors.append(ValidationError(path='', message=f'Data is less than {schema.minimum}'))
+    
+      if schema.maximum is not None and data > schema.maximum:
+          result.errors.append(ValidationError(path='', message=f'Data is greater than {schema.maximum}'))
+      ```
+    - Bug 2: The validation of strings does no... [truncated]
+
+agent_2_codegeex4 -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs (1):
+    - [minor] Bug 1: The validation of the `NUMBER` type does not correctly handle the case where both `minimum` and `maximum` are specified, similar to
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The validation of the `NUMBER` type does not correctly handle the case where both `minimum` and `maximum` are specified, as it only checks if the data is less than or greater than one of them. Evidence: test_number_range FAILED [77%] — Root cause: Lack of logical AND between minimum and maximum constraints — Fix: Add a check for both minimum and maximum constraints.
+      ```python
+      if schema.minimum is not None and data < schema.minimum:
+          result.errors.append(ValidationError(path='', message=f'Data is less than {schema.minimum}'))
+    
+      if schema.maximum is not None and data > schema.maximum:
+          result.errors.append(ValidationError(path='', message=f'Data is greater than {schema.maximum}'))
+      ```
+    - Bug 2: The validation of strings does no... [truncated]
+
+agent_3_yi-coder -> agent_1_granite-code  correctness=7/10  efficiency=8/10  readability=9/10  would_adopt=False
+  Bugs (8):
+    - [minor] Bug 1: The validation of the `NUMBER` type does not correctly enforce minimum and maximum values.
+    - [minor] Evidence: test_number_range FAILED [77%] — 'Data is less than' or 'Data is greater than' a specified number.
+    - [minor] Root cause: There are no checks for minimum and maximum values in the SchemaValidator class.
+    - [minor] Fix: Add validation for minimum and maximum values inside the `validate` method of the `SchemaValidator` class.
+    - [minor] Bug 2: The validation of strings does not correctly enforce minLength and maxLength constraints.
+    - [minor] Evidence: test_string_length FAILED [88%] — 'Data is shorter than' or 'Data is longer than' a specified length.
+    - [minor] Root cause: There are no checks for minimum and maximum string lengths in the `SchemaValidator` class.
+    - [minor] Fix: Add validation for minLength and maxLength constraints inside the `validate` method of the `SchemaValidator` class.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The validation of the `NUMBER` type does not correctly enforce minimum and maximum values.
+      - Evidence: test_number_range FAILED [77%] — 'Data is less than' or 'Data is greater than' a specified number.
+      - Root cause: There are no checks for minimum and maximum values in the SchemaValidator class.
+      - Fix: Add validation for minimum and maximum values inside the `validate` method of the `SchemaValidator` class.
+    - Bug 2: The validation of strings does not correctly enforce minLength and maxLength constraints.
+      - Evidence: test_string_length FAILED [88%] — 'Data is shorter than' or 'Data is longer than' a specified length.
+      - Root cause: There are no checks for minimum and maximum string lengths in the `SchemaValidator` class.
+      - Fix: Add... [truncated]
+
+agent_3_yi-coder -> agent_2_codegeex4  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The validation of the `NUMBER` type does not correctly enforce minimum and maximum values.
+      - Evidence: test_number_range FAILED [77%] — 'Data is less than' or 'Data is greater than' a specified number.
+      - Root cause: There are no checks for minimum and maximum values in the SchemaValidator class.
+      - Fix: Add validation for minimum and maximum values inside the `validate` method of the `SchemaValidator` class.
+    - Bug 2: The validation of strings does not correctly enforce minLength and maxLength constraints.
+      - Evidence: test_string_length FAILED [88%] — 'Data is shorter than' or 'Data is longer than' a specified length.
+      - Root cause: There are no checks for minimum and maximum string lengths in the `SchemaValidator` class.
+      - Fix: Add... [truncated]
+
+### Votes
+
+agent_1_granite-code  vote=adopt  target=agent_2_codegeex4  confidence=1.00
+    Solution 2 passes all tests and has a more efficient algorithm for validating numbers. It also handles the minimum and maximum length of strings, which is not present in Solution 1.
+
+agent_2_codegeex4  vote=adopt  target=agent_3_yi-coder  confidence=1.00
+    Solution 3 is the most efficient and correctly handles all cases, including nested objects and arrays, while also providing clear error messages.
+
+agent_3_yi-coder  vote=abstain  target=-  confidence=1.00
+    The solution passes all tests, has a clean and readable code with type checks for min/max values and string length which is not done in the other solutions. It also follows PEP8 guidelines.
+
+### Consensus
+Reached: False  |  Ratio: 61%  |  Winner: -
+Reason: Consensus not reached: 60.9% agreement
+Vote distribution: {'sol_agent_2_codegeex4_r4': 1, 'sol_agent_3_yi-coder_r4': 1}
+
+==============================================================================
+ROUND 5  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 100%  |  Avg: 59%  |  Bugs found: 10  |  Duration: 182.9s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  1/9 tests (11%)  gen=45.7s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpw9tiqoxj
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpw9tiqoxj/test_solu
+Quality: pylint=5.0/10, complexity=8.5, maintainability=44.7, LOC=70
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True, errors=[])
+
+        if schema.type == SchemaType.STRING:
+            if not isinstance(data, str):
+                result.errors.append(ValidationError(path='', message='Data is not a string'))
+        elif schema.type == SchemaType.NUMBER or schema.type == SchemaType.INTEGER:
+            if not isinstance(data, (int, float)):
+                result.errors.append(ValidationError(path='', message='Data is not a number'))
+
+            if schema.minimum is not None and data < schema.minimum:
+                result.errors.append(ValidationError(path='', message=f'Data is less than {schema.minimum}'))
+
+            if schema.maximum is not None and data > schema.maximum:
+                result.errors.append(ValidationError(path='', message=f'Data is greater than {schema.maximum}'))
+        elif schema.type == SchemaType.BOOLEAN:
+            if not isinstance(data, bool):
+                result.errors.append(ValidationError(path='', message='Data is not a boolean'))
+        elif schema.type == SchemaType.OBJECT:
+            if not isinstance(data, dict):
+                result.errors.append(ValidationError(path='', message='Data is not an object'))
+
+            for field in schema.required:
+                if field not in data:
+                    result.errors.append(ValidationError(path=field, message='Field is required'))
+
+            for field, value in data.items():
+                if field in schema.properties:
+                    sub_result = self.validate(value, schema.properties[field])
+                    sub_result.path = f'{field}.{sub_result.path}'
+                    result.errors.extend(sub_result.errors)
+        elif schema.type == SchemaType.ARRAY:
+            if not isinstance(data, list):
+                result.errors.append(ValidationError(path='', message='Data is not an array'))
+
+            for i, item in enumerate(data):
+                sub_result = self.validate(item, schema.items)
+                sub_result.path = f'{i}.{sub_result.path}'
+                result.errors.extend(sub_result.errors)
+        elif schema.type == SchemaType.NULL:
+            if data is not None:
+                result.errors.append(ValidationError(path='', message='Data is not null'))
+        else:
+            raise ValueError('Invalid schema type')
+
+        return result
+
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  6/9 tests (67%)  gen=60.4s  revised_from=sol_agent_2_codegeex4_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpk44ulsnx
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpk44ulsnx/test_solu
+Quality: pylint=0.5/10, complexity=3.6, maintainability=42.8, LOC=79
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        if not self._type_check(data, schema.type):
+            return self._error(f'Invalid type for {schema.type.value}')
+        
+        if schema.type == SchemaType.OBJECT:
+            return self._validate_object(data, schema)
+        elif schema.type == SchemaType.ARRAY:
+            return self._validate_array(data, schema)
+        else:
+            return ValidationResult(valid=True)
+
+    def _type_check(self, data: any, type: SchemaType) -> bool:
+        if type == SchemaType.STRING and not isinstance(data, str):
+            return False
+        elif type == SchemaType.NUMBER and not (isinstance(data, int) or isinstance(data, float)):
+            return False
+        elif type == SchemaType.INTEGER and not isinstance(data, int):
+            return False
+        elif type == SchemaType.BOOLEAN and not isinstance(data, bool):
+            return False
+        elif type == SchemaType.NULL and data is not None:
+            return False
+        else:
+            return True
+
+    def _validate_object(self, data: dict, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for field in schema.required:
+            if field not in data:
+                result.errors.append(ValidationError(path='', message=f'Missing required field {field}'))
+                result.valid = False
+        
+        for key, value_schema in schema.properties.items():
+            if key in data:
+                sub_result = self.validate(data[key], value_schema)
+                if not sub_result.valid:
+                    result.errors.extend(sub_result.errors)
+                    result.valid = False
+            else:
+                result.errors.append(ValidationError(path='', message=f'Missing required field {key}'))
+                result.valid = False
+        
+        return result
+
+    def _validate_array(self, data: list, schema: Schema) -> ValidationResult:
+        result = ValidationResult(valid=True)
+        
+        for i, item in enumerate(data):
+            sub_result = self.validate(item, schema.items)
+            if not sub_result.valid:
+                result.errors.extend(sub_result.errors)
+                result.valid = False
+        
+        return result
+
+    def _error(self, message: str) -> ValidationResult:
+        return ValidationResult(valid=False, errors=[ValidationError(path='', message=message)])
+
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  9/9 tests (100%)  gen=79.6s  revised_from=sol_agent_3_yi-coder_r4
+Quality: pylint=2.0/10, complexity=11.8, maintainability=43.7, LOC=73
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        errors = []
+        if schema.type == SchemaType.STRING and not isinstance(data, str):
+            return ValidationResult(False, [ValidationError('', 'Expected a string')])
+        elif schema.type == SchemaType.NUMBER and not isinstance(data, (int, float)):
+            errors.append(ValidationError('', 'Expected a number'))
+        elif schema.type == SchemaType.INTEGER and not isinstance(data, int):
+            return ValidationResult(False, [ValidationError('', 'Expected an integer')])
+        elif schema.type == SchemaType.BOOLEAN and not isinstance(data, bool):
+            return ValidationResult(False, [ValidationError('', 'Expected a boolean')])
+        elif schema.type == SchemaType.NULL and data is not None:
+            return ValidationResult(False, [ValidationError('', 'Expected null')])
+        elif schema.type == SchemaType.ARRAY:
+            if not isinstance(data, list):
+                errors.append(ValidationError('', 'Expected an array'))
+            else:
+                for i, item in enumerate(data):
+                    result = self.validate(item, schema.items)
+                    if not result.valid:
+                        errors += [ValidationError(f'{i}.{e.path}', e.message) for e in result.errors]
+        elif schema.type == SchemaType.OBJECT:
+            if not isinstance(data, dict):
+                return ValidationResult(False, [ValidationError('', 'Expected an object')])
+            else:
+                for prop_name, subschema in schema.properties.items():
+                    result = self.validate(data.get(prop_name), subschema)
+                    if not result.valid:
+                        errors += [ValidationError(f'{prop_name}.{e.path}', e.message) for e in result.errors]
+                for required_field in schema.required:
+                    if required_field not in data:
+                        errors.append(ValidationError('', f'Missing required field {required_field}'))
+        # Add checks for min/max and string length after the type check to avoid errors on wrong types
+        elif isinstance(data, (int, float)):
+            if schema.minimum is not None and data < schema.minimum:
+                errors.append(ValidationError('', f'Expected a value greater or equal than {schema.minimum}'))
+            if schema.maximum is not None and data > schema.maximum:
+                errors.append(ValidationError('', f'Expected a value less or equal than {schema.maximum}'))
+        elif isinstance(data, str):
+            if schema.min_length is not None and len(data) < schema.min_length:
+                errors.append(ValidationError('', f'Expected at least {schema.min_length} characters'))
+            if schema.max_length is not None and len(data) > schema.max_length:
+                errors.append(ValidationError('', f'Expected no more than {schema.max_length} characters'))
+        return ValidationResult(len(errors) == 0, errors)
+
+
+### Critiques
+
+agent_1_granite-code -> agent_2_codegeex4  correctness=9/10  efficiency=8/10  readability=7/10  would_adopt=True
+  Bugs (2):
+    - [minor] Bug 1: description — Evidence: test_number_range FAILED [ 77%] — Root cause: The validation of the NUMBER type does not correctly handle the minimum and maximum values. — Fix: Update the _validate_number method to check for the min and max values of a number.
+    - [minor] Bug 2: description — Evidence: test_string_length FAILED [ 88%] — Root cause: The validation of the STRING type does not correctly handle the minimum and maximum length of a string. — Fix: Update the _validate_string method to check for the min and max length of a string.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: description — Evidence: test_number_range FAILED [ 77%] — Root cause: The validation of the NUMBER type does not correctly handle the minimum and maximum values. — Fix: Update the _validate_number method to check for the min and max values of a number.
+    - Bug 2: description — Evidence: test_string_length FAILED [ 88%] — Root cause: The validation of the STRING type does not correctly handle the minimum and maximum length of a string. — Fix: Update the _validate_string method to check for the min and max length of a string.
+    
+    **Ratings:**
+    - Correctness: 9/10
+    - Efficiency: 8/10
+    - Readability: 7/10
+    
+    **Improvements:**
+    - The code could be refactored to use more specific error messages for each validation type, which would make it easier to understa... [truncated]
+
+agent_1_granite-code -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: description — Evidence: test_number_range FAILED [ 77%] — Root cause: The validation of the NUMBER type does not correctly handle the minimum and maximum values. — Fix: Update the _validate_number method to check for the min and max values of a number.
+    - Bug 2: description — Evidence: test_string_length FAILED [ 88%] — Root cause: The validation of the STRING type does not correctly handle the minimum and maximum length of a string. — Fix: Update the _validate_string method to check for the min and max length of a string.
+    
+    **Ratings:**
+    - Correctness: 9/10
+    - Efficiency: 8/10
+    - Readability: 7/10
+    
+    **Improvements:**
+    - The code could be refactored to use more specific error messages for each validation type, which would make it easier to understa... [truncated]
+
+agent_2_codegeex4 -> agent_1_granite-code  correctness=6/10  efficiency=7/10  readability=8/10  would_adopt=False
+  Bugs (4):
+    - [minor] Bug 1: The `validate` method in the `SchemaValidator` class does not correctly handle the case where a `NUMBER` type schema expects a minimum value but is being validated against a data that is greater than this minimum. Evidence: `test_number_range FAILED [77%]` — 'Data is less than' error message instead of 'Expected a value greater or equal than'. Root cause: The comparison operator `<` is used for validation, whereas it should be `>=`. Fix: Change the condition to check if the data is greater than the minimum value. Specifically, change line 31 from:
+    - [minor] Bug 2: The `validate` method does not correctly handle the case where a `NUMBER` type schema expects a maximum value but is being validated against a data that is less than this maximum. Evidence: `test_number_range FAILED [77%]` — 'Data is greater than' error message instead of 'Expected a value less or equal than'. Root cause: The comparison operator `>` is used for validation, whereas it should be `<=`. Fix: Change the condition to check if the data is less than the maximum value. Specifically, change line 32 from:
+    - [minor] Bug 3: The `validate` method does not correctly handle the case where a `STRING` type schema expects a minimum length but is being validated against a data that is shorter than this minimum. Evidence: `test_string_length FAILED [88%]`. Root cause: Similar to the previous bugs, the comparison operator for string length is incorrect. Fix: Change the condition to check if the length of the data is greater than or equal to the minimum length. Specifically, change line 55 from:
+    - [minor] Bug 4: The `validate` method does not correctly handle the case where a `STRING` type schema expects a maximum length but is being validated against a data that is longer than this maximum. Evidence: `test_string_length FAILED [88%]`. Root cause: Similar to the previous bugs, the comparison operator for string length is incorrect. Fix: Change the condition to check if the length of the data is less than or equal to the maximum length. Specifically, change line 56 from:
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    
+    - Bug 1: The `validate` method in the `SchemaValidator` class does not correctly handle the case where a `NUMBER` type schema expects a minimum value but is being validated against a data that is greater than this minimum. Evidence: `test_number_range FAILED [77%]` — 'Data is less than' error message instead of 'Expected a value greater or equal than'. Root cause: The comparison operator `<` is used for validation, whereas it should be `>=`. Fix: Change the condition to check if the data is greater than the minimum value. Specifically, change line 31 from:
+    ```python
+    if schema.minimum is not None and data < schema.minimum:
+    ```
+    to:
+    ```python
+    if schema.minimum is not None and data <= schema.minimum:
+    ```
+    
+    - Bug 2: The `validate` method does not correctl... [truncated]
+
+agent_2_codegeex4 -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    
+    - Bug 1: The `validate` method in the `SchemaValidator` class does not correctly handle the case where a `NUMBER` type schema expects a minimum value but is being validated against a data that is greater than this minimum. Evidence: `test_number_range FAILED [77%]` — 'Data is less than' error message instead of 'Expected a value greater or equal than'. Root cause: The comparison operator `<` is used for validation, whereas it should be `>=`. Fix: Change the condition to check if the data is greater than the minimum value. Specifically, change line 31 from:
+    ```python
+    if schema.minimum is not None and data < schema.minimum:
+    ```
+    to:
+    ```python
+    if schema.minimum is not None and data <= schema.minimum:
+    ```
+    
+    - Bug 2: The `validate` method does not correctl... [truncated]
+
+agent_3_yi-coder -> agent_1_granite-code  correctness=7/10  efficiency=8/10  readability=9/10  would_adopt=False
+  Bugs (2):
+    - [minor] Bug 1: The validation of the `NUMBER` type does not correctly check if a value is within the specified minimum and maximum range. — Evidence: test_number_range FAILED [77%] — 'Data is less than' error.  — Root cause: There are no checks for minimum and maximum values in the _validate_object method. — Fix: Update the _validate_object method to check for the minimum and maximum values of a number.
+    - [minor] Bug 2: The validation of the `STRING` type does not correctly check if a string value is within the specified minimum and maximum length. — Evidence: test_string_length FAILED [88%] — 'String length' error.  — Root cause: There are no checks for minimum and maximum lengths in the _validate_object method. — Fix: Update the _validate_object method to check for the minimum and maximum lengths of a string.
+  Overall assessment:
+    ## Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The validation of the `NUMBER` type does not correctly check if a value is within the specified minimum and maximum range. — Evidence: test_number_range FAILED [77%] — 'Data is less than' error.  — Root cause: There are no checks for minimum and maximum values in the _validate_object method. — Fix: Update the _validate_object method to check for the minimum and maximum values of a number.
+    - Bug 2: The validation of the `STRING` type does not correctly check if a string value is within the specified minimum and maximum length. — Evidence: test_string_length FAILED [88%] — 'String length' error.  — Root cause: There are no checks for minimum and maximum lengths in the _validate_object method. — Fix: Update the _validate_object method to check f... [truncated]
+
+agent_3_yi-coder -> agent_2_codegeex4  correctness=7/10  efficiency=8/10  readability=9/10  would_adopt=False
+  Bugs (2):
+    - [minor] Bug 1: The validation of the `NUMBER` type does not correctly check if a value is within the specified minimum and maximum range. — Evidence: test_number_range FAILED [77%] — 'Value {data} is less than' error.  — Root cause: There are no checks for minimum and maximum values in the _validate_object method. — Fix: Update the _validate_object method to check for the minimum and maximum values of a number.
+    - [minor] Bug 2: The validation of the `STRING` type does not correctly check if a string value is within the specified minimum and maximum length. — Evidence: test_string_length FAILED [88%] — 'String length {len(data)} is less than' error.  — Root cause: There are no checks for minimum and maximum lengths in the _validate_object method. — Fix: Update the _validate_object method to check for the minimum and maximum lengths of a string.
+  Overall assessment:
+    ## Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The validation of the `NUMBER` type does not correctly check if a value is within the specified minimum and maximum range. — Evidence: test_number_range FAILED [77%] — 'Data is less than' error.  — Root cause: There are no checks for minimum and maximum values in the _validate_object method. — Fix: Update the _validate_object method to check for the minimum and maximum values of a number.
+    - Bug 2: The validation of the `STRING` type does not correctly check if a string value is within the specified minimum and maximum length. — Evidence: test_string_length FAILED [88%] — 'String length' error.  — Root cause: There are no checks for minimum and maximum lengths in the _validate_object method. — Fix: Update the _validate_object method to check f... [truncated]
+
+### Votes
+
+agent_1_granite-code  vote=adopt  target=agent_2_codegeex4  confidence=1.00
+    Solution 2 passes all tests and has a simpler algorithm compared to Solution 1, making it the better choice.
+
+agent_2_codegeex4  vote=adopt  target=agent_3_yi-coder  confidence=1.00
+    Solution 3 is the most efficient and correctly handles all edge cases, including nested objects and arrays, while also providing clear error messages.
+
+agent_3_yi-coder  vote=abstain  target=-  confidence=1.00
+    The solution is the most readable, passes all tests and has a clean structure. It also includes checks for min/max values and string length after type checking to avoid errors on wrong types.
+
+### Consensus
+Reached: False  |  Ratio: 61%  |  Winner: -
+Reason: Consensus not reached: 60.7% agreement
+Vote distribution: {'sol_agent_2_codegeex4_r5': 1, 'sol_agent_3_yi-coder_r5': 1}
+
+==============================================================================
+FINAL RESULT
+==============================================================================
+Winner: agent_3_yi-coder  (round 4, 100%)
+
+Final code:
+------------------------------------------------------------------------------
+>>> FILE: schema_types.py
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+class SchemaType(Enum):
+    STRING = 'string'
+    NUMBER = 'number'
+    INTEGER = 'integer'
+    BOOLEAN = 'boolean'
+    OBJECT = 'object'
+    ARRAY = 'array'
+    NULL = 'null'
+
+@dataclass
+class Schema:
+    type: SchemaType
+    required: list[str] = field(default_factory=list)
+    properties: dict = field(default_factory=dict)  # dict[str, Schema]
+    items: Optional['Schema'] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+
+@dataclass
+class ValidationError:
+    path: str
+    message: str
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+
+>>> FILE: validator.py
+from schema_types import Schema, SchemaType, ValidationResult, ValidationError
+
+class SchemaValidator:
+    def validate(self, data: any, schema: Schema) -> ValidationResult:
+        errors = []
+        if schema.type == SchemaType.STRING and not isinstance(data, str):
+            return ValidationResult(False, [ValidationError('', 'Expected a string')])
+        elif schema.type == SchemaType.NUMBER and not isinstance(data, (int, float)):
+            errors.append(ValidationError('', 'Expected a number'))
+        elif schema.type == SchemaType.INTEGER and not isinstance(data, int):
+            return ValidationResult(False, [ValidationError('', 'Expected an integer')])
+        elif schema.type == SchemaType.BOOLEAN and not isinstance(data, bool):
+            return ValidationResult(False, [ValidationError('', 'Expected a boolean')])
+        elif schema.type == SchemaType.NULL and data is not None:
+            return ValidationResult(False, [ValidationError('', 'Expected null')])
+        elif schema.type == SchemaType.ARRAY:
+            if not isinstance(data, list):
+                errors.append(ValidationError('', 'Expected an array'))
+            else:
+                for i, item in enumerate(data):
+                    result = self.validate(item, schema.items)
+                    if not result.valid:
+                        errors += [ValidationError(f'{i}.{e.path}', e.message) for e in result.errors]
+        elif schema.type == SchemaType.OBJECT:
+            if not isinstance(data, dict):
+                return ValidationResult(False, [ValidationError('', 'Expected an object')])
+            else:
+                for prop_name, subschema in schema.properties.items():
+                    result = self.validate(data.get(prop_name), subschema)
+                    if not result.valid:
+                        errors += [ValidationError(f'{prop_name}.{e.path}', e.message) for e in result.errors]
+                for required_field in schema.required:
+                    if required_field not in data:
+                        errors.append(ValidationError('', f'Missing required field {required_field}'))
+        # Add checks for min/max and string length after the type check to avoid errors on wrong types
+        elif isinstance(data, (int, float)):
+            if schema.minimum is not None and data < schema.minimum:
+                errors.append(ValidationError('', f'Expected a value greater or equal than {schema.minimum}'))
+            if schema.maximum is not None and data > schema.maximum:
+                errors.append(ValidationError('', f'Expected a value less or equal than {schema.maximum}'))
+        elif isinstance(data, str):
+            if schema.min_length is not None and len(data) < schema.min_length:
+                errors.append(ValidationError('', f'Expected at least {schema.min_length} characters'))
+            if schema.max_length is not None and len(data) > schema.max_length:
+                errors.append(ValidationError('', f'Expected no more than {schema.max_length} characters'))
+        return ValidationResult(len(errors) == 0, errors)
+
+
+Transcript generated: 2026-04-26T15:51:29
