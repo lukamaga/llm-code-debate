@@ -1,0 +1,28 @@
+{
+  "id": "json_parser",
+  "name": "JSON Parser",
+  "difficulty": "extreme",
+  "description": "Implement a JSON parser from scratch with two modules. The tokenizer module converts a JSON string into tokens (braces, brackets, strings, numbers, booleans, null, colons, commas). The parser module uses these tokens to build a Python object (dict, list, str, int, float, bool, None).",
+  "signature": "# tokenizer.py\nfrom enum import Enum\nfrom dataclasses import dataclass\n\nclass TokenType(Enum):\n    LBRACE = '{'\n    RBRACE = '}'\n    LBRACKET = '['\n    RBRACKET = ']'\n    COLON = ':'\n    COMMA = ','\n    STRING = 'STRING'\n    NUMBER = 'NUMBER'\n    TRUE = 'TRUE'\n    FALSE = 'FALSE'\n    NULL = 'NULL'\n\n@dataclass\nclass Token:\n    type: TokenType\n    value: any\n\nclass JSONTokenizer:\n    def __init__(self, text: str):\n        ...\n    def tokenize(self) -> list[Token]:\n        ...\n\n# parser.py\nfrom tokenizer import JSONTokenizer, Token, TokenType\n\nclass JSONParser:\n    def __init__(self, text: str):\n        ...\n    def parse(self) -> any:\n        \"\"\"Parse JSON string and return Python object.\"\"\"\n        ...",
+  "required_files": ["tokenizer.py", "parser.py"],
+  "test_imports": ["from parser import JSONParser"],
+  "tests": [
+    "def test_parse_object():\n    result = JSONParser('{\"name\": \"Alice\", \"age\": 30}').parse()\n    assert result == {'name': 'Alice', 'age': 30}",
+    "def test_parse_array():\n    result = JSONParser('[1, 2, 3]').parse()\n    assert result == [1, 2, 3]",
+    "def test_parse_nested():\n    result = JSONParser('{\"data\": [1, {\"x\": true}]}').parse()\n    assert result == {'data': [1, {'x': True}]}",
+    "def test_parse_string():\n    result = JSONParser('\"hello world\"').parse()\n    assert result == 'hello world'",
+    "def test_parse_number_types():\n    assert JSONParser('42').parse() == 42\n    assert JSONParser('3.14').parse() == 3.14\n    assert JSONParser('-7').parse() == -7",
+    "def test_parse_literals():\n    assert JSONParser('true').parse() == True\n    assert JSONParser('false').parse() == False\n    assert JSONParser('null').parse() == None",
+    "def test_parse_empty_structures():\n    assert JSONParser('{}').parse() == {}\n    assert JSONParser('[]').parse() == []",
+    "def test_parse_escaped_strings():\n    result = JSONParser('{\"msg\": \"hello\\\\nworld\"}').parse()\n    assert result == {'msg': 'hello\\nworld'}",
+    "def test_parse_complex():\n    json_str = '{\"users\": [{\"id\": 1, \"active\": true}, {\"id\": 2, \"active\": false}], \"count\": 2}'\n    result = JSONParser(json_str).parse()\n    assert result['count'] == 2\n    assert len(result['users']) == 2\n    assert result['users'][0]['active'] == True"
+  ],
+  "constraints": [
+    "Do NOT use Python's json module",
+    "Must handle: objects, arrays, strings, numbers (int and float), booleans, null",
+    "Must handle basic escape sequences in strings (\\n, \\t, \\\\, \\\")",
+    "Raise ValueError on invalid JSON"
+  ],
+  "helper_code": {},
+  "tags": ["parser", "tokenizer", "multi-file", "recursion"]
+}
