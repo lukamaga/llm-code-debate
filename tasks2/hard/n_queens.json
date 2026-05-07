@@ -1,0 +1,25 @@
+{
+  "id": "n_queens",
+  "name": "N-Queens",
+  "difficulty": "hard",
+  "description": "The n-queens puzzle is the problem of placing n queens on an n x n chessboard such that no two queens attack each other (no two queens share the same row, column, or diagonal). Given an integer n, return all distinct solutions. Each solution is represented as a list of strings where 'Q' marks a queen and '.' marks an empty square. Solutions can be returned in any order.",
+  "signature": "def solve_n_queens(n: int) -> list[list[str]]:",
+  "tests": [
+    "def test_n_1():\n    assert solve_n_queens(1) == [['Q']]",
+    "def test_n_2():\n    assert solve_n_queens(2) == []",
+    "def test_n_3():\n    assert solve_n_queens(3) == []",
+    "def test_n_4_count():\n    result = solve_n_queens(4)\n    assert len(result) == 2",
+    "def test_n_4_validity():\n    result = solve_n_queens(4)\n    for board in result:\n        assert len(board) == 4\n        assert all(len(row) == 4 for row in board)\n        assert all(row.count('Q') == 1 for row in board)\n        cols = [row.index('Q') for row in board]\n        assert len(set(cols)) == 4",
+    "def test_n_5_count():\n    assert len(solve_n_queens(5)) == 10",
+    "def test_n_6_count():\n    assert len(solve_n_queens(6)) == 4",
+    "def test_n_8_count():\n    assert len(solve_n_queens(8)) == 92",
+    "def test_diagonals_n4():\n    result = solve_n_queens(4)\n    for board in result:\n        positions = [(r, row.index('Q')) for r, row in enumerate(board)]\n        for i in range(len(positions)):\n            for j in range(i+1, len(positions)):\n                r1, c1 = positions[i]\n                r2, c2 = positions[j]\n                assert abs(r1-r2) != abs(c1-c2)"
+  ],
+  "constraints": [
+    "1 <= n <= 9",
+    "Each solution is a list of n strings of length n",
+    "Use 'Q' for queen and '.' for empty square",
+    "Return empty list if no solution exists"
+  ],
+  "tags": ["backtracking", "recursion"]
+}
