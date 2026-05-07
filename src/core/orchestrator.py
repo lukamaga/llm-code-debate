@@ -143,6 +143,118 @@ def _looks_truncated(code: str) -> bool:
     return False
 
 
+def _is_placeholder_body(body: "list") -> bool:
+    """A function body counts as a placeholder if, after dropping the leading
+    docstring (if any), it contains exactly one statement and that statement
+    is one of:
+      * ``pass``
+      * a bare ellipsis expression (``...``)
+      * ``raise NotImplementedError`` (with or without args)
+    """
+    import ast as _ast
+
+    if not body:
+        return False
+
+    # Skip leading docstring.
+    stmts = body
+    if (
+        isinstance(stmts[0], _ast.Expr)
+        and isinstance(stmts[0].value, _ast.Constant)
+        and isinstance(stmts[0].value.value, str)
+    ):
+        stmts = stmts[1:]
+
+    if len(stmts) != 1:
+        return False
+
+    s = stmts[0]
+    if isinstance(s, _ast.Pass):
+        return True
+    if (
+        isinstance(s, _ast.Expr)
+        and isinstance(s.value, _ast.Constant)
+        and s.value.value is Ellipsis
+    ):
+        return True
+    if isinstance(s, _ast.Raise) and s.exc is not None:
+        # `raise NotImplementedError` or `raise NotImplementedError(...)`
+        exc = s.exc
+        name_node = exc.func if isinstance(exc, _ast.Call) else exc
+        if isinstance(name_node, _ast.Name) and name_node.id == "NotImplementedError":
+            return True
+    return False
+
+
+def _looks_lazy(code: str) -> bool:
+    """Detect "lazy" LLM output — code with placeholder bodies instead of
+    actual implementation.
+
+    Observed in real transcripts on multi-component tasks (parsers, compilers,
+    interpreters): models output the *architecture* (class skeletons,
+    dataclasses, method signatures) but leave the core methods as ``pass`` /
+    ``...`` / ``raise NotImplementedError``. Such code parses, runs, but
+    fails every test that exercises the missing logic — and propagates into
+    the next round's critique-revise cycle, accumulating MAD anti-pattern.
+
+    Heuristic: if the file has at least 4 ``def`` declarations AND ≥25% of
+    function bodies are placeholder-only, treat it as a stub. The thresholds
+    are calibrated against real transcripts:
+      * yi-coder lazy (5 defs, 2 placeholders = 40%)   → flagged
+      * codegeex4 lazy (4 defs, 1 placeholder = 25%)   → flagged (boundary)
+      * granite lazy (4 defs, 3 placeholders = 75%)    → flagged
+      * abstract base + concrete (3 defs, 1 = 33%)     → NOT flagged (< 4 defs)
+      * legit no-op hook in 5-method class (5 defs, 1 = 20%) → NOT flagged
+
+    Implementation uses AST — robust to comments between ``def`` and body,
+    arbitrary indentation, type hints, and decorators. Falls back to False
+    if the code fails to parse (the SyntaxError path already reverts those).
+    """
+    if not code or not code.strip():
+        return False
+
+    import ast as _ast
+
+    # Multi-file solutions use `# FILE: foo.py` separators; AST can't parse
+    # the concatenation. Split and check each file independently — if ANY
+    # file is mostly stubs, the whole solution is lazy.
+    if "# FILE:" in code:
+        parts = []
+        current: list[str] = []
+        for line in code.splitlines():
+            if line.strip().startswith("# FILE:"):
+                if current:
+                    parts.append("\n".join(current))
+                current = []
+            else:
+                current.append(line)
+        if current:
+            parts.append("\n".join(current))
+        return any(_looks_lazy(part) for part in parts if part.strip())
+
+    try:
+        tree = _ast.parse(code)
+    except SyntaxError:
+        # SyntaxError is handled by the existing _BROKEN_STATUSES path; we
+        # don't double-flag here.
+        return False
+
+    total_defs = 0
+    placeholder_defs = 0
+    for node in _ast.walk(tree):
+        if isinstance(node, (_ast.FunctionDef, _ast.AsyncFunctionDef)):
+            total_defs += 1
+            if _is_placeholder_body(node.body):
+                placeholder_defs += 1
+
+    # Need at least 4 functions to fairly judge — small files often have
+    # legitimate `pass` (e.g. abstract base + concrete subclass = 3 defs).
+    if total_defs < 4:
+        return False
+
+    return (placeholder_defs / total_defs) >= 0.25
+
+
 def should_revert_revision(
     prev_best: "Solution | None",
     revised_result: "Any",
@@ -211,11 +323,36 @@ def should_revert_revision(
     ):
         return (True, "truncated_output")
 
+    # Lazy skeleton: model wrote architecture but left ≥30% of function bodies
+    # as `pass` / `...` / `TODO`. Such revisions can never pass tests that
+    # exercise the missing logic; they accumulate into MAD anti-pattern. Only
+    # revert if there's no improvement (don't punish a legit partial rewrite).
+    if (
+        revised_code is not None
+        and _looks_lazy(revised_code)
+        and regression_size >= 0  # not strictly improving
+    ):
+        return (True, "lazy_skeleton")
+
     if regression_size >= 2:
         return (True, f"regressed_{regression_size}_tests")
 
     if regression_size == 1:
         return (False, "regressed_by_one_kept")
+
+    # No-op revision: model returned byte-identical code as its "revision".
+    # Observed in real transcripts (mini_database extreme — codegeex4 stuck for
+    # 4 rounds with R1 == R2 == R3 == R4 == R5). This is a legitimate "keep"
+    # outcome (no regression), but flagging it lets the orchestrator log a
+    # clear warning and lets future analysis distinguish "model converged" from
+    # "model rejected critique entirely". We do NOT revert — the solution IS
+    # the previous best, byte-for-byte. Only the reason code differs from
+    # "no_regression" so the caller can branch on it for diagnostics.
+    if revised_code is not None and prev_best.code:
+        prev_norm = (prev_best.code or "").strip()
+        new_norm = (revised_code or "").strip()
+        if prev_norm and prev_norm == new_norm:
+            return (False, "no_change_revision")
 
     return (False, "no_regression")
 
@@ -721,6 +858,15 @@ class DebateOrchestrator:
                         prev_passed, prev_total,
                         result.tests_passed, result.tests_total,
                     )
+                elif revert_reason == "no_change_revision":
+                    # Diagnostic only — solution is byte-identical to prev_best,
+                    # so keeping it is functionally a no-op. Surface this so
+                    # debug transcripts show which agents stalled vs. converged.
+                    logger.warning(
+                        "Agent %s submitted IDENTICAL code as revision (no change "
+                        "from prev best %d/%d) — model rejected critique or stuck",
+                        solution.agent_id, prev_passed, prev_total,
+                    )
 
                 try:
                     quality = await self.quality_analyzer.analyze(
@@ -960,7 +1106,13 @@ class DebateOrchestrator:
                 bugs = pc.get("bugs", [])
                 total_bugs += len(bugs)
 
-                ratings_parsed = pc.get("ratings_parsed", True)
+                # If pc is empty (LLM produced no "Solution N Analysis" section
+                # for this target — observed when peers write only ONE critique
+                # block while facing 2+ targets), the prior default of True
+                # silently misreported the metric. An empty dict means the
+                # critique was never produced, so honestly mark it as not-parsed
+                # so the warning fires and CSV averages exclude it.
+                ratings_parsed = bool(pc) and pc.get("ratings_parsed", True)
                 if not ratings_parsed:
                     logger.warning(
                         "Ratings not parsed for agent %s critique of %s, using defaults",
