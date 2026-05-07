@@ -28,12 +28,35 @@ OLLAMA_DATA="${PROJECT_DIR}/hpc/ollama_data"
 VENV_DIR="${PROJECT_DIR}/venv_hpc"
 
 # ── Config (edit these) ───────────────────────────────────────────────────
-# N=4 on HPC (strong voting signal, reliable tie-break, 12 critique calls/round).
-# For quick local testing use N=3: drop "mistral:7b" — 2× faster, triangulation
-# still works. N=2 is known-broken (echo chamber, no triangulation).
-MODELS="qwen2.5-coder:7b deepseek-coder:6.7b codellama:7b-instruct mistral:7b"
-MAX_ROUNDS=3
+# Peer pool — 3 instruct-tuned code models from independent labs (≈8-9B each).
+# Architecture diversity matters more than raw size for debate cross-pollination.
+# Verified locally: yi+codegeex+granite peers achieve 100% on schema_validator
+# (extreme) when paired with a stronger judge.
+PEERS="yi-coder:9b codegeex4:9b granite-code:8b"
+
+# Judge — heterogeneous, stronger than peer pool. Independent lab from peers
+# (01.AI Yi, Tsinghua GLM, IBM Granite) — gives clean LLM-as-Judge ablation.
+# Set to empty string to run without judge (baseline / no-judge ablation).
+#
+# VRAM math on V100 (32 GB):
+#   peers (5+5.5+4.6 = 15 GB) + judge:
+#     qwen2.5-coder:32b   = 19 GB → 34 GB total (overflows V100, slow offload)
+#     deepseek-coder-v2:16b = 9 GB → 24 GB total ✅ (fits, MoE = fast)
+#     "" (no judge)         = 15 GB total ✅ (fastest, baseline)
+# DeepSeek-v2 is MoE (3B active params) → 2× faster inference than 32B.
+JUDGE="deepseek-coder-v2:16b"
+
+# 5 rounds — gives adaptive temperature and cross-pollination room to converge.
+# Use 3 for quick smoke runs; 5+ for thesis-grade final experiments.
+MAX_ROUNDS=5
 TASK_DIRS="tasks/easy tasks/medium tasks/hard tasks/extreme"
+
+# Combined list of all models to pull (peers + judge if set).
+if [ -n "${JUDGE}" ]; then
+    MODELS="${PEERS} ${JUDGE}"
+else
+    MODELS="${PEERS}"
+fi
 
 # ── Setup ─────────────────────────────────────────────────────────────────
 cd "${PROJECT_DIR}"
@@ -111,13 +134,20 @@ done
 export OLLAMA_HOST="http://localhost:11434"
 
 AGENTS_ARG=""
-for model in ${MODELS}; do
+for model in ${PEERS}; do
     AGENTS_ARG="${AGENTS_ARG} ${model}"
 done
 
+# Build optional --judge argument only if JUDGE is set
+JUDGE_ARG=""
+if [ -n "${JUDGE}" ]; then
+    JUDGE_ARG="--judge ${JUDGE}"
+fi
+
 echo ""
 echo "Running experiments..."
-echo "Models: ${MODELS}"
+echo "Peers:      ${PEERS}"
+echo "Judge:      ${JUDGE:-<none>}"
 echo "Max rounds: ${MAX_ROUNDS}"
 echo ""
 
@@ -143,6 +173,7 @@ for task_dir in ${TASK_DIRS}; do
         if python3 -m src.main \
             --task "${task_file}" \
             --agents ${AGENTS_ARG} \
+            ${JUDGE_ARG} \
             --max-rounds "${MAX_ROUNDS}" \
             --output "results/"; then
             PASSED=$((PASSED + 1))
@@ -155,6 +186,33 @@ for task_dir in ${TASK_DIRS}; do
     done
 done
 
+# ── Export aggregated CSV summary ────────────────────────────────────────
+# All debates from this batch (and any previous ones in the same DB) are
+# flattened into a single CSV with 39 metric columns: pass rates, pass@k,
+# improvement deltas, consensus stats, agent behavior, timings. Same format
+# as the web /api/export/csv endpoint, so the file works in Excel/Pandas
+# without any extra processing.
+#
+# Filename includes SLURM_JOB_ID so each batch produces its own CSV — no
+# overwriting between runs. The DB itself accumulates all rows, so this
+# CSV is a snapshot of "everything in DB at end of this job".
+CSV_OUT="results/summary_${SLURM_JOB_ID:-local}.csv"
+CSV_ROUNDS="results/per_round_${SLURM_JOB_ID:-local}.csv"
+echo ""
+echo "Exporting aggregated CSV summaries..."
+# Two CSVs: summary (1 row per debate) + per-round (1 row per agent per round).
+# Per-round CSV is a goldmine — round_num=1 is the single-agent baseline,
+# round_num=N>1 is the debate-improved result, all in one file.
+if python3 -m src.analysis.csv_export \
+        --db debate_results.db \
+        --out "${CSV_OUT}" \
+        --out-rounds "${CSV_ROUNDS}"; then
+    echo "[OK] Summary:   ${PROJECT_DIR}/${CSV_OUT}"
+    echo "[OK] Per-round: ${PROJECT_DIR}/${CSV_ROUNDS}"
+else
+    echo "[WARN] CSV export failed — DB still contains all results, can re-export later"
+fi
+
 # ── Summary ──────────────────────────────────────────────────────────────
 echo ""
 echo "============================================"
@@ -165,6 +223,8 @@ echo "Failed:       ${FAILED}"
 echo "End time:     $(date)"
 echo "Results in:   ${PROJECT_DIR}/results/"
 echo "Database:     ${PROJECT_DIR}/debate_results.db"
+echo "CSV summary:  ${PROJECT_DIR}/${CSV_OUT}"
+echo "CSV rounds:   ${PROJECT_DIR}/${CSV_ROUNDS}"
 echo "============================================"
 
 # Cleanup is handled by the trap above
