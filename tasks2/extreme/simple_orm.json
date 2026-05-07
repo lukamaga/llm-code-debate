@@ -1,0 +1,32 @@
+{
+  "id": "simple_orm",
+  "name": "Simple ORM with In-Memory Storage",
+  "difficulty": "extreme",
+  "description": "Implement a tiny ORM-like framework backed by an in-memory store across two modules. Module orm_fields.py must define: Field base class with constructor Field(default=None, required=False, validator=None), method validate(value) raising ValueError if invalid; subclasses IntField, StringField, BoolField that enforce type checking; Model metaclass-driven base class so that subclasses declare class-level Field attributes which become instance attributes after construction. Module orm_store.py must import from orm_fields.py and implement: Store class with methods register(model_cls), insert(instance) returns assigned id, get(model_cls, id), all(model_cls) returns list, filter(model_cls, **kwargs) returns matching instances, delete(model_cls, id) returns True if removed, count(model_cls) returns int. Each instance gets an auto-incrementing id unique per model class on insert.",
+  "required_files": ["orm_fields.py", "orm_store.py"],
+  "test_imports": ["from orm_fields import Field, IntField, StringField, BoolField, Model", "from orm_store import Store"],
+  "signature": "# orm_fields.py\nclass Field:\n    def __init__(self, default=None, required=False, validator=None): ...\n    def validate(self, value): ...\n\nclass IntField(Field): ...\nclass StringField(Field): ...\nclass BoolField(Field): ...\n\nclass Model:\n    def __init__(self, **kwargs): ...\n\n# orm_store.py\nfrom orm_fields import Model\n\nclass Store:\n    def __init__(self): ...\n    def register(self, model_cls) -> None: ...\n    def insert(self, instance) -> int: ...\n    def get(self, model_cls, id): ...\n    def all(self, model_cls) -> list: ...\n    def filter(self, model_cls, **kwargs) -> list: ...\n    def delete(self, model_cls, id) -> bool: ...\n    def count(self, model_cls) -> int: ...",
+  "tests": [
+    "def test_field_defaults():\n    class User(Model):\n        name = StringField(default='anon')\n        age = IntField(default=0)\n    u = User()\n    assert u.name == 'anon' and u.age == 0",
+    "def test_field_kwargs():\n    class User(Model):\n        name = StringField()\n        age = IntField()\n    u = User(name='Alice', age=30)\n    assert u.name == 'Alice' and u.age == 30",
+    "def test_required_validation():\n    class User(Model):\n        name = StringField(required=True)\n    try:\n        User()\n        assert False, 'should have raised'\n    except ValueError:\n        pass",
+    "def test_type_check_int():\n    class T(Model):\n        x = IntField()\n    try:\n        T(x='not int')\n        assert False\n    except ValueError:\n        pass",
+    "def test_type_check_string():\n    class T(Model):\n        s = StringField()\n    try:\n        T(s=123)\n        assert False\n    except ValueError:\n        pass",
+    "def test_custom_validator():\n    class T(Model):\n        age = IntField(validator=lambda v: v >= 0)\n    try:\n        T(age=-1)\n        assert False\n    except ValueError:\n        pass\n    T(age=10)",
+    "def test_store_insert_get():\n    class U(Model):\n        name = StringField()\n    s = Store()\n    s.register(U)\n    uid = s.insert(U(name='Alice'))\n    fetched = s.get(U, uid)\n    assert fetched.name == 'Alice'",
+    "def test_store_auto_id():\n    class U(Model):\n        name = StringField()\n    s = Store()\n    s.register(U)\n    a = s.insert(U(name='A'))\n    b = s.insert(U(name='B'))\n    assert a != b",
+    "def test_store_filter():\n    class U(Model):\n        name = StringField()\n        active = BoolField(default=True)\n    s = Store()\n    s.register(U)\n    s.insert(U(name='A', active=True))\n    s.insert(U(name='B', active=False))\n    s.insert(U(name='C', active=True))\n    actives = s.filter(U, active=True)\n    assert len(actives) == 2",
+    "def test_store_delete():\n    class U(Model):\n        name = StringField()\n    s = Store()\n    s.register(U)\n    uid = s.insert(U(name='X'))\n    assert s.delete(U, uid) is True\n    assert s.get(U, uid) is None\n    assert s.delete(U, uid) is False",
+    "def test_store_count():\n    class U(Model):\n        name = StringField()\n    s = Store()\n    s.register(U)\n    s.insert(U(name='A'))\n    s.insert(U(name='B'))\n    assert s.count(U) == 2"
+  ],
+  "constraints": [
+    "Field type checks must raise ValueError, not TypeError",
+    "Model class attributes that are Field instances become instance attributes after __init__",
+    "Each model_cls has its own id counter starting at 1",
+    "get() returns None if id not found, does not raise",
+    "filter() supports equality matching on any registered field",
+    "Required fields without default must be provided as kwargs"
+  ],
+  "helper_code": {},
+  "tags": ["orm", "metaclass", "multi-file", "design"]
+}
