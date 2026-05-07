@@ -1,0 +1,240 @@
+==============================================================================
+DEBATE TRANSCRIPT  |  Count Inversions  (hard)
+==============================================================================
+Debate ID:   5a24737d
+Mode:        debate
+Status:      early_stop
+Started:     2026-04-27T22:38:30
+Ended:       2026-04-27T22:38:56
+Duration:    25.4s
+Max rounds:  5
+Rounds run:  1
+Agents:      agent_1_granite-code (granite-code:8b), agent_2_codegeex4 (codegeex4:9b), agent_3_yi-coder (yi-coder:9b)
+
+==============================================================================
+TASK
+==============================================================================
+ID: count_inversions
+Difficulty: hard
+
+Description:
+Given an array of integers, count the number of inversions. An inversion is a pair of indices (i, j) where i < j but arr[i] > arr[j]. Use a modified merge sort to achieve O(n log n) time complexity. A brute force O(n^2) approach is not acceptable for large inputs.
+
+Constraints:
+  - 0 <= len(arr) <= 10^5
+  - Array elements can be any integer including negatives
+  - Expected O(n log n) time complexity
+  - Do not modify the original array
+
+Tests: 9
+
+==============================================================================
+ROUND 1  |  PROPOSAL
+==============================================================================
+Best pass rate: 100%  |  Avg: 74%  |  Bugs found: 0  |  Duration: 25.4s
+
+### Proposals
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  2/9 tests (22%)  gen=22.1s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp4hdln401
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 9 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp4hdln401/test_solu
+Quality: pylint=9.5/10, complexity=1.0, maintainability=51.5, LOC=25
+------------------------------------------------------------------------------
+def count_inversions(arr):
+    def merge_and_count(left, right):
+        inv_count = 0
+        i, j = 0, 0
+
+        while i < len(left) and j < len(right):
+            if left[i] <= right[j]:
+                arr[i + j] = left[i]
+                i += 1
+            else:
+                arr[i + j] = right[j]
+                j += 1
+                inv_count += len(left) - i
+
+        arr[i + j:] = left[i:]
+        arr[i + j:] = right[j:]
+
+        return inv_count
+
+    def merge_sort(arr):
+        if len(arr) <= 1:
+            return arr, 0
+
+        mid = len(arr) // 2
+        left, left_inv_count = merge_sort(arr[:mid])
+        right, right_inv_count = merge_sort(arr[mid:])
+        merged, merged_inv_count = merge_and_count(left, right)
+        return merged, left_inv_count + right_inv_count + merged_inv_count
+
+    arr.sort()
+    return merge_sort(arr)[1]
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  9/9 tests (100%)  gen=18.7s
+Quality: pylint=8.5/10, complexity=2.0, maintainability=47.2, LOC=37
+------------------------------------------------------------------------------
+def count_inversions(arr: list[int]) -> int:
+    def merge_sort_and_count(arr: list[int], temp_arr: list[int], left: int, right: int) -> int:
+        if left >= right:
+            return 0
+
+        mid = (left + right) // 2
+        inversions = merge_sort_and_count(arr, temp_arr, left, mid) + merge_sort_and_count(arr, temp_arr, mid + 1, right)
+        inversions += merge_and_count(arr, temp_arr, left, mid, right)
+        return inversions
+
+    def merge_and_count(arr: list[int], temp_arr: list[int], left: int, mid: int, right: int) -> int:
+        i = left
+        j = mid + 1
+        k = left
+        inversions = 0
+
+        while i <= mid and j <= right:
+            if arr[i] <= arr[j]:
+                temp_arr[k] = arr[i]
+                i += 1
+            else:
+                temp_arr[k] = arr[j]
+                j += 1
+                inversions += (mid - i + 1)
+            k += 1
+
+        while i <= mid:
+            temp_arr[k] = arr[i]
+            i += 1
+            k += 1
+
+        while j <= right:
+            temp_arr[k] = arr[j]
+            j += 1
+            k += 1
+
+        for i in range(left, right + 1):
+            arr[i] = temp_arr[i]
+
+        return inversions
+
+    if not arr:
+        return 0
+
+    temp_arr = [0] * len(arr)
+    return merge_sort_and_count(arr, temp_arr, 0, len(arr) - 1)
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  9/9 tests (100%)  gen=23.3s
+Quality: pylint=9.5/10, complexity=3.3, maintainability=46.3, LOC=37
+------------------------------------------------------------------------------
+def count_and_merge(arr, temp_arr, left, mid, right):
+    i = left
+    j = mid
+    k = left
+    inv_count = 0
+
+    while i <= mid - 1 and j <= right:
+        if arr[i] <= arr[j]:
+            temp_arr[k] = arr[i]
+            i += 1
+        else:
+            temp_arr[k] = arr[j]
+            inv_count += (mid - i)
+            j += 1
+        k += 1
+
+    while i <= mid - 1:
+        temp_arr[k] = arr[i]
+        i += 1
+        k += 1
+
+    while j <= right:
+        temp_arr[k] = arr[j]
+        j += 1
+        k += 1
+
+    for i in range(left, right + 1):
+        arr[i] = temp_arr[i]
+
+    return inv_count
+
+def count_inversions_util(arr, temp_arr, left, right):
+    inv_count = 0
+
+    if right > left:
+        mid = (right + left) // 2
+
+        inv_count += count_inversions_util(arr, temp_arr, left, mid)
+        inv_count += count_inversions_util(arr, temp_arr, mid+1, right)
+        inv_count += count_and_merge(arr, temp_arr, left, mid+1, right)
+
+    return inv_count
+
+def count_inversions(arr):
+    n = len(arr)
+    temp_arr = [0] * n
+    return count_inversions_util(arr, temp_arr, 0, n-1)
+
+==============================================================================
+FINAL RESULT
+==============================================================================
+Winner: agent_2_codegeex4  (round 1, 100%)
+
+Final code:
+------------------------------------------------------------------------------
+def count_inversions(arr: list[int]) -> int:
+    def merge_sort_and_count(arr: list[int], temp_arr: list[int], left: int, right: int) -> int:
+        if left >= right:
+            return 0
+
+        mid = (left + right) // 2
+        inversions = merge_sort_and_count(arr, temp_arr, left, mid) + merge_sort_and_count(arr, temp_arr, mid + 1, right)
+        inversions += merge_and_count(arr, temp_arr, left, mid, right)
+        return inversions
+
+    def merge_and_count(arr: list[int], temp_arr: list[int], left: int, mid: int, right: int) -> int:
+        i = left
+        j = mid + 1
+        k = left
+        inversions = 0
+
+        while i <= mid and j <= right:
+            if arr[i] <= arr[j]:
+                temp_arr[k] = arr[i]
+                i += 1
+            else:
+                temp_arr[k] = arr[j]
+                j += 1
+                inversions += (mid - i + 1)
+            k += 1
+
+        while i <= mid:
+            temp_arr[k] = arr[i]
+            i += 1
+            k += 1
+
+        while j <= right:
+            temp_arr[k] = arr[j]
+            j += 1
+            k += 1
+
+        for i in range(left, right + 1):
+            arr[i] = temp_arr[i]
+
+        return inversions
+
+    if not arr:
+        return 0
+
+    temp_arr = [0] * len(arr)
+    return merge_sort_and_count(arr, temp_arr, 0, len(arr) - 1)
+
+Transcript generated: 2026-04-27T22:38:56
