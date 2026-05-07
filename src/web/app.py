@@ -53,6 +53,14 @@ current_debate_thread: Thread | None = None
 _debate_lock = __import__('threading').Lock()
 debate_stop_event: Event = Event()
 
+# Last finished debate state — used to recover the UI when a client missed the
+# ``debate_complete`` / ``debate_error`` event (e.g. WebSocket disconnect right
+# before the debate finishes, browser tab reload, sleep/wake on macOS).
+# Holds {"event": str, "payload": dict, "timestamp": float, "debate_id": str}
+# or None. Reset only when a new debate starts.
+_last_finished_state: dict | None = None
+_LAST_STATE_TTL_SEC = 60 * 60  # 1 hour — older results are stale, don't replay
+
 # Directory for human-readable debate transcripts
 TRANSCRIPTS_DIR = Path("transcripts")
 
@@ -66,6 +74,23 @@ def _save_transcript(debate) -> None:
         logger.info(f"Transcript saved: {path}")
     except Exception as e:
         logger.warning(f"Failed to save transcript for {getattr(debate, 'id', '?')}: {e}")
+
+
+def _remember_finished(event_name: str, payload: dict) -> None:
+    """Stash the latest debate completion so a reconnecting client can recover.
+
+    Called right before/after every ``debate_complete`` / ``debate_error``
+    socket emit. The state is replayed once on the next ``connect`` event if
+    it's fresh (within ``_LAST_STATE_TTL_SEC``). Reset on ``debate_started``.
+    """
+    global _last_finished_state
+    import time as _time
+    _last_finished_state = {
+        "event": event_name,
+        "payload": payload,
+        "timestamp": _time.time(),
+        "debate_id": payload.get("debate_id") or "",
+    }
 
 
 def _try_save_debate(debate) -> bool:
@@ -377,10 +402,30 @@ def download_transcript(filename: str):
 
 @socketio.on('connect')
 def handle_connect():
-    """Handle client connection."""
+    """Handle client connection.
+
+    If a recent debate has finished while no client was listening (browser
+    tab reloaded, WebSocket disconnect during last round, sleep/wake), replay
+    the final ``debate_complete`` or ``debate_error`` event so the UI can
+    render results instead of staying stuck on the last "Round N — REVISE"
+    state.
+    """
     print("[DEBUG] Client connected via WebSocket")
     logger.info("Client connected")
     emit('connected', {'status': 'connected'})
+
+    # Replay last finished debate state if it's still fresh.
+    if _last_finished_state is not None:
+        import time as _time
+        age = _time.time() - _last_finished_state["timestamp"]
+        if age <= _LAST_STATE_TTL_SEC:
+            logger.info(
+                "Replaying %s for reconnected client (debate_id=%s, age=%.0fs)",
+                _last_finished_state["event"],
+                _last_finished_state["debate_id"],
+                age,
+            )
+            emit(_last_finished_state["event"], _last_finished_state["payload"])
 
 
 @socketio.on('disconnect')
@@ -496,6 +541,11 @@ def handle_start_debate(data: dict):
         asyncio.set_event_loop(loop)
 
         try:
+            # New debate starts — clear any stale "last finished" state so a
+            # late reconnect doesn't replay the previous run.
+            global _last_finished_state
+            _last_finished_state = None
+
             socketio.emit('debate_started', {
                 'task': task.name,
                 'agents': agent_models,
@@ -553,7 +603,7 @@ def handle_start_debate(data: dict):
                     })
 
             # Send final result with full metrics
-            socketio.emit('debate_complete', {
+            complete_payload = {
                 'debate_id': debate.id,
                 'status': debate.status.value,
                 'final_pass_rate': metrics.final_pass_rate,
@@ -563,11 +613,15 @@ def handle_start_debate(data: dict):
                 'metrics': metrics.to_dict(),
                 'round_history': round_history,
                 'critiques': critique_summary,
-            })
+            }
+            _remember_finished('debate_complete', complete_payload)
+            socketio.emit('debate_complete', complete_payload)
 
         except Exception as e:
             logger.exception(f"Debate failed: {e}")
-            socketio.emit('debate_error', {'message': str(e)})
+            err_payload = {'message': str(e)}
+            _remember_finished('debate_error', err_payload)
+            socketio.emit('debate_error', err_payload)
 
         finally:
             loop.close()
@@ -660,6 +714,9 @@ def handle_start_solo(data: dict):
         asyncio.set_event_loop(loop)
 
         try:
+            global _last_finished_state
+            _last_finished_state = None  # clear stale replay state for new run
+
             socketio.emit('debate_started', {'task': task.name, 'agents': [agent_model], 'is_solo': True})
 
             debate = loop.run_until_complete(
@@ -673,7 +730,7 @@ def handle_start_solo(data: dict):
             collector = MetricsCollector()
             metrics = collector.collect_debate_metrics(debate)
 
-            socketio.emit('debate_complete', {
+            solo_payload = {
                 'debate_id': debate.id,
                 'status': debate.status.value,
                 'final_pass_rate': metrics.final_pass_rate,
@@ -696,11 +753,15 @@ def handle_start_solo(data: dict):
                 }],
                 'critiques': [],
                 'is_solo': True,
-            })
+            }
+            _remember_finished('debate_complete', solo_payload)
+            socketio.emit('debate_complete', solo_payload)
 
         except Exception as e:
             logger.exception(f"Solo run failed: {e}")
-            socketio.emit('debate_error', {'message': str(e)})
+            err_payload = {'message': str(e)}
+            _remember_finished('debate_error', err_payload)
+            socketio.emit('debate_error', err_payload)
 
         finally:
             loop.close()
@@ -1009,6 +1070,17 @@ def _extract_metrics_from_record(record) -> dict:
             rounds_to_consensus = rd.get("round_num", 0)
             break
 
+    # Peak round detection — at which round did the BEST solution appear?
+    # Mirrored in src/analysis/csv_export.py — keep both in sync.
+    best_round = 1
+    best_round_pass_rate = 0.0
+    for rd in rounds:
+        rd_best = rd.get("best_pass_rate", 0.0) or 0.0
+        if rd_best > best_round_pass_rate:
+            best_round_pass_rate = rd_best
+            best_round = rd.get("round_num", 0)
+    peak_after_debate = best_round > 1
+
     total_rounds = record.total_rounds or len(rounds)
     duration = record.duration_seconds or 0.0
     avg_round_dur = (duration / total_rounds) if total_rounds > 0 else 0.0
@@ -1069,6 +1141,9 @@ def _extract_metrics_from_record(record) -> dict:
         "most_successful_agent": most_successful_agent,
         "most_bugs_found_by": most_bugs_found_by,
         "agent_behavior": agent_behavior,
+        "best_round": best_round,
+        "best_round_pass_rate": round(best_round_pass_rate, 4),
+        "peak_after_debate": peak_after_debate,
     }
 
 
@@ -1104,6 +1179,8 @@ def api_export_csv():
             'all_solutions_count', 'passing_solutions_count',
             'most_active_agent', 'most_successful_agent', 'most_bugs_found_by',
             'status', 'winning_agent',
+            # Peak-round metrics — answers "did debate help?"
+            'best_round', 'best_round_pass_rate', 'peak_after_debate',
         ])
 
         for r in records:
@@ -1127,6 +1204,7 @@ def api_export_csv():
                 ext['all_solutions_count'], ext['passing_solutions_count'],
                 ext['most_active_agent'], ext['most_successful_agent'], ext['most_bugs_found_by'],
                 r.status, r.winning_agent_id,
+                ext['best_round'], ext['best_round_pass_rate'], ext['peak_after_debate'],
             ])
 
         from flask import Response
