@@ -1,0 +1,29 @@
+{
+  "id": "event_system",
+  "name": "Event-Driven System",
+  "difficulty": "extreme",
+  "description": "Implement an event-driven publish/subscribe system with middleware support as two separate modules. Module event_types.py must implement: Event dataclass with fields event_type (str), data (dict), cancelled (bool, default False) and a cancel() method; Middleware abstract base class with abstract method process(event) -> Event|None. Module event_bus.py must import Event and Middleware from event_types.py and implement EventBus class with methods: subscribe(event_type, handler), unsubscribe(event_type, handler) -> bool, emit(event) -> list (returns handler return values), add_middleware(middleware). Middleware process() returns modified Event or None to cancel. Multiple middlewares are applied in order they were added. emit() with no subscribers returns empty list.",
+  "required_files": ["event_types.py", "event_bus.py"],
+  "test_imports": ["from event_types import Event, Middleware", "from event_bus import EventBus"],
+  "signature": "# event_types.py\nfrom dataclasses import dataclass, field\nfrom typing import Any\nfrom abc import ABC, abstractmethod\n\n@dataclass\nclass Event:\n    event_type: str\n    data: dict[str, Any] = field(default_factory=dict)\n    cancelled: bool = False\n    def cancel(self): ...\n\nclass Middleware(ABC):\n    @abstractmethod\n    def process(self, event: Event) -> Event | None: ...\n\n# event_bus.py\nfrom event_types import Event, Middleware\n\nclass EventBus:\n    def subscribe(self, event_type: str, handler: callable) -> None: ...\n    def unsubscribe(self, event_type: str, handler: callable) -> bool: ...\n    def emit(self, event: Event) -> list: ...\n    def add_middleware(self, middleware: Middleware) -> None: ...",
+  "tests": [
+    "def test_basic_emit():\n    bus = EventBus()\n    results = []\n    bus.subscribe('click', lambda e: results.append(e.data))\n    bus.emit(Event('click', {'x': 10}))\n    assert results == [{'x': 10}]",
+    "def test_multiple_handlers():\n    bus = EventBus()\n    r1, r2 = [], []\n    bus.subscribe('msg', lambda e: r1.append(1))\n    bus.subscribe('msg', lambda e: r2.append(2))\n    bus.emit(Event('msg', {}))\n    assert r1 == [1] and r2 == [2]",
+    "def test_unsubscribe():\n    bus = EventBus()\n    results = []\n    handler = lambda e: results.append(1)\n    bus.subscribe('x', handler)\n    bus.unsubscribe('x', handler)\n    bus.emit(Event('x', {}))\n    assert results == []",
+    "def test_unsubscribe_returns_false_if_not_found():\n    bus = EventBus()\n    assert bus.unsubscribe('x', lambda e: None) == False",
+    "def test_different_event_types():\n    bus = EventBus()\n    r = []\n    bus.subscribe('a', lambda e: r.append('a'))\n    bus.subscribe('b', lambda e: r.append('b'))\n    bus.emit(Event('a', {}))\n    assert r == ['a']",
+    "def test_middleware_modifies_event():\n    bus = EventBus()\n    class UpperMiddleware(Middleware):\n        def process(self, event):\n            event.data['text'] = event.data.get('text', '').upper()\n            return event\n    bus.add_middleware(UpperMiddleware())\n    results = []\n    bus.subscribe('msg', lambda e: results.append(e.data['text']))\n    bus.emit(Event('msg', {'text': 'hello'}))\n    assert results == ['HELLO']",
+    "def test_middleware_filters_event():\n    bus = EventBus()\n    class BlockMiddleware(Middleware):\n        def process(self, event):\n            if event.data.get('blocked'):\n                return None\n            return event\n    bus.add_middleware(BlockMiddleware())\n    results = []\n    bus.subscribe('x', lambda e: results.append(1))\n    bus.emit(Event('x', {'blocked': True}))\n    bus.emit(Event('x', {'blocked': False}))\n    assert results == [1]",
+    "def test_handler_return_values():\n    bus = EventBus()\n    bus.subscribe('calc', lambda e: e.data['x'] * 2)\n    bus.subscribe('calc', lambda e: e.data['x'] * 3)\n    result = bus.emit(Event('calc', {'x': 5}))\n    assert sorted(result) == [10, 15]",
+    "def test_emit_no_subscribers():\n    bus = EventBus()\n    result = bus.emit(Event('nobody', {}))\n    assert result == []"
+  ],
+  "constraints": [
+    "Handlers are callable objects receiving an Event",
+    "Middleware process() returns modified Event or None to cancel",
+    "Multiple middlewares are applied in order they were added",
+    "emit() returns list of handler return values",
+    "event_types.py must export Event and Middleware",
+    "event_bus.py must import from event_types.py and export EventBus"
+  ],
+  "tags": ["design-pattern", "pub-sub", "multi-file", "middleware"]
+}
