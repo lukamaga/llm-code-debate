@@ -1,0 +1,26 @@
+{
+  "id": "edit_distance",
+  "name": "Edit Distance (Levenshtein)",
+  "difficulty": "hard",
+  "description": "Given two strings word1 and word2, return the minimum number of operations required to convert word1 to word2. Allowed operations: insert a character, delete a character, replace a character. Use dynamic programming to achieve O(m*n) time and space complexity.",
+  "signature": "def min_distance(word1: str, word2: str) -> int:",
+  "tests": [
+    "def test_basic():\n    assert min_distance('horse', 'ros') == 3",
+    "def test_complex():\n    assert min_distance('intention', 'execution') == 5",
+    "def test_empty_first():\n    assert min_distance('', 'abc') == 3",
+    "def test_empty_second():\n    assert min_distance('abc', '') == 3",
+    "def test_both_empty():\n    assert min_distance('', '') == 0",
+    "def test_same_string():\n    assert min_distance('hello', 'hello') == 0",
+    "def test_single_replace():\n    assert min_distance('cat', 'bat') == 1",
+    "def test_single_insert():\n    assert min_distance('cat', 'cats') == 1",
+    "def test_single_delete():\n    assert min_distance('cats', 'cat') == 1",
+    "def test_completely_different():\n    assert min_distance('abc', 'xyz') == 3"
+  ],
+  "constraints": [
+    "0 <= len(word1), len(word2) <= 500",
+    "Both words consist of lowercase English letters",
+    "Expected O(m*n) time complexity",
+    "Each operation costs exactly 1"
+  ],
+  "tags": ["dynamic-programming", "string"]
+}
