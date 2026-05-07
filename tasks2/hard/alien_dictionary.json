@@ -1,0 +1,26 @@
+{
+  "id": "alien_dictionary",
+  "name": "Alien Dictionary",
+  "difficulty": "hard",
+  "description": "Given a list of words sorted lexicographically by the rules of an unknown alien language, derive the order of characters in that language. Return a string of the unique characters in the alien language sorted in the alien order. If the order is invalid (contains a cycle), return an empty string. If there are multiple valid orderings, return any one of them. All characters in the input are lowercase English letters.",
+  "signature": "def alien_order(words: list[str]) -> str:",
+  "tests": [
+    "def test_basic():\n    result = alien_order(['wrt', 'wrf', 'er', 'ett', 'rftt'])\n    assert result == 'wertf'",
+    "def test_two_words():\n    result = alien_order(['z', 'x'])\n    assert result == 'zx'",
+    "def test_cycle_invalid():\n    assert alien_order(['z', 'x', 'z']) == ''",
+    "def test_single_word():\n    result = alien_order(['abc'])\n    assert set(result) == {'a', 'b', 'c'}\n    assert len(result) == 3",
+    "def test_prefix_violation():\n    assert alien_order(['abc', 'ab']) == ''",
+    "def test_two_same_words():\n    result = alien_order(['abc', 'abc'])\n    assert set(result) == {'a', 'b', 'c'}\n    assert len(result) == 3",
+    "def test_single_char_words():\n    result = alien_order(['z', 'z'])\n    assert result == 'z'",
+    "def test_multiple_valid_orderings():\n    result = alien_order(['z', 'x', 'y'])\n    assert result.index('z') < result.index('x')\n    assert result.index('x') < result.index('y')"
+  ],
+  "constraints": [
+    "1 <= words.length <= 100",
+    "1 <= words[i].length <= 100",
+    "All characters are lowercase English letters",
+    "Return empty string if ordering is invalid (cycle detected)",
+    "If a longer word is a prefix of a shorter word that appears after it, the ordering is invalid",
+    "Use topological sort on character dependency graph"
+  ],
+  "tags": ["topological-sort", "graph", "bfs", "string"]
+}
