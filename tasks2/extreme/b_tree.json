@@ -1,0 +1,33 @@
+{
+  "id": "b_tree",
+  "name": "B-Tree with Range Queries",
+  "difficulty": "extreme",
+  "description": "Implement a B-tree across two modules. Module btree_node.py must define: BTreeNode class with attributes keys (list[Any], sorted), values (list[Any]), children (list[BTreeNode]), is_leaf (bool); helpers is_full(min_degree) and split(min_degree) returning (median_key, median_value, right_node). Module btree.py must import from btree_node.py and implement BTree class with constructor BTree(min_degree: int = 3) and methods: insert(key, value); search(key) returns value or None; delete(key) returns True if removed; range_query(low, high) returns sorted list of (key, value) pairs with low <= key <= high; size() returns total entries; height() returns tree height (1 for single root). Keys must support < comparison.",
+  "required_files": ["btree_node.py", "btree.py"],
+  "test_imports": ["from btree_node import BTreeNode", "from btree import BTree"],
+  "signature": "# btree_node.py\nclass BTreeNode:\n    def __init__(self, is_leaf: bool = True): ...\n    def is_full(self, min_degree: int) -> bool: ...\n    def split(self, min_degree: int): ...\n\n# btree.py\nfrom btree_node import BTreeNode\n\nclass BTree:\n    def __init__(self, min_degree: int = 3): ...\n    def insert(self, key, value) -> None: ...\n    def search(self, key): ...\n    def delete(self, key) -> bool: ...\n    def range_query(self, low, high) -> list: ...\n    def size(self) -> int: ...\n    def height(self) -> int: ...",
+  "tests": [
+    "def test_empty_search():\n    t = BTree()\n    assert t.search(5) is None",
+    "def test_basic_insert_search():\n    t = BTree()\n    t.insert(10, 'ten')\n    assert t.search(10) == 'ten'",
+    "def test_multiple_inserts():\n    t = BTree(min_degree=3)\n    items = [(5, 'a'), (3, 'b'), (8, 'c'), (1, 'd'), (15, 'e'), (12, 'f')]\n    for k, v in items:\n        t.insert(k, v)\n    for k, v in items:\n        assert t.search(k) == v",
+    "def test_size_grows():\n    t = BTree()\n    assert t.size() == 0\n    t.insert(1, 'a')\n    t.insert(2, 'b')\n    assert t.size() == 2",
+    "def test_update_existing():\n    t = BTree()\n    t.insert(5, 'old')\n    t.insert(5, 'new')\n    assert t.search(5) == 'new'\n    assert t.size() == 1",
+    "def test_split_increases_height():\n    t = BTree(min_degree=2)\n    for k in range(1, 10):\n        t.insert(k, str(k))\n    assert t.height() >= 2",
+    "def test_range_query_basic():\n    t = BTree()\n    for k in [5, 1, 8, 3, 10, 12, 2]:\n        t.insert(k, str(k))\n    result = t.range_query(2, 8)\n    keys = [k for k, v in result]\n    assert keys == [2, 3, 5, 8]",
+    "def test_range_query_empty():\n    t = BTree()\n    for k in [10, 20, 30]:\n        t.insert(k, str(k))\n    result = t.range_query(50, 100)\n    assert result == []",
+    "def test_delete_existing():\n    t = BTree()\n    t.insert(5, 'a')\n    t.insert(10, 'b')\n    assert t.delete(5) is True\n    assert t.search(5) is None\n    assert t.size() == 1",
+    "def test_delete_missing():\n    t = BTree()\n    t.insert(1, 'a')\n    assert t.delete(99) is False",
+    "def test_many_inserts():\n    t = BTree(min_degree=3)\n    for k in range(100):\n        t.insert(k, k * 2)\n    for k in range(100):\n        assert t.search(k) == k * 2\n    assert t.size() == 100",
+    "def test_range_after_inserts():\n    t = BTree(min_degree=3)\n    for k in range(50):\n        t.insert(k, k)\n    result = t.range_query(10, 20)\n    assert [k for k, v in result] == list(range(10, 21))"
+  ],
+  "constraints": [
+    "min_degree (t) >= 2; nodes have at least t-1 keys (except root) and at most 2t-1",
+    "Keys within a node remain sorted",
+    "search returns None for missing keys",
+    "Re-inserting an existing key updates its value without growing size",
+    "range_query returns pairs in ascending key order",
+    "height of empty tree is 0; tree with single root is 1"
+  ],
+  "helper_code": {},
+  "tags": ["data-structure", "tree", "multi-file", "b-tree"]
+}
