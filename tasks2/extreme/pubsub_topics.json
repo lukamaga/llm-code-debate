@@ -1,0 +1,32 @@
+{
+  "id": "pubsub_topics",
+  "name": "Pub/Sub System with Hierarchical Topics",
+  "difficulty": "extreme",
+  "description": "Implement a hierarchical topic-based publish/subscribe system across two modules. Module pubsub_types.py must define: Message dataclass with fields topic (str), payload (Any), id (int); SubscriberInfo dataclass with fields topic_pattern (str), handler (callable Message->None), id (int). Module pubsub_broker.py must import from pubsub_types.py and implement Broker class with methods: publish(topic: str, payload) returns assigned message id; subscribe(topic_pattern: str, handler) returns subscription id; unsubscribe(sub_id: int) -> bool; topics() returns sorted list of distinct topic strings ever published. Topic patterns use '.' as separator and '*' as single-level wildcard, '#' as multi-level wildcard. Examples: 'app.user.*' matches 'app.user.created' but not 'app.user.profile.updated'; 'app.#' matches 'app.x' and 'app.x.y'; 'app.*.created' matches 'app.user.created'.",
+  "required_files": ["pubsub_types.py", "pubsub_broker.py"],
+  "test_imports": ["from pubsub_types import Message, SubscriberInfo", "from pubsub_broker import Broker"],
+  "signature": "# pubsub_types.py\nfrom dataclasses import dataclass\nfrom typing import Any, Callable\n\n@dataclass\nclass Message:\n    topic: str\n    payload: Any\n    id: int\n\n@dataclass\nclass SubscriberInfo:\n    topic_pattern: str\n    handler: Callable\n    id: int\n\n# pubsub_broker.py\nfrom pubsub_types import Message, SubscriberInfo\n\nclass Broker:\n    def __init__(self): ...\n    def publish(self, topic: str, payload) -> int: ...\n    def subscribe(self, topic_pattern: str, handler) -> int: ...\n    def unsubscribe(self, sub_id: int) -> bool: ...\n    def topics(self) -> list[str]: ...",
+  "tests": [
+    "def test_basic_pub_sub():\n    b = Broker()\n    received = []\n    b.subscribe('app.user.created', lambda m: received.append(m.payload))\n    b.publish('app.user.created', {'id': 1})\n    assert received == [{'id': 1}]",
+    "def test_no_match_no_call():\n    b = Broker()\n    received = []\n    b.subscribe('a.b', lambda m: received.append(m))\n    b.publish('a.c', None)\n    assert received == []",
+    "def test_single_wildcard():\n    b = Broker()\n    received = []\n    b.subscribe('app.user.*', lambda m: received.append(m.topic))\n    b.publish('app.user.created', None)\n    b.publish('app.user.deleted', None)\n    b.publish('app.user.profile.updated', None)\n    assert sorted(received) == ['app.user.created', 'app.user.deleted']",
+    "def test_multi_wildcard():\n    b = Broker()\n    received = []\n    b.subscribe('app.#', lambda m: received.append(m.topic))\n    b.publish('app.x', None)\n    b.publish('app.x.y', None)\n    b.publish('app.x.y.z', None)\n    b.publish('other.x', None)\n    assert sorted(received) == ['app.x', 'app.x.y', 'app.x.y.z']",
+    "def test_middle_wildcard():\n    b = Broker()\n    received = []\n    b.subscribe('app.*.created', lambda m: received.append(m.topic))\n    b.publish('app.user.created', None)\n    b.publish('app.order.created', None)\n    b.publish('app.user.deleted', None)\n    assert sorted(received) == ['app.order.created', 'app.user.created']",
+    "def test_multiple_subscribers():\n    b = Broker()\n    a, c = [], []\n    b.subscribe('event', lambda m: a.append(1))\n    b.subscribe('event', lambda m: c.append(1))\n    b.publish('event', None)\n    assert len(a) == 1 and len(c) == 1",
+    "def test_unsubscribe():\n    b = Broker()\n    received = []\n    sid = b.subscribe('topic', lambda m: received.append(m))\n    assert b.unsubscribe(sid) is True\n    b.publish('topic', None)\n    assert received == []",
+    "def test_unsubscribe_invalid():\n    b = Broker()\n    assert b.unsubscribe(999) is False",
+    "def test_message_id_increments():\n    b = Broker()\n    a = b.publish('t', 1)\n    c = b.publish('t', 2)\n    assert c > a",
+    "def test_topics_list():\n    b = Broker()\n    b.publish('a.b', 1)\n    b.publish('c.d', 2)\n    b.publish('a.b', 3)\n    assert b.topics() == ['a.b', 'c.d']",
+    "def test_message_object_passed():\n    b = Broker()\n    captured = []\n    b.subscribe('e', lambda m: captured.append(m))\n    b.publish('e', 'hello')\n    assert isinstance(captured[0], Message)\n    assert captured[0].topic == 'e' and captured[0].payload == 'hello'"
+  ],
+  "constraints": [
+    "Topic separator is '.' (period)",
+    "'*' wildcard matches exactly one segment",
+    "'#' wildcard matches one or more segments at the end of pattern",
+    "Subscription IDs and message IDs are unique within the broker",
+    "topics() returns distinct topics actually published, sorted ascending",
+    "Handlers are called synchronously in subscription order"
+  ],
+  "helper_code": {},
+  "tags": ["pubsub", "messaging", "multi-file", "wildcard"]
+}
