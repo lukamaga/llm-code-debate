@@ -1,0 +1,29 @@
+{
+  "id": "rate_limiter",
+  "name": "Rate Limiter (Token Bucket + Sliding Window)",
+  "difficulty": "extreme",
+  "description": "Implement a rate limiting library with two strategies across two modules. Module limiter_types.py must define: LimitResult dataclass with fields allowed (bool), remaining (int), retry_after (float, seconds until next token, 0.0 if allowed); RateLimiter abstract base class with abstract methods allow(key: str) -> LimitResult and reset(key: str) -> None. Module limiters.py must import from limiter_types.py and implement: TokenBucketLimiter(capacity: int, refill_rate: float) where refill_rate is tokens per second, refilled continuously based on time elapsed; SlidingWindowLimiter(max_requests: int, window_seconds: float) which tracks request timestamps per key and counts those within the last window_seconds. Both classes must store independent state per key. Use time.monotonic() as time source.",
+  "required_files": ["limiter_types.py", "limiters.py"],
+  "test_imports": ["from limiter_types import LimitResult, RateLimiter", "from limiters import TokenBucketLimiter, SlidingWindowLimiter"],
+  "signature": "# limiter_types.py\nfrom dataclasses import dataclass\nfrom abc import ABC, abstractmethod\n\n@dataclass\nclass LimitResult:\n    allowed: bool\n    remaining: int\n    retry_after: float\n\nclass RateLimiter(ABC):\n    @abstractmethod\n    def allow(self, key: str) -> LimitResult: ...\n    @abstractmethod\n    def reset(self, key: str) -> None: ...\n\n# limiters.py\nfrom limiter_types import RateLimiter, LimitResult\n\nclass TokenBucketLimiter(RateLimiter):\n    def __init__(self, capacity: int, refill_rate: float): ...\n\nclass SlidingWindowLimiter(RateLimiter):\n    def __init__(self, max_requests: int, window_seconds: float): ...",
+  "tests": [
+    "def test_token_bucket_allows_initial():\n    lim = TokenBucketLimiter(capacity=3, refill_rate=1.0)\n    r = lim.allow('user1')\n    assert r.allowed is True\n    assert r.remaining == 2",
+    "def test_token_bucket_exhausts():\n    lim = TokenBucketLimiter(capacity=2, refill_rate=1.0)\n    lim.allow('u')\n    lim.allow('u')\n    r = lim.allow('u')\n    assert r.allowed is False\n    assert r.retry_after > 0",
+    "def test_token_bucket_refills():\n    import time\n    lim = TokenBucketLimiter(capacity=2, refill_rate=10.0)\n    lim.allow('u')\n    lim.allow('u')\n    assert lim.allow('u').allowed is False\n    time.sleep(0.15)\n    assert lim.allow('u').allowed is True",
+    "def test_token_bucket_isolated_keys():\n    lim = TokenBucketLimiter(capacity=1, refill_rate=1.0)\n    assert lim.allow('a').allowed is True\n    assert lim.allow('a').allowed is False\n    assert lim.allow('b').allowed is True",
+    "def test_token_bucket_reset():\n    lim = TokenBucketLimiter(capacity=1, refill_rate=0.1)\n    lim.allow('u')\n    assert lim.allow('u').allowed is False\n    lim.reset('u')\n    assert lim.allow('u').allowed is True",
+    "def test_sliding_window_allows_initial():\n    lim = SlidingWindowLimiter(max_requests=3, window_seconds=1.0)\n    r = lim.allow('u')\n    assert r.allowed is True\n    assert r.remaining == 2",
+    "def test_sliding_window_blocks_excess():\n    lim = SlidingWindowLimiter(max_requests=2, window_seconds=1.0)\n    lim.allow('u')\n    lim.allow('u')\n    r = lim.allow('u')\n    assert r.allowed is False",
+    "def test_sliding_window_recovers():\n    import time\n    lim = SlidingWindowLimiter(max_requests=2, window_seconds=0.1)\n    lim.allow('u')\n    lim.allow('u')\n    assert lim.allow('u').allowed is False\n    time.sleep(0.15)\n    assert lim.allow('u').allowed is True",
+    "def test_sliding_window_reset():\n    lim = SlidingWindowLimiter(max_requests=1, window_seconds=10.0)\n    lim.allow('u')\n    lim.reset('u')\n    assert lim.allow('u').allowed is True"
+  ],
+  "constraints": [
+    "Use time.monotonic() as time source",
+    "Token bucket starts full and refills continuously",
+    "Sliding window must purge timestamps older than window_seconds",
+    "State per key is isolated; reset() only affects given key",
+    "retry_after is 0.0 when allowed=True"
+  ],
+  "helper_code": {},
+  "tags": ["rate-limiting", "multi-file", "design-pattern"]
+}
