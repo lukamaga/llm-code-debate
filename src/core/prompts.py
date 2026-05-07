@@ -89,6 +89,12 @@ def build_proposal_prompt(task: "Task") -> str:
 Write a complete Python implementation that solves this task.
 Make sure your code handles all edge cases and follows the constraints.
 
+CRITICAL: Submit COMPLETE working code, not a skeleton.
+- ❌ DO NOT use `pass`, `...`, `# TODO`, or `raise NotImplementedError` as a function body.
+- ❌ DO NOT outline classes/methods and leave them empty.
+- ✅ EVERY function must have real, executable logic that returns the right value.
+- ✅ Prefer a simple brute-force solution that PASSES TESTS over an elegant stub that doesn't.
+
 Wrap your code in ```python and ``` markers."""
 
 
@@ -444,6 +450,15 @@ Work from concrete evidence, not guesses.
 3. **Adopt another solution** if it passes strictly more tests than yours. Do not adopt if it passes fewer.
 4. **Create a hybrid** only if you can name a specific bug in your code that the other solution fixes.
 
+## CRITICAL: Submit COMPLETE working code, not a skeleton
+Your solution will be executed against the tests immediately. Stub functions FAIL.
+- ❌ DO NOT write `pass`, `...`, `# TODO`, `# Implement this`, or `raise NotImplementedError` as a function body.
+- ❌ DO NOT leave `def foo(): pass` for any function the tests will call.
+- ❌ DO NOT outline an architecture and skip the implementation.
+- ✅ EVERY function must contain real, executable logic that returns the right value.
+- ✅ If you cannot finish a complex algorithm, prefer a simple correct solution over an empty skeleton.
+- ✅ When in doubt, write a brute-force solution that passes the tests rather than an elegant stub that doesn't.
+
 Provide your revised (or adopted) solution wrapped in ```python and ``` markers."""
 
     if task.is_multi_file:
@@ -791,8 +806,22 @@ def parse_vote_response(response: str) -> dict:
         result["parse_failed"] = True
         return result
 
-    # Parse VOTE line — primary pattern
-    vote_match = re.search(r"VOTE[:\s]*(\d+)", response, re.IGNORECASE)
+    # Parse VOTE line — primary pattern.
+    # Robust against the formats actually seen in transcripts (yi-coder uses
+    # markdown emphasis: `**VOTE:** 2`) and against plausible variants that
+    # could appear with future models. Three protections:
+    #   * \bVOTE\b — word boundary prevents matching VOTE inside REVOTE,
+    #     DEVOTED, VOTED, PIVOT, etc. (real false-positive in stress test).
+    #   * \*{0,2} around separator — tolerates `**VOTE**:`, `VOTE:**2**`,
+    #     `**VOTE: 2**` markdown wrappers.
+    #   * [:\-—–=>\s]* separator class — accepts colon, hyphen, em-dash,
+    #     en-dash, arrow `=>`, plain whitespace, OR no separator at all
+    #     (covers `VOTE 2`, `VOTE: 2`, `VOTE — 2`, `VOTE => 2`).
+    # Validated against 23 should-match and 8 should-not-match cases (31/31).
+    vote_match = re.search(
+        r"\bVOTE\b\s*\*{0,2}\s*[:\-—–=>\s]*\*{0,2}\s*(\d+)",
+        response, re.IGNORECASE,
+    )
     if vote_match:
         result["voted_solution"] = int(vote_match.group(1))
     else:
@@ -817,8 +846,13 @@ def parse_vote_response(response: str) -> dict:
             logger.warning("Failed to parse vote from response: %s", response[:200])
             result["parse_failed"] = True
 
-    # Parse CONFIDENCE line
-    conf_match = re.search(r"CONFIDENCE[:\s]*([\d.]+)", response, re.IGNORECASE)
+    # Parse CONFIDENCE line — same markdown-tolerance fix as VOTE.
+    # Real failing case: yi-coder `**CONFIDENCE:** 1.0` → old regex returned
+    # default 0.5 (verified on real transcript sample).
+    conf_match = re.search(
+        r"\bCONFIDENCE\b\s*\*{0,2}\s*[:\-—–=>\s]*\*{0,2}\s*([\d.]+)",
+        response, re.IGNORECASE,
+    )
     if conf_match:
         try:
             result["confidence"] = min(1.0, max(0.0, float(conf_match.group(1))))
