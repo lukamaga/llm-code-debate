@@ -1,0 +1,25 @@
+{
+  "id": "largest_rectangle_histogram",
+  "name": "Largest Rectangle in Histogram",
+  "difficulty": "hard",
+  "description": "Given an array of integers heights representing the histogram's bar heights where the width of each bar is 1, return the area of the largest rectangle in the histogram. Use a monotonic stack approach to achieve O(n) time complexity. A brute force O(n^2) approach is not acceptable.",
+  "signature": "def largest_rectangle_area(heights: list[int]) -> int:",
+  "tests": [
+    "def test_basic():\n    assert largest_rectangle_area([2, 1, 5, 6, 2, 3]) == 10",
+    "def test_simple():\n    assert largest_rectangle_area([2, 4]) == 4",
+    "def test_single_bar():\n    assert largest_rectangle_area([5]) == 5",
+    "def test_empty():\n    assert largest_rectangle_area([]) == 0",
+    "def test_increasing():\n    assert largest_rectangle_area([1, 2, 3, 4, 5]) == 9",
+    "def test_decreasing():\n    assert largest_rectangle_area([5, 4, 3, 2, 1]) == 9",
+    "def test_all_same():\n    assert largest_rectangle_area([3, 3, 3, 3]) == 12",
+    "def test_with_zero():\n    assert largest_rectangle_area([2, 0, 2]) == 2",
+    "def test_one_zero():\n    assert largest_rectangle_area([0]) == 0",
+    "def test_complex():\n    assert largest_rectangle_area([6, 7, 5, 2, 4, 5, 9, 3]) == 16"
+  ],
+  "constraints": [
+    "1 <= len(heights) <= 10^5",
+    "0 <= heights[i] <= 10^4",
+    "Expected O(n) time complexity using a monotonic stack"
+  ],
+  "tags": ["stack", "monotonic-stack"]
+}
