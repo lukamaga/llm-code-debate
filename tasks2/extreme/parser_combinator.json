@@ -1,0 +1,33 @@
+{
+  "id": "parser_combinator",
+  "name": "Parser Combinator Library",
+  "difficulty": "extreme",
+  "description": "Implement a small parser combinator library across two modules. Module parser_core.py must define: ParseResult dataclass with fields success (bool), value (Any), remaining (str), error (str, default ''); Parser class wrapping a function (str -> ParseResult) with methods: __call__(text), then(other) sequence (returns tuple (a, b)), or_else(other) tries first then second on failure, map(fn) transforms successful value, many() returns list of zero-or-more matches. Module combinators.py must import Parser from parser_core.py and provide module-level functions: char(c) parses a single specific character; digit() parses one digit char; literal(s) parses an exact substring; whitespace() consumes any number of spaces/tabs (including zero) returning the consumed string; integer() parses signed/unsigned integer and returns Python int.",
+  "required_files": ["parser_core.py", "combinators.py"],
+  "test_imports": ["from parser_core import Parser, ParseResult", "from combinators import char, digit, literal, whitespace, integer"],
+  "signature": "# parser_core.py\nfrom dataclasses import dataclass\nfrom typing import Any, Callable\n\n@dataclass\nclass ParseResult:\n    success: bool\n    value: Any\n    remaining: str\n    error: str = ''\n\nclass Parser:\n    def __init__(self, fn: Callable[[str], ParseResult]): ...\n    def __call__(self, text: str) -> ParseResult: ...\n    def then(self, other: 'Parser') -> 'Parser': ...\n    def or_else(self, other: 'Parser') -> 'Parser': ...\n    def map(self, fn: Callable) -> 'Parser': ...\n    def many(self) -> 'Parser': ...\n\n# combinators.py\nfrom parser_core import Parser, ParseResult\n\ndef char(c: str) -> Parser: ...\ndef digit() -> Parser: ...\ndef literal(s: str) -> Parser: ...\ndef whitespace() -> Parser: ...\ndef integer() -> Parser: ...",
+  "tests": [
+    "def test_char_match():\n    r = char('a')('apple')\n    assert r.success and r.value == 'a' and r.remaining == 'pple'",
+    "def test_char_fail():\n    r = char('a')('banana')\n    assert r.success is False",
+    "def test_digit():\n    r = digit()('7xyz')\n    assert r.success and r.value == '7' and r.remaining == 'xyz'",
+    "def test_digit_fail():\n    assert digit()('xyz').success is False",
+    "def test_literal():\n    r = literal('hello')('hello world')\n    assert r.success and r.value == 'hello' and r.remaining == ' world'",
+    "def test_literal_fail():\n    assert literal('hello')('helXo').success is False",
+    "def test_then():\n    p = char('a').then(char('b'))\n    r = p('abc')\n    assert r.success and r.value == ('a', 'b') and r.remaining == 'c'",
+    "def test_or_else():\n    p = char('a').or_else(char('b'))\n    assert p('abc').value == 'a'\n    assert p('bcd').value == 'b'\n    assert p('xyz').success is False",
+    "def test_map():\n    p = digit().map(int)\n    r = p('5x')\n    assert r.success and r.value == 5",
+    "def test_many():\n    p = digit().many()\n    r = p('123abc')\n    assert r.success and r.value == ['1', '2', '3'] and r.remaining == 'abc'",
+    "def test_many_zero():\n    r = digit().many()('abc')\n    assert r.success and r.value == [] and r.remaining == 'abc'",
+    "def test_integer():\n    assert integer()('42 rest').value == 42\n    assert integer()('-17x').value == -17",
+    "def test_whitespace():\n    r = whitespace()('   abc')\n    assert r.success and r.remaining == 'abc'"
+  ],
+  "constraints": [
+    "Parser is composable: combinators return new Parser objects, do not mutate",
+    "many() must succeed even with zero matches (returns empty list)",
+    "Failed parsers must leave remaining text unchanged from where they started",
+    "integer() handles optional leading '-' sign",
+    "whitespace() consumes spaces and tabs only and always succeeds"
+  ],
+  "helper_code": {},
+  "tags": ["parser", "combinator", "multi-file", "functional"]
+}
