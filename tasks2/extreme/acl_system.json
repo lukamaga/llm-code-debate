@@ -1,0 +1,32 @@
+{
+  "id": "acl_system",
+  "name": "Access Control List System",
+  "difficulty": "extreme",
+  "description": "Implement a role-based access control system across two modules. Module acl_types.py must define: Permission dataclass with fields resource (str), action (str); Role dataclass with fields name (str), permissions (set of (resource, action) tuples), inherits (list[str], parent role names); AccessDecision enum ALLOW, DENY, NOT_APPLICABLE. Module acl_engine.py must import from acl_types.py and implement Engine class with methods: define_role(role: Role); assign_role(user: str, role_name: str); revoke_role(user: str, role_name: str) -> bool; grant(role_name: str, resource: str, action: str); deny(role_name: str, resource: str, action: str) explicit deny that overrides grants; check(user: str, resource: str, action: str) -> AccessDecision; effective_permissions(user: str) -> set[tuple[str, str]] computed across all assigned roles and their inheritance. Inheritance: child role gets parent's permissions; explicit DENY beats inherited ALLOW.",
+  "required_files": ["acl_types.py", "acl_engine.py"],
+  "test_imports": ["from acl_types import Permission, Role, AccessDecision", "from acl_engine import Engine"],
+  "signature": "# acl_types.py\nfrom dataclasses import dataclass, field\nfrom enum import Enum\n\n@dataclass\nclass Permission:\n    resource: str\n    action: str\n\n@dataclass\nclass Role:\n    name: str\n    permissions: set = field(default_factory=set)\n    inherits: list = field(default_factory=list)\n\nclass AccessDecision(Enum):\n    ALLOW = 'allow'\n    DENY = 'deny'\n    NOT_APPLICABLE = 'not_applicable'\n\n# acl_engine.py\nfrom acl_types import Permission, Role, AccessDecision\n\nclass Engine:\n    def __init__(self): ...\n    def define_role(self, role: Role) -> None: ...\n    def assign_role(self, user: str, role_name: str) -> None: ...\n    def revoke_role(self, user: str, role_name: str) -> bool: ...\n    def grant(self, role_name: str, resource: str, action: str) -> None: ...\n    def deny(self, role_name: str, resource: str, action: str) -> None: ...\n    def check(self, user: str, resource: str, action: str) -> AccessDecision: ...\n    def effective_permissions(self, user: str) -> set: ...",
+  "tests": [
+    "def test_no_role_not_applicable():\n    e = Engine()\n    assert e.check('alice', 'doc', 'read') == AccessDecision.NOT_APPLICABLE",
+    "def test_grant_allows():\n    e = Engine()\n    e.define_role(Role('reader'))\n    e.grant('reader', 'doc', 'read')\n    e.assign_role('alice', 'reader')\n    assert e.check('alice', 'doc', 'read') == AccessDecision.ALLOW",
+    "def test_no_permission_not_applicable():\n    e = Engine()\n    e.define_role(Role('reader'))\n    e.grant('reader', 'doc', 'read')\n    e.assign_role('alice', 'reader')\n    assert e.check('alice', 'doc', 'write') == AccessDecision.NOT_APPLICABLE",
+    "def test_deny_blocks():\n    e = Engine()\n    e.define_role(Role('user'))\n    e.grant('user', 'doc', 'read')\n    e.deny('user', 'doc', 'read')\n    e.assign_role('alice', 'user')\n    assert e.check('alice', 'doc', 'read') == AccessDecision.DENY",
+    "def test_inheritance():\n    e = Engine()\n    e.define_role(Role('reader'))\n    e.grant('reader', 'doc', 'read')\n    e.define_role(Role('editor', inherits=['reader']))\n    e.grant('editor', 'doc', 'write')\n    e.assign_role('alice', 'editor')\n    assert e.check('alice', 'doc', 'read') == AccessDecision.ALLOW\n    assert e.check('alice', 'doc', 'write') == AccessDecision.ALLOW",
+    "def test_deny_overrides_inherit():\n    e = Engine()\n    e.define_role(Role('admin'))\n    e.grant('admin', 'sys', 'delete')\n    e.define_role(Role('limited', inherits=['admin']))\n    e.deny('limited', 'sys', 'delete')\n    e.assign_role('bob', 'limited')\n    assert e.check('bob', 'sys', 'delete') == AccessDecision.DENY",
+    "def test_multiple_roles():\n    e = Engine()\n    e.define_role(Role('a'))\n    e.grant('a', 'r1', 'read')\n    e.define_role(Role('b'))\n    e.grant('b', 'r2', 'write')\n    e.assign_role('user', 'a')\n    e.assign_role('user', 'b')\n    assert e.check('user', 'r1', 'read') == AccessDecision.ALLOW\n    assert e.check('user', 'r2', 'write') == AccessDecision.ALLOW",
+    "def test_revoke():\n    e = Engine()\n    e.define_role(Role('reader'))\n    e.grant('reader', 'doc', 'read')\n    e.assign_role('alice', 'reader')\n    assert e.revoke_role('alice', 'reader') is True\n    assert e.check('alice', 'doc', 'read') == AccessDecision.NOT_APPLICABLE",
+    "def test_revoke_unassigned():\n    e = Engine()\n    e.define_role(Role('x'))\n    assert e.revoke_role('alice', 'x') is False",
+    "def test_effective_permissions():\n    e = Engine()\n    e.define_role(Role('reader'))\n    e.grant('reader', 'doc', 'read')\n    e.define_role(Role('editor', inherits=['reader']))\n    e.grant('editor', 'doc', 'write')\n    e.assign_role('alice', 'editor')\n    perms = e.effective_permissions('alice')\n    assert ('doc', 'read') in perms\n    assert ('doc', 'write') in perms",
+    "def test_chained_inheritance():\n    e = Engine()\n    e.define_role(Role('a'))\n    e.grant('a', 'r', 'x')\n    e.define_role(Role('b', inherits=['a']))\n    e.define_role(Role('c', inherits=['b']))\n    e.assign_role('u', 'c')\n    assert e.check('u', 'r', 'x') == AccessDecision.ALLOW"
+  ],
+  "constraints": [
+    "Roles must be defined before being assigned",
+    "Inheritance is resolved transitively",
+    "Explicit DENY at any level beats ALLOW",
+    "If neither grant nor deny applies, return NOT_APPLICABLE",
+    "effective_permissions excludes denied permissions",
+    "User can have multiple roles; their permissions union with deny overrides"
+  ],
+  "helper_code": {},
+  "tags": ["security", "acl", "rbac", "multi-file", "design"]
+}
