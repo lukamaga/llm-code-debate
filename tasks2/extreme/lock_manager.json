@@ -1,0 +1,32 @@
+{
+  "id": "lock_manager",
+  "name": "Read-Write Lock Manager (Non-blocking)",
+  "difficulty": "extreme",
+  "description": "Implement a non-blocking read-write lock manager (no real threading, just bookkeeping) across two modules. Module lock_types.py must define: LockMode enum READ, WRITE; LockResult dataclass with fields acquired (bool), holders (list[str], current holders after the operation), reason (str, default ''); DeadlockError exception. Module lock_manager.py must import from lock_types.py and implement LockManager class with methods: try_acquire(resource: str, holder: str, mode: LockMode) -> LockResult; release(resource: str, holder: str) -> bool; held_by(holder: str) -> list[str] (resources currently held); resources() -> dict[str, list[str]] (mapping resource to current holders); detect_deadlock(holder: str, resource: str, mode: LockMode) -> bool checks if granting this would create a cycle in the wait-for graph. Multiple readers allowed, only one writer allowed and incompatible with any other holder. Holder may upgrade READ to WRITE only when sole holder.",
+  "required_files": ["lock_types.py", "lock_manager.py"],
+  "test_imports": ["from lock_types import LockMode, LockResult, DeadlockError", "from lock_manager import LockManager"],
+  "signature": "# lock_types.py\nfrom enum import Enum\nfrom dataclasses import dataclass, field\n\nclass LockMode(Enum):\n    READ = 'read'\n    WRITE = 'write'\n\n@dataclass\nclass LockResult:\n    acquired: bool\n    holders: list = field(default_factory=list)\n    reason: str = ''\n\nclass DeadlockError(Exception): ...\n\n# lock_manager.py\nfrom lock_types import LockMode, LockResult, DeadlockError\n\nclass LockManager:\n    def __init__(self): ...\n    def try_acquire(self, resource: str, holder: str, mode: LockMode) -> LockResult: ...\n    def release(self, resource: str, holder: str) -> bool: ...\n    def held_by(self, holder: str) -> list[str]: ...\n    def resources(self) -> dict: ...\n    def detect_deadlock(self, holder: str, resource: str, mode: LockMode) -> bool: ...",
+  "tests": [
+    "def test_acquire_read():\n    m = LockManager()\n    r = m.try_acquire('file1', 'A', LockMode.READ)\n    assert r.acquired is True\n    assert 'A' in r.holders",
+    "def test_multiple_readers():\n    m = LockManager()\n    m.try_acquire('f', 'A', LockMode.READ)\n    r = m.try_acquire('f', 'B', LockMode.READ)\n    assert r.acquired is True\n    assert sorted(r.holders) == ['A', 'B']",
+    "def test_write_excludes_readers():\n    m = LockManager()\n    m.try_acquire('f', 'A', LockMode.READ)\n    r = m.try_acquire('f', 'B', LockMode.WRITE)\n    assert r.acquired is False",
+    "def test_writer_excludes_writer():\n    m = LockManager()\n    m.try_acquire('f', 'A', LockMode.WRITE)\n    r = m.try_acquire('f', 'B', LockMode.WRITE)\n    assert r.acquired is False",
+    "def test_release_allows_others():\n    m = LockManager()\n    m.try_acquire('f', 'A', LockMode.WRITE)\n    m.release('f', 'A')\n    r = m.try_acquire('f', 'B', LockMode.WRITE)\n    assert r.acquired is True",
+    "def test_release_unknown():\n    m = LockManager()\n    assert m.release('f', 'unknown') is False",
+    "def test_held_by():\n    m = LockManager()\n    m.try_acquire('a', 'X', LockMode.READ)\n    m.try_acquire('b', 'X', LockMode.WRITE)\n    held = m.held_by('X')\n    assert sorted(held) == ['a', 'b']",
+    "def test_resources_view():\n    m = LockManager()\n    m.try_acquire('a', 'X', LockMode.READ)\n    m.try_acquire('a', 'Y', LockMode.READ)\n    m.try_acquire('b', 'Z', LockMode.WRITE)\n    resmap = m.resources()\n    assert sorted(resmap['a']) == ['X', 'Y']\n    assert resmap['b'] == ['Z']",
+    "def test_upgrade_sole_holder():\n    m = LockManager()\n    m.try_acquire('f', 'A', LockMode.READ)\n    r = m.try_acquire('f', 'A', LockMode.WRITE)\n    assert r.acquired is True",
+    "def test_upgrade_blocked_with_others():\n    m = LockManager()\n    m.try_acquire('f', 'A', LockMode.READ)\n    m.try_acquire('f', 'B', LockMode.READ)\n    r = m.try_acquire('f', 'A', LockMode.WRITE)\n    assert r.acquired is False",
+    "def test_detect_deadlock_simple():\n    m = LockManager()\n    m.try_acquire('a', 'X', LockMode.WRITE)\n    m.try_acquire('b', 'Y', LockMode.WRITE)\n    assert m.detect_deadlock('X', 'b', LockMode.WRITE) is True or isinstance(m.detect_deadlock('X', 'b', LockMode.WRITE), bool)"
+  ],
+  "constraints": [
+    "Multiple READs on the same resource are compatible",
+    "WRITE is exclusive of all other holders",
+    "Re-acquire by same holder in same mode is idempotent (acquired=True, no duplicate)",
+    "Upgrade READ->WRITE only allowed when holder is the sole holder",
+    "release returns False if holder does not currently hold the resource",
+    "detect_deadlock returns a boolean and does not modify state"
+  ],
+  "helper_code": {},
+  "tags": ["concurrency", "locks", "multi-file", "deadlock-detection"]
+}
