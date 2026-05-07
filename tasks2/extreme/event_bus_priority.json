@@ -1,0 +1,30 @@
+{
+  "id": "event_bus_priority",
+  "name": "Priority Event Bus with Filters",
+  "difficulty": "extreme",
+  "description": "Implement an event bus with priorities and filters across two modules. Module event_types.py must define: Event dataclass with fields name (str), payload (Any), timestamp (float, default time.monotonic() at creation); Subscription dataclass with fields handler (callable taking Event), priority (int, higher runs first), filter_fn (callable Event->bool or None); EventBusBase abstract base class with abstract methods subscribe, unsubscribe, publish. Module event_bus.py must import from event_types.py and implement EventBus class with methods: subscribe(event_name: str, handler, priority: int = 0, filter_fn = None) returns a subscription_id (int); unsubscribe(subscription_id) returns True if removed; publish(event: Event) calls all matching subscriptions in priority order (highest first, FIFO within same priority), skipping those whose filter_fn returns False; subscriber_count(event_name) -> int. Wildcard '*' subscribes to all events.",
+  "required_files": ["event_types.py", "event_bus.py"],
+  "test_imports": ["from event_types import Event, Subscription, EventBusBase", "from event_bus import EventBus"],
+  "signature": "# event_types.py\nfrom dataclasses import dataclass, field\nfrom abc import ABC, abstractmethod\nfrom typing import Any, Callable\nimport time\n\n@dataclass\nclass Event:\n    name: str\n    payload: Any\n    timestamp: float = field(default_factory=time.monotonic)\n\n@dataclass\nclass Subscription:\n    handler: Callable\n    priority: int\n    filter_fn: Callable | None\n\nclass EventBusBase(ABC):\n    @abstractmethod\n    def subscribe(self, event_name, handler, priority=0, filter_fn=None) -> int: ...\n    @abstractmethod\n    def unsubscribe(self, subscription_id: int) -> bool: ...\n    @abstractmethod\n    def publish(self, event: Event) -> None: ...\n\n# event_bus.py\nfrom event_types import Event, Subscription, EventBusBase\n\nclass EventBus(EventBusBase):\n    def __init__(self): ...\n    def subscriber_count(self, event_name: str) -> int: ...",
+  "tests": [
+    "def test_basic_publish():\n    bus = EventBus()\n    received = []\n    bus.subscribe('click', lambda e: received.append(e.payload))\n    bus.publish(Event('click', 'btn1'))\n    assert received == ['btn1']",
+    "def test_no_subscriber_no_error():\n    bus = EventBus()\n    bus.publish(Event('nothing', None))",
+    "def test_priority_order():\n    bus = EventBus()\n    order = []\n    bus.subscribe('e', lambda e: order.append('low'), priority=1)\n    bus.subscribe('e', lambda e: order.append('high'), priority=10)\n    bus.subscribe('e', lambda e: order.append('mid'), priority=5)\n    bus.publish(Event('e', None))\n    assert order == ['high', 'mid', 'low']",
+    "def test_fifo_within_priority():\n    bus = EventBus()\n    order = []\n    bus.subscribe('e', lambda e: order.append('first'), priority=5)\n    bus.subscribe('e', lambda e: order.append('second'), priority=5)\n    bus.publish(Event('e', None))\n    assert order == ['first', 'second']",
+    "def test_filter_blocks():\n    bus = EventBus()\n    received = []\n    bus.subscribe('msg', lambda e: received.append(e.payload), filter_fn=lambda e: e.payload.get('important'))\n    bus.publish(Event('msg', {'important': False}))\n    bus.publish(Event('msg', {'important': True}))\n    assert len(received) == 1",
+    "def test_unsubscribe():\n    bus = EventBus()\n    received = []\n    sid = bus.subscribe('e', lambda e: received.append(e))\n    assert bus.unsubscribe(sid) is True\n    bus.publish(Event('e', None))\n    assert received == []",
+    "def test_unsubscribe_invalid():\n    bus = EventBus()\n    assert bus.unsubscribe(999) is False",
+    "def test_wildcard():\n    bus = EventBus()\n    received = []\n    bus.subscribe('*', lambda e: received.append(e.name))\n    bus.publish(Event('a', None))\n    bus.publish(Event('b', None))\n    assert received == ['a', 'b']",
+    "def test_subscriber_count():\n    bus = EventBus()\n    bus.subscribe('e', lambda x: None)\n    bus.subscribe('e', lambda x: None)\n    bus.subscribe('other', lambda x: None)\n    assert bus.subscriber_count('e') == 2"
+  ],
+  "constraints": [
+    "Subscription IDs must be unique across all subscribe calls",
+    "Higher priority handlers run first",
+    "Within the same priority, handlers run in subscribe order (FIFO)",
+    "Wildcard '*' matches every event name",
+    "Filter returning False skips the handler, not raises",
+    "subscriber_count counts only subscriptions for the exact event_name (not wildcards)"
+  ],
+  "helper_code": {},
+  "tags": ["event-driven", "multi-file", "design-pattern", "observer"]
+}
