@@ -1,0 +1,32 @@
+{
+  "id": "command_undo",
+  "name": "Command Pattern with Undo/Redo Stack",
+  "difficulty": "extreme",
+  "description": "Implement the command pattern with undo/redo support across two modules. Module command_types.py must define: Command abstract base class with abstract methods execute(state: dict) -> Any and undo(state: dict) -> None and a name property (str); CommandResult dataclass with fields command_name (str), value (Any), timestamp (float). Module command_invoker.py must import from command_types.py and implement Invoker class with methods: execute(command: Command) runs command.execute and pushes onto undo stack, clears redo stack, returns CommandResult; undo() pops undo stack, calls command.undo, pushes onto redo stack; redo() pops redo stack, calls command.execute, pushes back onto undo stack; can_undo() -> bool; can_redo() -> bool; history() -> list[str] (names of all currently undoable commands in order). Provide concrete commands: SetCommand(key, value) and DeleteCommand(key) operating on the state dict.",
+  "required_files": ["command_types.py", "command_invoker.py"],
+  "test_imports": ["from command_types import Command, CommandResult", "from command_invoker import Invoker, SetCommand, DeleteCommand"],
+  "signature": "# command_types.py\nfrom abc import ABC, abstractmethod\nfrom dataclasses import dataclass, field\nfrom typing import Any\nimport time\n\nclass Command(ABC):\n    @property\n    @abstractmethod\n    def name(self) -> str: ...\n    @abstractmethod\n    def execute(self, state: dict) -> Any: ...\n    @abstractmethod\n    def undo(self, state: dict) -> None: ...\n\n@dataclass\nclass CommandResult:\n    command_name: str\n    value: Any\n    timestamp: float = field(default_factory=time.monotonic)\n\n# command_invoker.py\nfrom command_types import Command, CommandResult\n\nclass Invoker:\n    def __init__(self, state: dict): ...\n    def execute(self, command: Command) -> CommandResult: ...\n    def undo(self) -> bool: ...\n    def redo(self) -> bool: ...\n    def can_undo(self) -> bool: ...\n    def can_redo(self) -> bool: ...\n    def history(self) -> list[str]: ...\n\nclass SetCommand(Command): ...\nclass DeleteCommand(Command): ...",
+  "tests": [
+    "def test_set_command():\n    state = {}\n    inv = Invoker(state)\n    inv.execute(SetCommand('x', 42))\n    assert state == {'x': 42}",
+    "def test_undo_set():\n    state = {}\n    inv = Invoker(state)\n    inv.execute(SetCommand('x', 1))\n    inv.undo()\n    assert 'x' not in state",
+    "def test_delete_command():\n    state = {'x': 1}\n    inv = Invoker(state)\n    inv.execute(DeleteCommand('x'))\n    assert 'x' not in state",
+    "def test_undo_delete_restores():\n    state = {'x': 1}\n    inv = Invoker(state)\n    inv.execute(DeleteCommand('x'))\n    inv.undo()\n    assert state == {'x': 1}",
+    "def test_redo():\n    state = {}\n    inv = Invoker(state)\n    inv.execute(SetCommand('x', 5))\n    inv.undo()\n    inv.redo()\n    assert state == {'x': 5}",
+    "def test_can_undo_redo_initial():\n    inv = Invoker({})\n    assert inv.can_undo() is False\n    assert inv.can_redo() is False",
+    "def test_new_command_clears_redo():\n    state = {}\n    inv = Invoker(state)\n    inv.execute(SetCommand('a', 1))\n    inv.undo()\n    assert inv.can_redo() is True\n    inv.execute(SetCommand('b', 2))\n    assert inv.can_redo() is False",
+    "def test_history_names():\n    inv = Invoker({})\n    inv.execute(SetCommand('a', 1))\n    inv.execute(SetCommand('b', 2))\n    inv.execute(DeleteCommand('a'))\n    h = inv.history()\n    assert len(h) == 3\n    assert 'set' in h[0].lower() or 'set' in h[1].lower()",
+    "def test_undo_returns_false_when_empty():\n    inv = Invoker({})\n    assert inv.undo() is False",
+    "def test_set_overwrite_undo():\n    state = {'x': 'old'}\n    inv = Invoker(state)\n    inv.execute(SetCommand('x', 'new'))\n    assert state['x'] == 'new'\n    inv.undo()\n    assert state['x'] == 'old'",
+    "def test_command_result():\n    inv = Invoker({})\n    r = inv.execute(SetCommand('x', 99))\n    assert isinstance(r, CommandResult)\n    assert r.value == 99 or r.command_name"
+  ],
+  "constraints": [
+    "Each command must record enough info in execute to undo correctly",
+    "Executing a new command clears the redo stack",
+    "undo/redo return False when their stack is empty (do not raise)",
+    "history() reflects the undo stack only (not redo)",
+    "SetCommand on existing key must restore the previous value on undo, not delete",
+    "DeleteCommand on missing key is a no-op but still pushes onto undo stack"
+  ],
+  "helper_code": {},
+  "tags": ["design-pattern", "command", "undo-redo", "multi-file"]
+}
