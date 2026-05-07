@@ -1,0 +1,30 @@
+{
+  "id": "bloom_filter",
+  "name": "Bloom Filter with Counting Variant",
+  "difficulty": "extreme",
+  "description": "Implement a Bloom filter and a counting Bloom filter across two modules. Module hash_utils.py must define: HashFn dataclass with fields seed (int) and a __call__(item: bytes) -> int method that returns a non-negative integer hash; make_hashes(k: int, seeds: list[int]) -> list[HashFn] returns k independent hash functions (deterministic, seeded). Module bloom.py must import from hash_utils.py and implement: BloomFilter class with constructor BloomFilter(size: int, num_hashes: int, seeds: list[int] | None = None), methods add(item: str), contains(item: str) -> bool, __len__() returns count of distinct adds (allowing approximate over-count is OK; use a separate add counter), and approximate_fill_ratio() -> float (fraction of bits set); CountingBloomFilter with same interface plus remove(item: str) -> bool that decrements counters and returns True if any counter was non-zero.",
+  "required_files": ["hash_utils.py", "bloom.py"],
+  "test_imports": ["from hash_utils import HashFn, make_hashes", "from bloom import BloomFilter, CountingBloomFilter"],
+  "signature": "# hash_utils.py\nfrom dataclasses import dataclass\n\n@dataclass\nclass HashFn:\n    seed: int\n    def __call__(self, item: bytes) -> int: ...\n\ndef make_hashes(k: int, seeds: list[int]) -> list[HashFn]: ...\n\n# bloom.py\nfrom hash_utils import HashFn, make_hashes\n\nclass BloomFilter:\n    def __init__(self, size: int, num_hashes: int, seeds: list[int] | None = None): ...\n    def add(self, item: str) -> None: ...\n    def contains(self, item: str) -> bool: ...\n    def __len__(self) -> int: ...\n    def approximate_fill_ratio(self) -> float: ...\n\nclass CountingBloomFilter(BloomFilter):\n    def remove(self, item: str) -> bool: ...",
+  "tests": [
+    "def test_basic_add_contains():\n    bf = BloomFilter(size=128, num_hashes=3)\n    bf.add('hello')\n    assert bf.contains('hello') is True",
+    "def test_no_false_negatives():\n    bf = BloomFilter(size=256, num_hashes=4)\n    items = ['apple', 'banana', 'cherry', 'date']\n    for it in items:\n        bf.add(it)\n    for it in items:\n        assert bf.contains(it) is True",
+    "def test_missing_item():\n    bf = BloomFilter(size=2048, num_hashes=5)\n    bf.add('x')\n    assert bf.contains('definitely_not_added_xyz_unique') is False",
+    "def test_deterministic():\n    bf1 = BloomFilter(size=128, num_hashes=3, seeds=[1,2,3])\n    bf2 = BloomFilter(size=128, num_hashes=3, seeds=[1,2,3])\n    bf1.add('hello')\n    bf2.add('hello')\n    assert bf1.contains('hello') == bf2.contains('hello')",
+    "def test_len_grows():\n    bf = BloomFilter(size=128, num_hashes=3)\n    assert len(bf) == 0\n    bf.add('a')\n    bf.add('b')\n    assert len(bf) == 2",
+    "def test_fill_ratio():\n    bf = BloomFilter(size=128, num_hashes=3)\n    assert bf.approximate_fill_ratio() == 0.0\n    for i in range(20):\n        bf.add(f'item{i}')\n    assert 0.0 < bf.approximate_fill_ratio() <= 1.0",
+    "def test_counting_remove():\n    cbf = CountingBloomFilter(size=128, num_hashes=3)\n    cbf.add('hello')\n    assert cbf.contains('hello') is True\n    assert cbf.remove('hello') is True\n    assert cbf.contains('hello') is False",
+    "def test_counting_remove_missing():\n    cbf = CountingBloomFilter(size=128, num_hashes=3)\n    assert cbf.remove('never_added') is False",
+    "def test_counting_double_add():\n    cbf = CountingBloomFilter(size=128, num_hashes=3)\n    cbf.add('x')\n    cbf.add('x')\n    cbf.remove('x')\n    assert cbf.contains('x') is True\n    cbf.remove('x')\n    assert cbf.contains('x') is False",
+    "def test_make_hashes_count():\n    hs = make_hashes(5, [10, 20, 30, 40, 50])\n    assert len(hs) == 5\n    assert all(callable(h) for h in hs)"
+  ],
+  "constraints": [
+    "Hash functions must be deterministic given the same seed and input",
+    "BloomFilter has no false negatives (added items always return True for contains)",
+    "Default seeds (when None) should be derived deterministically from num_hashes",
+    "CountingBloomFilter.remove decrements all relevant counters",
+    "remove returns False only when the item's positions all have zero counters"
+  ],
+  "helper_code": {},
+  "tags": ["data-structure", "multi-file", "probabilistic", "hashing"]
+}
