@@ -1,0 +1,30 @@
+{
+  "id": "task_queue",
+  "name": "Priority Task Queue with Workers",
+  "difficulty": "extreme",
+  "description": "Implement a synchronous priority task queue with workers across two modules. Module queue_types.py must define: Task dataclass with fields id (int), payload (Any), priority (int, lower number = higher priority), created_at (float); TaskResult dataclass with fields task_id (int), status ('completed'|'failed'), value (Any), error (str, default ''). Module task_queue.py must import from queue_types.py and implement TaskQueue class with methods: submit(payload, priority: int = 5) returns task id (auto-incrementing from 1); register_worker(name: str, handler: Callable[[Any], Any]); set_default_worker(name: str); process_one() pops highest-priority task and runs default worker, returns TaskResult or None if queue empty; process_all() processes everything in priority order, returns list[TaskResult]; pending_count() -> int; cancel(task_id) returns True if removed before execution. Within the same priority, FIFO by submission order. Worker exceptions are caught and reported as failed TaskResult.",
+  "required_files": ["queue_types.py", "task_queue.py"],
+  "test_imports": ["from queue_types import Task, TaskResult", "from task_queue import TaskQueue"],
+  "signature": "# queue_types.py\nfrom dataclasses import dataclass, field\nfrom typing import Any\nimport time\n\n@dataclass\nclass Task:\n    id: int\n    payload: Any\n    priority: int\n    created_at: float = field(default_factory=time.monotonic)\n\n@dataclass\nclass TaskResult:\n    task_id: int\n    status: str\n    value: Any\n    error: str = ''\n\n# task_queue.py\nfrom queue_types import Task, TaskResult\n\nclass TaskQueue:\n    def __init__(self): ...\n    def submit(self, payload, priority: int = 5) -> int: ...\n    def register_worker(self, name: str, handler) -> None: ...\n    def set_default_worker(self, name: str) -> None: ...\n    def process_one(self) -> TaskResult | None: ...\n    def process_all(self) -> list: ...\n    def pending_count(self) -> int: ...\n    def cancel(self, task_id: int) -> bool: ...",
+  "tests": [
+    "def test_submit_returns_increasing_ids():\n    q = TaskQueue()\n    a = q.submit('x')\n    b = q.submit('y')\n    assert b > a",
+    "def test_priority_order():\n    q = TaskQueue()\n    q.register_worker('echo', lambda p: p)\n    q.set_default_worker('echo')\n    q.submit('low', priority=10)\n    q.submit('high', priority=1)\n    q.submit('mid', priority=5)\n    results = q.process_all()\n    assert [r.value for r in results] == ['high', 'mid', 'low']",
+    "def test_fifo_same_priority():\n    q = TaskQueue()\n    q.register_worker('echo', lambda p: p)\n    q.set_default_worker('echo')\n    q.submit('a', priority=5)\n    q.submit('b', priority=5)\n    q.submit('c', priority=5)\n    results = q.process_all()\n    assert [r.value for r in results] == ['a', 'b', 'c']",
+    "def test_process_one_returns_none_when_empty():\n    q = TaskQueue()\n    assert q.process_one() is None",
+    "def test_worker_failure():\n    def bad(p):\n        raise ValueError('boom')\n    q = TaskQueue()\n    q.register_worker('bad', bad)\n    q.set_default_worker('bad')\n    tid = q.submit('x')\n    r = q.process_one()\n    assert r.task_id == tid\n    assert r.status == 'failed'\n    assert 'boom' in r.error",
+    "def test_pending_count():\n    q = TaskQueue()\n    q.submit('a')\n    q.submit('b')\n    assert q.pending_count() == 2\n    q.register_worker('echo', lambda p: p)\n    q.set_default_worker('echo')\n    q.process_one()\n    assert q.pending_count() == 1",
+    "def test_cancel_existing():\n    q = TaskQueue()\n    tid = q.submit('x')\n    assert q.cancel(tid) is True\n    assert q.pending_count() == 0",
+    "def test_cancel_missing():\n    q = TaskQueue()\n    assert q.cancel(999) is False",
+    "def test_worker_value_passed_through():\n    q = TaskQueue()\n    q.register_worker('double', lambda p: p * 2)\n    q.set_default_worker('double')\n    q.submit(5)\n    r = q.process_one()\n    assert r.status == 'completed' and r.value == 10"
+  ],
+  "constraints": [
+    "Task ids start at 1 and increase by 1 with each submit",
+    "Lower priority value = processed first",
+    "FIFO ordering preserved within same priority",
+    "process_one returns None on empty queue, never raises",
+    "Worker exceptions become failed TaskResult with str(exc) in error",
+    "cancel only succeeds if task hasn't been processed yet"
+  ],
+  "helper_code": {},
+  "tags": ["queue", "multi-file", "priority", "design"]
+}
