@@ -1,0 +1,31 @@
+{
+  "id": "retry_policy",
+  "name": "Retry Policy with Backoff Strategies",
+  "difficulty": "extreme",
+  "description": "Implement a retry policy framework across two modules. Module retry_types.py must define: BackoffStrategy abstract base class with abstract method delay(attempt: int) -> float (attempt is 1-indexed); Attempt dataclass with fields number (int), exception (Exception | None), delay_before (float), result (Any); RetryExhausted exception with attribute attempts (list[Attempt]). Module retry.py must import from retry_types.py and implement: ConstantBackoff(delay_seconds: float); LinearBackoff(initial: float, increment: float); ExponentialBackoff(initial: float, multiplier: float = 2.0, max_delay: float = float('inf')); RetryPolicy class with constructor RetryPolicy(max_attempts: int, backoff: BackoffStrategy, retry_on: tuple[type, ...] = (Exception,)) and method execute(fn, *args, **kwargs) that calls fn, sleeping between attempts. The execute method must use a sleep_fn injected via constructor param sleep_fn (defaults to time.sleep) to make tests deterministic. attempts() property returns the list of all attempts from last execute call.",
+  "required_files": ["retry_types.py", "retry.py"],
+  "test_imports": ["from retry_types import BackoffStrategy, Attempt, RetryExhausted", "from retry import ConstantBackoff, LinearBackoff, ExponentialBackoff, RetryPolicy"],
+  "signature": "# retry_types.py\nfrom abc import ABC, abstractmethod\nfrom dataclasses import dataclass\nfrom typing import Any\n\nclass BackoffStrategy(ABC):\n    @abstractmethod\n    def delay(self, attempt: int) -> float: ...\n\n@dataclass\nclass Attempt:\n    number: int\n    exception: Exception | None\n    delay_before: float\n    result: Any = None\n\nclass RetryExhausted(Exception):\n    def __init__(self, attempts: list):\n        super().__init__(f'retry exhausted after {len(attempts)} attempts')\n        self.attempts = attempts\n\n# retry.py\nfrom retry_types import BackoffStrategy, Attempt, RetryExhausted\n\nclass ConstantBackoff(BackoffStrategy): ...\nclass LinearBackoff(BackoffStrategy): ...\nclass ExponentialBackoff(BackoffStrategy): ...\n\nclass RetryPolicy:\n    def __init__(self, max_attempts: int, backoff: BackoffStrategy, retry_on=(Exception,), sleep_fn=None): ...\n    def execute(self, fn, *args, **kwargs): ...\n    @property\n    def attempts(self) -> list: ...",
+  "tests": [
+    "def test_constant_backoff():\n    b = ConstantBackoff(0.5)\n    assert b.delay(1) == 0.5\n    assert b.delay(5) == 0.5",
+    "def test_linear_backoff():\n    b = LinearBackoff(initial=1.0, increment=0.5)\n    assert b.delay(1) == 1.0\n    assert b.delay(2) == 1.5\n    assert b.delay(3) == 2.0",
+    "def test_exponential_backoff():\n    b = ExponentialBackoff(initial=1.0, multiplier=2.0)\n    assert b.delay(1) == 1.0\n    assert b.delay(2) == 2.0\n    assert b.delay(3) == 4.0\n    assert b.delay(4) == 8.0",
+    "def test_exponential_max_delay():\n    b = ExponentialBackoff(initial=1.0, multiplier=2.0, max_delay=3.0)\n    assert b.delay(1) == 1.0\n    assert b.delay(2) == 2.0\n    assert b.delay(3) == 3.0\n    assert b.delay(10) == 3.0",
+    "def test_succeed_first_attempt():\n    sleeps = []\n    p = RetryPolicy(3, ConstantBackoff(0.1), sleep_fn=sleeps.append)\n    result = p.execute(lambda: 42)\n    assert result == 42\n    assert sleeps == []",
+    "def test_succeed_after_failures():\n    sleeps = []\n    counter = {'n': 0}\n    def flaky():\n        counter['n'] += 1\n        if counter['n'] < 3:\n            raise ValueError('not yet')\n        return 'ok'\n    p = RetryPolicy(5, ConstantBackoff(0.1), sleep_fn=sleeps.append)\n    result = p.execute(flaky)\n    assert result == 'ok'\n    assert len(sleeps) == 2",
+    "def test_exhausted():\n    sleeps = []\n    def always_fails():\n        raise RuntimeError('nope')\n    p = RetryPolicy(3, ConstantBackoff(0.1), sleep_fn=sleeps.append)\n    try:\n        p.execute(always_fails)\n        assert False\n    except RetryExhausted as e:\n        assert len(e.attempts) == 3",
+    "def test_retry_only_specific_exceptions():\n    p = RetryPolicy(3, ConstantBackoff(0.1), retry_on=(ValueError,), sleep_fn=lambda d: None)\n    def bad():\n        raise TypeError('not retried')\n    try:\n        p.execute(bad)\n        assert False\n    except TypeError:\n        pass",
+    "def test_attempts_recorded():\n    p = RetryPolicy(3, ConstantBackoff(0.1), sleep_fn=lambda d: None)\n    counter = {'n': 0}\n    def flaky():\n        counter['n'] += 1\n        if counter['n'] < 2:\n            raise ValueError()\n        return 'done'\n    p.execute(flaky)\n    assert len(p.attempts) == 2\n    assert p.attempts[0].exception is not None\n    assert p.attempts[1].exception is None",
+    "def test_passes_args():\n    p = RetryPolicy(2, ConstantBackoff(0.0), sleep_fn=lambda d: None)\n    result = p.execute(lambda x, y: x * y, 3, y=4)\n    assert result == 12"
+  ],
+  "constraints": [
+    "execute returns fn's return value on success; raises RetryExhausted if all attempts fail",
+    "Attempt numbers start at 1",
+    "Backoff is applied BEFORE retrying, not before first attempt (so attempts[0].delay_before == 0.0)",
+    "Exceptions not in retry_on must propagate immediately without retry",
+    "sleep_fn callable receives the delay; default is time.sleep",
+    "attempts property reflects only the most recent execute call"
+  ],
+  "helper_code": {},
+  "tags": ["resilience", "multi-file", "design-pattern", "retry"]
+}
