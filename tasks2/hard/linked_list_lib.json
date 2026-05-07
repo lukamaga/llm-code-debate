@@ -1,0 +1,25 @@
+{
+  "id": "linked_list_lib",
+  "name": "Doubly Linked List Library",
+  "difficulty": "hard",
+  "description": "Implement a DoublyLinkedList class with advanced operations. The Node class stores value, next, and prev pointers. The DoublyLinkedList supports append, prepend, delete, reverse, merge sort, and merging two sorted lists. All pointer manipulations must maintain both next and prev references correctly.",
+  "signature": "class Node:\n    def __init__(self, value):\n        self.value = value\n        self.next = None\n        self.prev = None\n\nclass DoublyLinkedList:\n    def __init__(self):\n        pass\n    def append(self, value) -> None:\n        pass\n    def prepend(self, value) -> None:\n        pass\n    def delete(self, value) -> bool:\n        pass\n    def to_list(self) -> list:\n        pass\n    def reverse(self) -> None:\n        pass\n    def sort(self) -> None:\n        \"\"\"Sort in ascending order using merge sort.\"\"\"\n        pass\n    def __len__(self) -> int:\n        pass\n    def __contains__(self, value) -> bool:\n        pass\n\ndef merge_sorted(list1: DoublyLinkedList, list2: DoublyLinkedList) -> DoublyLinkedList:\n    \"\"\"Merge two sorted linked lists into a new sorted linked list.\"\"\"\n    pass",
+  "tests": [
+    "def test_append_and_to_list():\n    ll = DoublyLinkedList()\n    ll.append(1)\n    ll.append(2)\n    ll.append(3)\n    assert ll.to_list() == [1, 2, 3]",
+    "def test_prepend():\n    ll = DoublyLinkedList()\n    ll.prepend(3)\n    ll.prepend(2)\n    ll.prepend(1)\n    assert ll.to_list() == [1, 2, 3]",
+    "def test_delete():\n    ll = DoublyLinkedList()\n    ll.append(1)\n    ll.append(2)\n    ll.append(3)\n    assert ll.delete(2) == True\n    assert ll.to_list() == [1, 3]\n    assert ll.delete(5) == False",
+    "def test_reverse():\n    ll = DoublyLinkedList()\n    ll.append(1)\n    ll.append(2)\n    ll.append(3)\n    ll.reverse()\n    assert ll.to_list() == [3, 2, 1]",
+    "def test_sort():\n    ll = DoublyLinkedList()\n    ll.append(3)\n    ll.append(1)\n    ll.append(4)\n    ll.append(1)\n    ll.append(5)\n    ll.sort()\n    assert ll.to_list() == [1, 1, 3, 4, 5]",
+    "def test_len_and_contains():\n    ll = DoublyLinkedList()\n    ll.append(10)\n    ll.append(20)\n    assert len(ll) == 2\n    assert 10 in ll\n    assert 30 not in ll",
+    "def test_merge_sorted():\n    l1 = DoublyLinkedList()\n    l1.append(1)\n    l1.append(3)\n    l1.append(5)\n    l2 = DoublyLinkedList()\n    l2.append(2)\n    l2.append(4)\n    l2.append(6)\n    merged = merge_sorted(l1, l2)\n    assert merged.to_list() == [1, 2, 3, 4, 5, 6]",
+    "def test_empty_operations():\n    ll = DoublyLinkedList()\n    assert ll.to_list() == []\n    assert len(ll) == 0\n    ll.reverse()\n    assert ll.to_list() == []\n    ll.sort()\n    assert ll.to_list() == []",
+    "def test_doubly_linked():\n    ll = DoublyLinkedList()\n    ll.append(1)\n    ll.append(2)\n    ll.append(3)\n    ll.reverse()\n    ll.reverse()\n    assert ll.to_list() == [1, 2, 3]"
+  ],
+  "constraints": [
+    "Must use doubly-linked nodes (prev and next pointers)",
+    "sort must use merge sort algorithm",
+    "merge_sorted must not modify input lists",
+    "All operations must work correctly with empty lists"
+  ],
+  "tags": ["linked-list", "sorting", "design"]
+}
