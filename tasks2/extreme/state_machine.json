@@ -1,0 +1,27 @@
+{
+  "id": "state_machine",
+  "name": "Finite State Machine",
+  "difficulty": "extreme",
+  "description": "Implement a finite state machine (FSM) framework with two modules. The state_types module defines State, Transition, and Action types. The fsm_engine module implements the StateMachine that manages states, transitions with guards (conditions), and actions triggered on transitions.",
+  "signature": "# state_types.py\nfrom dataclasses import dataclass, field\nfrom typing import Callable, Any\n\n@dataclass\nclass Action:\n    name: str\n    handler: Callable[[dict], None]  # takes context dict\n\n@dataclass\nclass Transition:\n    event: str\n    source: str\n    target: str\n    guard: Callable[[dict], bool] | None = None  # condition to allow transition\n    actions: list[Action] = field(default_factory=list)\n\n@dataclass\nclass State:\n    name: str\n    on_enter: Callable[[dict], None] | None = None\n    on_exit: Callable[[dict], None] | None = None\n\n# fsm_engine.py\nfrom state_types import State, Transition, Action\n\nclass StateMachine:\n    def __init__(self, initial_state: str, context: dict = None):\n        ...\n    def add_state(self, state: State) -> None:\n        ...\n    def add_transition(self, transition: Transition) -> None:\n        ...\n    def send(self, event: str) -> bool:\n        \"\"\"Process event. Returns True if transition occurred.\"\"\"\n        ...\n    @property\n    def current_state(self) -> str:\n        ...\n    def get_available_events(self) -> list[str]:\n        ...\n    def get_history(self) -> list[str]:\n        \"\"\"Return list of states visited.\"\"\"\n        ...",
+  "required_files": ["state_types.py", "fsm_engine.py"],
+  "test_imports": ["from state_types import State, Transition, Action", "from fsm_engine import StateMachine"],
+  "tests": [
+    "def test_basic_transition():\n    sm = StateMachine('idle')\n    sm.add_state(State('idle'))\n    sm.add_state(State('running'))\n    sm.add_transition(Transition('start', 'idle', 'running'))\n    assert sm.current_state == 'idle'\n    sm.send('start')\n    assert sm.current_state == 'running'",
+    "def test_invalid_event():\n    sm = StateMachine('idle')\n    sm.add_state(State('idle'))\n    assert sm.send('unknown') == False\n    assert sm.current_state == 'idle'",
+    "def test_guard_blocks():\n    sm = StateMachine('locked', context={'pin': '1234'})\n    sm.add_state(State('locked'))\n    sm.add_state(State('unlocked'))\n    sm.add_transition(Transition('unlock', 'locked', 'unlocked', guard=lambda ctx: ctx.get('input') == ctx.get('pin')))\n    sm.send('unlock')\n    assert sm.current_state == 'locked'",
+    "def test_guard_allows():\n    sm = StateMachine('locked', context={'pin': '1234', 'input': '1234'})\n    sm.add_state(State('locked'))\n    sm.add_state(State('unlocked'))\n    sm.add_transition(Transition('unlock', 'locked', 'unlocked', guard=lambda ctx: ctx.get('input') == ctx.get('pin')))\n    sm.send('unlock')\n    assert sm.current_state == 'unlocked'",
+    "def test_actions_executed():\n    log = []\n    sm = StateMachine('off')\n    sm.add_state(State('off'))\n    sm.add_state(State('on'))\n    sm.add_transition(Transition('toggle', 'off', 'on', actions=[Action('log', lambda ctx: log.append('turned_on'))]))\n    sm.send('toggle')\n    assert log == ['turned_on']",
+    "def test_on_enter_exit():\n    log = []\n    sm = StateMachine('a')\n    sm.add_state(State('a', on_exit=lambda ctx: log.append('exit_a')))\n    sm.add_state(State('b', on_enter=lambda ctx: log.append('enter_b')))\n    sm.add_transition(Transition('go', 'a', 'b'))\n    sm.send('go')\n    assert log == ['exit_a', 'enter_b']",
+    "def test_available_events():\n    sm = StateMachine('idle')\n    sm.add_state(State('idle'))\n    sm.add_state(State('running'))\n    sm.add_transition(Transition('start', 'idle', 'running'))\n    sm.add_transition(Transition('stop', 'running', 'idle'))\n    assert sm.get_available_events() == ['start']",
+    "def test_history():\n    sm = StateMachine('a')\n    sm.add_state(State('a'))\n    sm.add_state(State('b'))\n    sm.add_state(State('c'))\n    sm.add_transition(Transition('go_b', 'a', 'b'))\n    sm.add_transition(Transition('go_c', 'b', 'c'))\n    sm.send('go_b')\n    sm.send('go_c')\n    assert sm.get_history() == ['a', 'b', 'c']"
+  ],
+  "constraints": [
+    "Guards are optional callable conditions",
+    "Actions execute in order when transition fires",
+    "on_enter/on_exit callbacks are optional",
+    "send returns False if no valid transition found"
+  ],
+  "helper_code": {},
+  "tags": ["design-pattern", "multi-file", "state-machine"]
+}
