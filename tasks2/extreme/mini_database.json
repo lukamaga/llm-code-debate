@@ -1,0 +1,29 @@
+{
+  "id": "mini_database",
+  "name": "Mini Key-Value Database",
+  "difficulty": "extreme",
+  "description": "Implement a mini in-memory key-value database as two separate modules. Module storage.py must implement StorageBackend class with methods: get(key) -> str|None, set(key, value), delete(key) -> bool, has(key) -> bool, keys() -> list[str], clear(), snapshot() -> dict[str,str] (returns copy of current state), restore(snapshot: dict) (restores from a snapshot). Module database.py must import StorageBackend from storage.py and implement Database class that wraps StorageBackend and adds transaction support: get, set, delete, begin() to start a transaction, commit() to apply changes, rollback() to discard changes. Nested transactions must be supported (begin inside begin). commit/rollback without active transaction must raise an exception.",
+  "required_files": ["storage.py", "database.py"],
+  "test_imports": ["from database import Database"],
+  "signature": "# storage.py\nclass StorageBackend:\n    def __init__(self): ...\n    def get(self, key: str) -> str | None: ...\n    def set(self, key: str, value: str) -> None: ...\n    def delete(self, key: str) -> bool: ...\n    def has(self, key: str) -> bool: ...\n    def keys(self) -> list[str]: ...\n    def clear(self) -> None: ...\n    def snapshot(self) -> dict[str, str]: ...\n    def restore(self, snapshot: dict[str, str]) -> None: ...\n\n# database.py\nfrom storage import StorageBackend\n\nclass Database:\n    def __init__(self): ...\n    def get(self, key: str) -> str | None: ...\n    def set(self, key: str, value: str) -> None: ...\n    def delete(self, key: str) -> bool: ...\n    def begin(self) -> None: ...\n    def commit(self) -> None: ...\n    def rollback(self) -> None: ...",
+  "tests": [
+    "def test_basic_set_get():\n    db = Database()\n    db.set('a', '1')\n    assert db.get('a') == '1'",
+    "def test_get_missing():\n    db = Database()\n    assert db.get('missing') is None",
+    "def test_delete():\n    db = Database()\n    db.set('a', '1')\n    assert db.delete('a') == True\n    assert db.get('a') is None",
+    "def test_delete_missing():\n    db = Database()\n    assert db.delete('missing') == False",
+    "def test_transaction_commit():\n    db = Database()\n    db.set('a', '1')\n    db.begin()\n    db.set('a', '2')\n    db.commit()\n    assert db.get('a') == '2'",
+    "def test_transaction_rollback():\n    db = Database()\n    db.set('a', '1')\n    db.begin()\n    db.set('a', '2')\n    db.rollback()\n    assert db.get('a') == '1'",
+    "def test_nested_transactions():\n    db = Database()\n    db.set('a', '1')\n    db.begin()\n    db.set('a', '2')\n    db.begin()\n    db.set('a', '3')\n    db.rollback()\n    assert db.get('a') == '2'\n    db.commit()\n    assert db.get('a') == '2'",
+    "def test_rollback_delete():\n    db = Database()\n    db.set('a', '1')\n    db.begin()\n    db.delete('a')\n    assert db.get('a') is None\n    db.rollback()\n    assert db.get('a') == '1'",
+    "def test_commit_no_transaction():\n    db = Database()\n    try:\n        db.commit()\n        assert False, 'Should raise'\n    except Exception:\n        pass",
+    "def test_multiple_keys():\n    db = Database()\n    db.begin()\n    db.set('x', '10')\n    db.set('y', '20')\n    db.commit()\n    assert db.get('x') == '10'\n    assert db.get('y') == '20'"
+  ],
+  "constraints": [
+    "Keys and values are strings",
+    "Nested transactions must be supported",
+    "commit/rollback without active transaction should raise an exception",
+    "storage.py must provide StorageBackend with snapshot/restore",
+    "database.py must import and use StorageBackend from storage.py"
+  ],
+  "tags": ["design", "transactions", "multi-file", "data-structures"]
+}
