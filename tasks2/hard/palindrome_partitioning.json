@@ -1,0 +1,26 @@
+{
+  "id": "palindrome_partitioning",
+  "name": "Palindrome Partitioning Min Cuts",
+  "difficulty": "hard",
+  "description": "Given a string s, partition it such that every substring of the partition is a palindrome. Return the minimum number of cuts needed for a palindrome partitioning of s. For example, 'aab' can be partitioned as ['aa', 'b'] using 1 cut. Use dynamic programming with palindrome precomputation to achieve O(n^2) time complexity.",
+  "signature": "def min_cut(s: str) -> int:",
+  "tests": [
+    "def test_basic():\n    assert min_cut('aab') == 1",
+    "def test_single_palindrome():\n    assert min_cut('a') == 0",
+    "def test_already_palindrome():\n    assert min_cut('aba') == 0",
+    "def test_no_palindrome_pairs():\n    assert min_cut('ab') == 1",
+    "def test_empty():\n    assert min_cut('') == 0",
+    "def test_all_same():\n    assert min_cut('aaaa') == 0",
+    "def test_complex():\n    assert min_cut('aabba') == 1",
+    "def test_long_palindrome():\n    assert min_cut('racecar') == 0",
+    "def test_worst_case():\n    assert min_cut('abcde') == 4",
+    "def test_mixed():\n    assert min_cut('ababbbabbababa') == 3"
+  ],
+  "constraints": [
+    "1 <= len(s) <= 2000 (or empty string)",
+    "s consists of lowercase English letters only",
+    "Expected O(n^2) time and space complexity",
+    "A single character is always a palindrome (0 cuts needed for length-1 string)"
+  ],
+  "tags": ["dynamic-programming", "string", "palindrome"]
+}
