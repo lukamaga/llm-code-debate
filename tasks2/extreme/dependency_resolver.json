@@ -1,0 +1,31 @@
+{
+  "id": "dependency_resolver",
+  "name": "Dependency Graph Resolver with Cycles",
+  "difficulty": "extreme",
+  "description": "Implement a dependency resolver across two modules. Module dep_types.py must define: Node dataclass with fields name (str), dependencies (list[str], default empty), data (Any, default None); CycleError exception with attribute cycle (list[str]); ResolutionPlan dataclass with fields order (list[str], topological order) and parallel_groups (list[list[str]], where each group can be processed in parallel after previous groups). Module dep_resolver.py must import from dep_types.py and implement Graph class with methods: add_node(node: Node); remove_node(name: str); add_edge(from_name: str, to_name: str); resolve(target: str | None = None) returns ResolutionPlan, raising CycleError on cycles. If target is None, plan covers all nodes; otherwise only target plus its transitive dependencies. parallel_groups: group N contains all nodes whose dependencies are all in groups < N.",
+  "required_files": ["dep_types.py", "dep_resolver.py"],
+  "test_imports": ["from dep_types import Node, CycleError, ResolutionPlan", "from dep_resolver import Graph"],
+  "signature": "# dep_types.py\nfrom dataclasses import dataclass, field\nfrom typing import Any\n\n@dataclass\nclass Node:\n    name: str\n    dependencies: list = field(default_factory=list)\n    data: Any = None\n\nclass CycleError(Exception):\n    def __init__(self, cycle: list):\n        super().__init__(f'cycle detected: {cycle}')\n        self.cycle = cycle\n\n@dataclass\nclass ResolutionPlan:\n    order: list\n    parallel_groups: list\n\n# dep_resolver.py\nfrom dep_types import Node, CycleError, ResolutionPlan\n\nclass Graph:\n    def __init__(self): ...\n    def add_node(self, node: Node) -> None: ...\n    def remove_node(self, name: str) -> None: ...\n    def add_edge(self, from_name: str, to_name: str) -> None: ...\n    def resolve(self, target: str | None = None) -> ResolutionPlan: ...",
+  "tests": [
+    "def test_single_node():\n    g = Graph()\n    g.add_node(Node('a'))\n    plan = g.resolve()\n    assert plan.order == ['a']\n    assert plan.parallel_groups == [['a']]",
+    "def test_linear_chain():\n    g = Graph()\n    g.add_node(Node('a'))\n    g.add_node(Node('b', dependencies=['a']))\n    g.add_node(Node('c', dependencies=['b']))\n    plan = g.resolve()\n    assert plan.order == ['a', 'b', 'c']",
+    "def test_parallel_independent():\n    g = Graph()\n    g.add_node(Node('a'))\n    g.add_node(Node('b'))\n    plan = g.resolve()\n    assert sorted(plan.parallel_groups[0]) == ['a', 'b']",
+    "def test_diamond():\n    g = Graph()\n    g.add_node(Node('a'))\n    g.add_node(Node('b', dependencies=['a']))\n    g.add_node(Node('c', dependencies=['a']))\n    g.add_node(Node('d', dependencies=['b', 'c']))\n    plan = g.resolve()\n    assert plan.order[0] == 'a'\n    assert plan.order[-1] == 'd'\n    assert set(plan.order[1:3]) == {'b', 'c'}",
+    "def test_cycle_detected():\n    g = Graph()\n    g.add_node(Node('a', dependencies=['b']))\n    g.add_node(Node('b', dependencies=['a']))\n    try:\n        g.resolve()\n        assert False\n    except CycleError:\n        pass",
+    "def test_self_loop_cycle():\n    g = Graph()\n    g.add_node(Node('a', dependencies=['a']))\n    try:\n        g.resolve()\n        assert False\n    except CycleError:\n        pass",
+    "def test_target_subgraph():\n    g = Graph()\n    g.add_node(Node('a'))\n    g.add_node(Node('b', dependencies=['a']))\n    g.add_node(Node('c'))\n    plan = g.resolve(target='b')\n    assert set(plan.order) == {'a', 'b'}",
+    "def test_remove_node():\n    g = Graph()\n    g.add_node(Node('a'))\n    g.add_node(Node('b', dependencies=['a']))\n    g.remove_node('b')\n    plan = g.resolve()\n    assert plan.order == ['a']",
+    "def test_add_edge():\n    g = Graph()\n    g.add_node(Node('a'))\n    g.add_node(Node('b'))\n    g.add_edge('b', 'a')\n    plan = g.resolve()\n    assert plan.order == ['a', 'b']",
+    "def test_parallel_groups_diamond():\n    g = Graph()\n    g.add_node(Node('a'))\n    g.add_node(Node('b', dependencies=['a']))\n    g.add_node(Node('c', dependencies=['a']))\n    g.add_node(Node('d', dependencies=['b', 'c']))\n    plan = g.resolve()\n    assert len(plan.parallel_groups) == 3\n    assert plan.parallel_groups[0] == ['a']\n    assert sorted(plan.parallel_groups[1]) == ['b', 'c']\n    assert plan.parallel_groups[2] == ['d']"
+  ],
+  "constraints": [
+    "Add a node before adding edges referencing it",
+    "Cycles must be detected and raise CycleError, not infinite loop",
+    "Topological order is one valid sort (any valid order acceptable for tests using set comparison)",
+    "parallel_groups[i] contains nodes whose deps are all in groups[0..i-1]",
+    "Removing a node also removes references to it from other nodes' dependency lists",
+    "resolve(target=X) limits result to X and its transitive dependencies"
+  ],
+  "helper_code": {},
+  "tags": ["graph", "topological-sort", "multi-file", "design"]
+}
