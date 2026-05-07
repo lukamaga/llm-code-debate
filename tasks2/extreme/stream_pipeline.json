@@ -1,0 +1,37 @@
+{
+  "id": "stream_pipeline",
+  "name": "Stream Processing Pipeline with Operators",
+  "difficulty": "extreme",
+  "description": "Implement a lazy stream processing pipeline across two modules. Module stream_ops.py must define: Operator abstract base class with abstract method apply(iterable) -> iterable; concrete operators MapOp(fn), FilterOp(predicate), TakeOp(n), SkipOp(n), DistinctOp(), BatchOp(size: int) yields lists, FlattenOp() flattens one level. Module stream.py must import from stream_ops.py and implement Stream class with constructor Stream(source: iterable) and chainable methods map(fn), filter(pred), take(n), skip(n), distinct(), batch(size), flatten() each returning a new Stream; terminal methods to_list(), count() returning int, reduce(fn, initial), first(default=None), for_each(fn). Pipeline is lazy — operators only execute when terminal method is called.",
+  "required_files": ["stream_ops.py", "stream.py"],
+  "test_imports": ["from stream_ops import Operator, MapOp, FilterOp, TakeOp, SkipOp, DistinctOp, BatchOp, FlattenOp", "from stream import Stream"],
+  "signature": "# stream_ops.py\nfrom abc import ABC, abstractmethod\n\nclass Operator(ABC):\n    @abstractmethod\n    def apply(self, iterable): ...\n\nclass MapOp(Operator): ...\nclass FilterOp(Operator): ...\nclass TakeOp(Operator): ...\nclass SkipOp(Operator): ...\nclass DistinctOp(Operator): ...\nclass BatchOp(Operator): ...\nclass FlattenOp(Operator): ...\n\n# stream.py\nfrom stream_ops import Operator, MapOp, FilterOp, TakeOp, SkipOp, DistinctOp, BatchOp, FlattenOp\n\nclass Stream:\n    def __init__(self, source): ...\n    def map(self, fn) -> 'Stream': ...\n    def filter(self, pred) -> 'Stream': ...\n    def take(self, n: int) -> 'Stream': ...\n    def skip(self, n: int) -> 'Stream': ...\n    def distinct(self) -> 'Stream': ...\n    def batch(self, size: int) -> 'Stream': ...\n    def flatten(self) -> 'Stream': ...\n    def to_list(self) -> list: ...\n    def count(self) -> int: ...\n    def reduce(self, fn, initial): ...\n    def first(self, default=None): ...\n    def for_each(self, fn) -> None: ...",
+  "tests": [
+    "def test_to_list():\n    assert Stream([1,2,3]).to_list() == [1,2,3]",
+    "def test_map():\n    assert Stream([1,2,3]).map(lambda x: x*2).to_list() == [2,4,6]",
+    "def test_filter():\n    assert Stream([1,2,3,4]).filter(lambda x: x%2==0).to_list() == [2,4]",
+    "def test_chain():\n    result = Stream(range(10)).filter(lambda x: x%2==0).map(lambda x: x*10).to_list()\n    assert result == [0, 20, 40, 60, 80]",
+    "def test_take():\n    assert Stream([1,2,3,4,5]).take(3).to_list() == [1,2,3]",
+    "def test_skip():\n    assert Stream([1,2,3,4,5]).skip(2).to_list() == [3,4,5]",
+    "def test_distinct():\n    assert Stream([1,2,2,3,3,3,4]).distinct().to_list() == [1,2,3,4]",
+    "def test_batch():\n    assert Stream([1,2,3,4,5]).batch(2).to_list() == [[1,2],[3,4],[5]]",
+    "def test_flatten():\n    assert Stream([[1,2],[3],[4,5]]).flatten().to_list() == [1,2,3,4,5]",
+    "def test_count():\n    assert Stream([1,2,3,4]).filter(lambda x: x>1).count() == 3",
+    "def test_reduce():\n    assert Stream([1,2,3,4]).reduce(lambda a,b: a+b, 0) == 10",
+    "def test_first():\n    assert Stream([1,2,3]).first() == 1",
+    "def test_first_empty_default():\n    assert Stream([]).first(default='none') == 'none'",
+    "def test_for_each():\n    out = []\n    Stream([1,2,3]).for_each(out.append)\n    assert out == [1,2,3]",
+    "def test_lazy_take_infinite_safe():\n    def naturals():\n        n = 0\n        while True:\n            yield n\n            n += 1\n    assert Stream(naturals()).take(5).to_list() == [0,1,2,3,4]",
+    "def test_complex_chain():\n    result = Stream(range(20)).filter(lambda x: x%2==0).map(lambda x: x*x).take(3).to_list()\n    assert result == [0, 4, 16]"
+  ],
+  "constraints": [
+    "Pipeline is lazy: operators store config but do not iterate until a terminal method runs",
+    "Each chainable method returns a new Stream (not mutate)",
+    "take and skip never raise on shorter source (just stop early or return [])",
+    "distinct preserves first-occurrence order",
+    "batch yields a final partial batch if elements remain",
+    "first(default) returns default on empty stream"
+  ],
+  "helper_code": {},
+  "tags": ["stream", "lazy", "multi-file", "functional"]
+}
