@@ -1,0 +1,343 @@
+debate_id,task_id,task_name,difficulty,agent_id,model,role,round_num,is_revision,pass_rate,tests_passed,tests_total,status,generation_time,code_chars,was_truncated,is_historical_best_reuse
+72eacd34,binary_search,Binary Search,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,12.33,339,False,False
+72eacd34,binary_search,Binary Search,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,8,8,passed,8.48,320,False,False
+72eacd34,binary_search,Binary Search,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,8,8,passed,7.56,473,False,False
+98845733,caesar_cipher,Caesar Cipher,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,8.87,766,False,False
+98845733,caesar_cipher,Caesar Cipher,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,8,test_failed,5.64,670,False,False
+98845733,caesar_cipher,Caesar Cipher,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,8,8,passed,13.06,1966,False,False
+3142d513,count_vowels,Count Vowels,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,7,7,passed,2.75,129,False,False
+3142d513,count_vowels,Count Vowels,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,7,7,passed,7.86,298,False,False
+3142d513,count_vowels,Count Vowels,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,7,7,passed,3.33,594,False,False
+f2013170,fibonacci,Fibonacci Number,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,6,6,passed,7.4,563,False,False
+f2013170,fibonacci,Fibonacci Number,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,6,6,passed,4.45,275,False,False
+f2013170,fibonacci,Fibonacci Number,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,6,6,passed,9.29,128,False,False
+0c0db9a4,fizzbuzz,FizzBuzz,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,7,7,passed,2.46,340,False,False
+0c0db9a4,fizzbuzz,FizzBuzz,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,7,7,passed,9.85,338,False,False
+0c0db9a4,fizzbuzz,FizzBuzz,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,7,7,passed,4.78,736,False,False
+632555e6,flatten_list,Flatten Nested List,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,7,7,passed,5.82,322,False,False
+632555e6,flatten_list,Flatten Nested List,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,7,7,passed,2.83,229,False,False
+632555e6,flatten_list,Flatten Nested List,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,7,7,passed,7.66,235,False,False
+3770d67a,max_subarray,Maximum Subarray Sum,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,7,7,passed,6.11,361,False,False
+3770d67a,max_subarray,Maximum Subarray Sum,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,7,7,passed,10.5,442,False,False
+3770d67a,max_subarray,Maximum Subarray Sum,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,7,7,passed,6.07,801,False,False
+0d8a46f0,merge_sorted_arrays,Merge Two Sorted Arrays,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,7,7,passed,4.46,733,False,False
+0d8a46f0,merge_sorted_arrays,Merge Two Sorted Arrays,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,7,7,passed,5.08,579,False,False
+0d8a46f0,merge_sorted_arrays,Merge Two Sorted Arrays,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,7,7,passed,10.61,661,False,False
+09369858,palindrome,Valid Palindrome,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,7,7,passed,1.83,298,False,False
+09369858,palindrome,Valid Palindrome,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,7,7,passed,8.33,113,False,False
+09369858,palindrome,Valid Palindrome,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,0.8571,6,7,test_failed,4.2,686,False,False
+378e4ebb,power_of_two,Power of Two,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,2.91,128,False,False
+378e4ebb,power_of_two,Power of Two,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,8,8,passed,3.23,131,False,False
+378e4ebb,power_of_two,Power of Two,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,8,8,passed,8.14,514,False,False
+76fe8a13,remove_duplicates,Remove Duplicates from Sorted Array,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,7,7,passed,4.69,286,False,False
+76fe8a13,remove_duplicates,Remove Duplicates from Sorted Array,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,7,7,passed,10.38,495,False,False
+76fe8a13,remove_duplicates,Remove Duplicates from Sorted Array,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,0.8571,6,7,test_failed,5.12,577,False,False
+69c623d0,reverse_string,Reverse String,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,5,5,passed,2.97,300,False,False
+69c623d0,reverse_string,Reverse String,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,5,5,passed,3.05,284,False,False
+69c623d0,reverse_string,Reverse String,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,0.8,4,5,test_failed,9.09,646,False,False
+dd886780,roman_to_integer,Roman to Integer,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,7.06,1005,False,False
+dd886780,roman_to_integer,Roman to Integer,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,8,8,passed,13.95,317,False,False
+dd886780,roman_to_integer,Roman to Integer,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,0.25,2,8,test_failed,9.06,1333,False,False
+976a4e4b,two_sum,Two Sum,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,5,5,passed,4.91,246,False,False
+976a4e4b,two_sum,Two Sum,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,5,5,passed,3.97,498,False,False
+976a4e4b,two_sum,Two Sum,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,5,5,passed,8.4,244,False,False
+fb68d4a4,valid_parentheses,Valid Parentheses,easy,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,7,7,passed,5.7,650,False,False
+fb68d4a4,valid_parentheses,Valid Parentheses,easy,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,7,7,passed,8.54,350,False,False
+fb68d4a4,valid_parentheses,Valid Parentheses,easy,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,7,7,passed,4.04,418,False,False
+4506b030,binary_tree_serialize,Serialize and Deserialize Binary Tree,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,4,4,passed,8.32,1312,False,False
+4506b030,binary_tree_serialize,Serialize and Deserialize Binary Tree,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,4,test_failed,9.52,1000,False,False
+4506b030,binary_tree_serialize,Serialize and Deserialize Binary Tree,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.25,1,4,test_failed,17.13,1145,False,False
+af4e3021,coin_change,Coin Change,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,9,9,passed,8.2,708,False,False
+af4e3021,coin_change,Coin Change,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,9,9,passed,12.73,268,False,False
+af4e3021,coin_change,Coin Change,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.3333,3,9,test_failed,6.99,669,False,False
+628d798e,decode_ways,Decode Ways,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.375,3,8,test_failed,6.95,383,False,False
+628d798e,decode_ways,Decode Ways,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,8,8,passed,7.0,577,False,False
+628d798e,decode_ways,Decode Ways,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.5,4,8,test_failed,24.66,3887,False,False
+3c97121a,group_anagrams,Group Anagrams,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,5,5,passed,6.3,512,False,False
+3c97121a,group_anagrams,Group Anagrams,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,5,5,passed,11.07,327,False,False
+3c97121a,group_anagrams,Group Anagrams,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,5,5,passed,6.49,920,False,False
+2950b219,kth_largest,Kth Largest Element in a Stream,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,7,7,passed,7.14,524,False,False
+2950b219,kth_largest,Kth Largest Element in a Stream,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,7,7,passed,7.55,890,False,False
+2950b219,kth_largest,Kth Largest Element in a Stream,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,7,test_failed,12.31,327,False,False
+e8c26844,longest_substring,Longest Substring Without Repeating Characters,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,11,11,passed,6.43,433,False,False
+e8c26844,longest_substring,Longest Substring Without Repeating Characters,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.8182,9,11,test_failed,12.29,484,False,False
+e8c26844,longest_substring,Longest Substring Without Repeating Characters,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,11,11,passed,7.51,642,False,False
+41bbb7ea,lru_cache,LRU Cache,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,9.61,1205,False,False
+41bbb7ea,lru_cache,LRU Cache,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,8,8,passed,10.95,2264,False,False
+41bbb7ea,lru_cache,LRU Cache,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.625,5,8,test_failed,17.44,699,False,False
+fd7512fc,matrix_spiral,Spiral Matrix,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.25,2,8,test_failed,5.36,450,False,False
+fd7512fc,matrix_spiral,Spiral Matrix,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,8,8,passed,11.24,911,False,False
+fd7512fc,matrix_spiral,Spiral Matrix,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.375,3,8,test_failed,5.15,877,False,False
+c9f638ed,stack_with_min,Min Stack,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,7,7,passed,5.31,517,False,False
+c9f638ed,stack_with_min,Min Stack,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,7,7,passed,6.19,656,False,False
+c9f638ed,stack_with_min,Min Stack,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.7143,5,7,test_failed,11.92,856,False,False
+ee11952c,string_compression,String Compression,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,9.01,719,False,False
+ee11952c,string_compression,String Compression,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,8,8,passed,15.71,1064,False,False
+ee11952c,string_compression,String Compression,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,8,8,passed,9.58,1343,False,False
+203fea9b,task_scheduler_simple,Task Scheduler,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,9,9,passed,8.39,1176,False,False
+203fea9b,task_scheduler_simple,Task Scheduler,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.4444,4,9,test_failed,5.51,674,False,False
+203fea9b,task_scheduler_simple,Task Scheduler,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.4444,4,9,test_failed,12.53,975,False,False
+c5913d8f,three_sum,Three Sum,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,7.31,829,False,False
+c5913d8f,three_sum,Three Sum,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.875,7,8,test_failed,14.86,1016,False,False
+c5913d8f,three_sum,Three Sum,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.875,7,8,test_failed,8.55,1438,False,False
+a5b9adf2,trie,Trie (Prefix Tree),medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,6,6,passed,10.59,2025,False,False
+a5b9adf2,trie,Trie (Prefix Tree),medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.8333,5,6,test_failed,10.84,1968,False,False
+a5b9adf2,trie,Trie (Prefix Tree),medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.8333,5,6,test_failed,18.17,1235,False,False
+6640ee93,valid_sudoku,Valid Sudoku,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,7,7,passed,4.69,981,False,False
+6640ee93,valid_sudoku,Valid Sudoku,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,7,7,passed,12.34,1034,False,False
+6640ee93,valid_sudoku,Valid Sudoku,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.5714,4,7,test_failed,6.12,850,False,False
+a4779105,word_pattern,Word Pattern,medium,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,6.41,498,False,False
+a4779105,word_pattern,Word Pattern,medium,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,8,8,passed,6.08,475,False,False
+a4779105,word_pattern,Word Pattern,medium,agent_3_codellama,codellama:7b-instruct,general,1,False,0.5,4,8,test_failed,14.19,1969,False,False
+5aad5994,alien_dictionary,Alien Dictionary,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,9.51,1469,False,False
+5aad5994,alien_dictionary,Alien Dictionary,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.625,5,8,test_failed,14.81,1235,False,False
+5aad5994,alien_dictionary,Alien Dictionary,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,8,timeout,8.06,1257,False,False
+bb572c3b,count_inversions,Count Inversions,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,9,9,passed,7.24,931,False,False
+bb572c3b,count_inversions,Count Inversions,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,9,test_failed,6.75,757,False,False
+bb572c3b,count_inversions,Count Inversions,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.5556,5,9,test_failed,15.34,1784,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.8571,6,7,test_failed,14.94,2146,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,7,test_failed,23.05,1745,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,7,test_failed,14.48,1217,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.8571,6,7,test_failed,13.28,2146,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,True,0.0,0,7,test_failed,24.42,1931,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_3_codellama,codellama:7b-instruct,general,2,True,0.0,0,7,test_failed,14.17,1698,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,False,0.8571,6,7,test_failed,14.94,2146,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,True,0.0,0,7,test_failed,17.7,2926,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_3_codellama,codellama:7b-instruct,general,3,True,0.8571,6,7,test_failed,28.32,1740,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,True,0.8571,6,7,test_failed,14.18,2146,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,True,0.2857,2,7,test_failed,29.65,2577,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_3_codellama,codellama:7b-instruct,general,4,True,0.8571,6,7,test_failed,17.08,1740,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,5,True,0.8571,6,7,test_failed,13.56,2146,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,5,True,0.2857,2,7,test_failed,16.55,2562,False,False
+2e584097,lfu_cache,LFU Cache,hard,agent_3_codellama,codellama:7b-instruct,general,5,True,0.8571,6,7,test_failed,29.15,1762,False,False
+a223456d,linked_list_lib,Doubly Linked List Library,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,9,9,passed,18.95,4676,False,False
+a223456d,linked_list_lib,Doubly Linked List Library,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,9,test_failed,20.93,4471,False,False
+a223456d,linked_list_lib,Doubly Linked List Library,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,9,timeout,32.9,3898,False,False
+ec94a58c,max_profit_k_transactions,Best Time to Buy and Sell Stock with K Transactions,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,9.13,702,False,False
+ec94a58c,max_profit_k_transactions,Best Time to Buy and Sell Stock with K Transactions,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,8,8,passed,15.77,1042,False,False
+ec94a58c,max_profit_k_transactions,Best Time to Buy and Sell Stock with K Transactions,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.625,5,8,test_failed,9.33,1143,False,False
+f5c5f8ef,median_sorted_arrays,Median of Two Sorted Arrays,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,10,10,passed,9.35,1644,False,False
+f5c5f8ef,median_sorted_arrays,Median of Two Sorted Arrays,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.4,4,10,test_failed,7.25,878,False,False
+f5c5f8ef,median_sorted_arrays,Median of Two Sorted Arrays,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.3,3,10,test_failed,15.08,1952,False,False
+72223b39,merge_intervals,Interval Scheduling and Merge,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.8571,6,7,test_failed,9.11,1183,False,False
+72223b39,merge_intervals,Interval Scheduling and Merge,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.8571,6,7,test_failed,16.8,1288,False,False
+72223b39,merge_intervals,Interval Scheduling and Merge,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.5714,4,7,test_failed,9.42,1520,False,False
+72223b39,merge_intervals,Interval Scheduling and Merge,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,False,0.8571,6,7,test_failed,9.11,1183,False,False
+72223b39,merge_intervals,Interval Scheduling and Merge,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,True,0.8571,6,7,test_failed,16.51,1355,False,False
+72223b39,merge_intervals,Interval Scheduling and Merge,hard,agent_3_codellama,codellama:7b-instruct,general,2,True,0.8571,6,7,test_failed,7.92,1183,False,False
+9bd3cf67,merge_k_sorted,Merge K Sorted Lists,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,7.89,1138,False,False
+9bd3cf67,merge_k_sorted,Merge K Sorted Lists,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,8,8,passed,14.05,795,False,False
+9bd3cf67,merge_k_sorted,Merge K Sorted Lists,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,1.0,8,8,passed,8.54,573,False,False
+63b913c2,minimum_window_substring,Minimum Window Substring,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.8889,8,9,test_failed,9.17,1267,False,False
+63b913c2,minimum_window_substring,Minimum Window Substring,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.8889,8,9,test_failed,8.06,995,False,False
+63b913c2,minimum_window_substring,Minimum Window Substring,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.4444,4,9,test_failed,15.53,1042,False,False
+63b913c2,minimum_window_substring,Minimum Window Substring,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.8889,8,9,test_failed,9.0,1267,False,False
+63b913c2,minimum_window_substring,Minimum Window Substring,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,False,0.8889,8,9,test_failed,8.06,995,False,False
+63b913c2,minimum_window_substring,Minimum Window Substring,hard,agent_3_codellama,codellama:7b-instruct,general,2,False,0.4444,4,9,test_failed,15.53,1042,False,False
+e075b2d4,regex_matching,Regular Expression Matching,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,12,12,passed,12.0,1115,False,False
+e075b2d4,regex_matching,Regular Expression Matching,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,12,12,passed,7.4,294,False,False
+e075b2d4,regex_matching,Regular Expression Matching,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.25,3,12,test_failed,14.71,1378,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.25,2,8,test_failed,13.13,2209,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.375,3,8,test_failed,27.9,1906,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.125,1,8,test_failed,18.9,5381,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.25,2,8,test_failed,12.25,2209,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,True,0.375,3,8,test_failed,31.55,1908,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_3_codellama,codellama:7b-instruct,general,2,True,0.125,1,8,test_failed,21.87,5381,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,True,0.25,2,8,test_failed,14.89,2285,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,True,0.375,3,8,test_failed,14.93,1908,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_3_codellama,codellama:7b-instruct,general,3,True,0.125,1,8,test_failed,36.01,5381,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,True,0.125,1,8,test_failed,14.78,2057,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,True,0.375,3,8,test_failed,34.12,1953,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_3_codellama,codellama:7b-instruct,general,4,True,0.125,1,8,test_failed,24.97,5381,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,5,True,0.25,2,8,test_failed,12.1,2209,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,5,True,0.375,3,8,test_failed,13.35,1907,False,False
+31fe20d2,shortest_path,Weighted Graph Shortest Path,hard,agent_3_codellama,codellama:7b-instruct,general,5,True,0.125,1,8,test_failed,32.13,5381,False,False
+2da74fa0,sliding_window_max,Sliding Window Maximum,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,6.01,777,False,False
+2da74fa0,sliding_window_max,Sliding Window Maximum,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,8,8,passed,6.49,889,False,False
+2da74fa0,sliding_window_max,Sliding Window Maximum,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.375,3,8,test_failed,12.76,719,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.5,4,8,test_failed,8.8,1273,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.375,3,8,test_failed,13.45,991,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,1,runtime_error,7.59,371,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.5,4,8,test_failed,6.84,1187,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,True,0.375,3,8,test_failed,17.39,909,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_3_codellama,codellama:7b-instruct,general,2,True,0.0,0,8,test_failed,10.44,1010,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,True,0.5,4,8,test_failed,9.91,1273,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,True,0.375,3,8,test_failed,9.95,991,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_3_codellama,codellama:7b-instruct,general,3,False,0.0,0,1,runtime_error,7.59,371,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,True,0.5,4,8,test_failed,8.64,1273,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,True,1.0,8,8,passed,16.14,604,False,False
+a091dd7e,text_justification,Text Justification,hard,agent_3_codellama,codellama:7b-instruct,general,4,False,0.0,0,1,runtime_error,7.59,371,False,False
+d7d46bc7,topological_sort,Course Schedule with Parallel Execution,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,8,8,passed,12.41,2817,False,False
+d7d46bc7,topological_sort,Course Schedule with Parallel Execution,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.75,6,8,test_failed,30.35,2106,False,False
+d7d46bc7,topological_sort,Course Schedule with Parallel Execution,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,8,timeout,19.33,5222,False,False
+d99c2c68,word_ladder,Word Ladder,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.7778,7,9,test_failed,9.49,1140,False,False
+d99c2c68,word_ladder,Word Ladder,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.2222,2,9,test_failed,7.51,716,False,False
+d99c2c68,word_ladder,Word Ladder,hard,agent_3_codellama,codellama:7b-instruct,general,1,False,0.3333,3,9,test_failed,16.3,2207,False,False
+d99c2c68,word_ladder,Word Ladder,hard,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.8889,8,9,test_failed,9.97,1295,False,False
+d99c2c68,word_ladder,Word Ladder,hard,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,True,0.7778,7,9,test_failed,7.53,960,False,False
+d99c2c68,word_ladder,Word Ladder,hard,agent_3_codellama,codellama:7b-instruct,general,2,True,0.2222,2,9,test_failed,16.31,933,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.0,0,8,test_failed,17.75,4851,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.125,1,8,test_failed,31.03,3016,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,8,test_failed,33.13,3773,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.0,0,8,test_failed,21.66,4987,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,True,0.125,1,8,test_failed,44.11,4046,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_3_codellama,codellama:7b-instruct,general,2,True,0.0,0,8,test_failed,42.17,4598,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,True,0.0,0,8,test_failed,21.66,5207,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,True,0.125,1,8,test_failed,42.32,3369,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_3_codellama,codellama:7b-instruct,general,3,True,0.0,0,8,test_failed,39.69,5080,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,True,0.0,0,8,test_failed,22.46,5326,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,True,0.125,1,8,test_failed,40.38,3445,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_3_codellama,codellama:7b-instruct,general,4,True,0.0,0,8,test_failed,35.15,4037,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,5,True,0.0,0,8,test_failed,22.17,4937,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,5,True,0.125,1,8,test_failed,40.96,3474,False,False
+8d75789a,calculator,Expression Calculator,extreme,agent_3_codellama,codellama:7b-instruct,general,5,True,0.0,0,8,test_failed,42.19,4110,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.0,0,1,runtime_error,21.26,5134,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,1,syntax_error,42.68,5286,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,1,runtime_error,40.29,4409,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,False,0.0,0,1,runtime_error,21.26,5134,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,False,0.0,0,1,syntax_error,42.68,5286,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_3_codellama,codellama:7b-instruct,general,2,False,0.0,0,1,runtime_error,40.29,4409,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,False,0.0,0,1,runtime_error,21.26,5134,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,False,0.0,0,1,syntax_error,42.68,5286,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_3_codellama,codellama:7b-instruct,general,3,False,0.0,0,1,runtime_error,40.29,4409,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,False,0.0,0,1,runtime_error,21.26,5134,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,False,0.0,0,1,syntax_error,42.68,5286,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_3_codellama,codellama:7b-instruct,general,4,False,0.0,0,1,runtime_error,40.29,4409,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,5,False,0.0,0,1,runtime_error,21.26,5134,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,5,False,0.0,0,1,syntax_error,42.68,5286,False,False
+1545b097,data_pipeline,Data Transformation Pipeline,extreme,agent_3_codellama,codellama:7b-instruct,general,5,False,0.0,0,1,runtime_error,40.29,4409,False,False
+c340b9e8,event_system,Event-Driven System,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.8889,8,9,test_failed,6.15,1608,False,False
+c340b9e8,event_system,Event-Driven System,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,1.0,9,9,passed,16.99,1912,False,False
+c340b9e8,event_system,Event-Driven System,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,1,runtime_error,21.53,2098,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.0,0,9,timeout,25.63,5512,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,1,runtime_error,11.09,2263,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,1,runtime_error,21.84,1755,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,False,0.0,0,9,timeout,25.63,5512,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,False,0.0,0,1,runtime_error,11.09,2263,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_3_codellama,codellama:7b-instruct,general,2,False,0.0,0,1,runtime_error,21.84,1755,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,False,0.0,0,9,timeout,25.63,5512,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,False,0.0,0,1,runtime_error,11.09,2263,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_3_codellama,codellama:7b-instruct,general,3,False,0.0,0,1,runtime_error,21.84,1755,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,False,0.0,0,9,timeout,25.63,5512,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,False,0.0,0,1,runtime_error,11.09,2263,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_3_codellama,codellama:7b-instruct,general,4,False,0.0,0,1,runtime_error,21.84,1755,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,5,False,0.0,0,9,timeout,25.63,5512,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,5,False,0.0,0,1,runtime_error,11.09,2263,False,False
+94c475d5,expression_evaluator,Mathematical Expression Evaluator,extreme,agent_3_codellama,codellama:7b-instruct,general,5,False,0.0,0,1,runtime_error,21.84,1755,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.9,9,10,test_failed,25.01,5592,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.6,6,10,test_failed,49.52,4641,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.2,2,10,test_failed,46.79,4744,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.9,9,10,test_failed,26.37,5642,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,False,0.6,6,10,test_failed,49.52,4641,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_3_codellama,codellama:7b-instruct,general,2,True,0.2,2,10,test_failed,54.09,4744,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,True,0.9,9,10,test_failed,26.72,5666,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,True,0.6,6,10,test_failed,56.16,4706,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_3_codellama,codellama:7b-instruct,general,3,True,0.4,4,10,test_failed,52.1,5612,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,True,0.9,9,10,test_failed,27.12,5618,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,False,0.6,6,10,test_failed,49.52,4641,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_3_codellama,codellama:7b-instruct,general,4,True,0.4,4,10,test_failed,59.91,7436,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,5,True,0.9,9,10,test_failed,30.82,5701,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,5,False,0.6,6,10,test_failed,49.52,4641,False,False
+9e6c3c7d,graph_algorithms,Graph Library with Algorithms,extreme,agent_3_codellama,codellama:7b-instruct,general,5,True,0.4,4,10,test_failed,52.1,5612,False,False
+6c437ad5,http_client,Mock HTTP Client Framework,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.0,0,9,test_failed,17.78,4364,False,False
+6c437ad5,http_client,Mock HTTP Client Framework,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.1111,1,9,test_failed,38.41,3651,False,False
+6c437ad5,http_client,Mock HTTP Client Framework,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.5556,5,9,test_failed,41.78,4751,False,False
+6c437ad5,http_client,Mock HTTP Client Framework,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.0,0,9,test_failed,19.11,4307,False,False
+6c437ad5,http_client,Mock HTTP Client Framework,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,False,0.1111,1,9,test_failed,38.41,3651,False,False
+6c437ad5,http_client,Mock HTTP Client Framework,extreme,agent_3_codellama,codellama:7b-instruct,general,2,True,0.5556,5,9,test_failed,43.94,4761,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.0,0,1,runtime_error,21.03,2232,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,1,runtime_error,10.0,2168,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,1,runtime_error,24.09,2006,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,False,0.0,0,1,runtime_error,21.03,2232,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,True,0.125,1,8,test_failed,23.05,2190,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_3_codellama,codellama:7b-instruct,general,2,False,0.0,0,1,runtime_error,24.09,2006,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,False,0.0,0,1,runtime_error,21.03,2232,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,True,0.125,1,8,test_failed,22.55,2192,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_3_codellama,codellama:7b-instruct,general,3,False,0.0,0,1,runtime_error,24.09,2006,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,False,0.0,0,1,runtime_error,21.03,2232,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,True,0.125,1,8,test_failed,24.45,2326,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_3_codellama,codellama:7b-instruct,general,4,False,0.0,0,1,runtime_error,24.09,2006,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,5,False,0.0,0,1,runtime_error,21.03,2232,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,5,True,0.0,0,8,test_failed,27.82,2542,False,False
+a7ed4d25,http_router,HTTP Router with Middleware,extreme,agent_3_codellama,codellama:7b-instruct,general,5,False,0.0,0,1,runtime_error,24.09,2006,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.2222,2,9,test_failed,21.51,5631,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.2222,2,9,test_failed,39.24,5758,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,9,test_failed,47.81,6714,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.2222,2,9,test_failed,27.08,6034,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,True,0.2222,2,9,test_failed,50.76,6102,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_3_codellama,codellama:7b-instruct,general,2,True,0.0,0,9,test_failed,60.83,6714,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,True,0.2222,2,9,test_failed,31.63,7132,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,True,0.2222,2,9,test_failed,62.83,5809,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_3_codellama,codellama:7b-instruct,general,3,True,0.0,0,9,test_failed,60.6,6714,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,True,0.2222,2,9,test_failed,62.18,5747,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,True,0.2222,2,9,test_failed,34.08,5117,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_3_codellama,codellama:7b-instruct,general,4,True,0.0,0,9,test_failed,53.73,6714,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,5,True,0.4444,4,9,test_failed,56.15,5689,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,5,True,0.2222,2,9,test_failed,42.13,5843,False,False
+5e3c287c,json_parser,JSON Parser,extreme,agent_3_codellama,codellama:7b-instruct,general,5,True,0.0,0,9,test_failed,59.13,6708,False,False
+9b98c3b8,mini_database,Mini Key-Value Database,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.9,9,10,test_failed,12.99,3382,False,False
+9b98c3b8,mini_database,Mini Key-Value Database,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.8,8,10,test_failed,23.49,2488,False,False
+9b98c3b8,mini_database,Mini Key-Value Database,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.8,8,10,test_failed,26.21,2048,False,False
+9b98c3b8,mini_database,Mini Key-Value Database,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.9,9,10,test_failed,14.46,3344,False,False
+9b98c3b8,mini_database,Mini Key-Value Database,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,False,0.8,8,10,test_failed,23.49,2488,False,False
+9b98c3b8,mini_database,Mini Key-Value Database,extreme,agent_3_codellama,codellama:7b-instruct,general,2,False,0.8,8,10,test_failed,26.21,2048,False,False
+88d5a1e3,plugin_system,Plugin System,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.0,0,1,runtime_error,10.27,2541,False,False
+88d5a1e3,plugin_system,Plugin System,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.8889,8,9,test_failed,27.32,3538,False,False
+88d5a1e3,plugin_system,Plugin System,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.5556,5,9,test_failed,28.19,2852,False,False
+88d5a1e3,plugin_system,Plugin System,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.6667,6,9,test_failed,14.15,3459,False,False
+88d5a1e3,plugin_system,Plugin System,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,False,0.8889,8,9,test_failed,27.32,3538,False,False
+88d5a1e3,plugin_system,Plugin System,extreme,agent_3_codellama,codellama:7b-instruct,general,2,False,0.5556,5,9,test_failed,28.19,2852,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.0,0,9,test_failed,15.93,3584,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,9,test_failed,34.45,4747,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,1,runtime_error,35.58,3810,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.0,0,9,test_failed,18.55,3793,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,True,0.0,0,9,test_failed,34.31,3811,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_3_codellama,codellama:7b-instruct,general,2,False,0.0,0,1,runtime_error,35.58,3810,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,True,0.0,0,9,test_failed,18.55,3827,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,False,0.0,0,9,test_failed,34.45,4747,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_3_codellama,codellama:7b-instruct,general,3,False,0.0,0,1,runtime_error,35.58,3810,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,True,0.0,0,9,test_failed,16.93,3698,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,True,0.0,0,9,test_failed,38.51,4510,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_3_codellama,codellama:7b-instruct,general,4,False,0.0,0,1,runtime_error,35.58,3810,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,5,True,0.0,0,9,test_failed,18.28,3651,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,5,True,0.0,0,9,test_failed,41.73,4640,False,False
+3ac21fea,query_engine,SQL-like Query Engine,extreme,agent_3_codellama,codellama:7b-instruct,general,5,False,0.0,0,1,runtime_error,35.58,3810,False,False
+5dcd9da2,schema_validator,JSON Schema Validator,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,1.0,9,9,passed,12.66,3847,False,False
+5dcd9da2,schema_validator,JSON Schema Validator,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,1,runtime_error,27.02,3723,False,False
+5dcd9da2,schema_validator,JSON Schema Validator,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,9,test_failed,27.59,2931,False,False
+c68839c1,state_machine,Finite State Machine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.0,0,8,test_failed,15.98,2625,False,False
+c68839c1,state_machine,Finite State Machine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.375,3,8,test_failed,11.48,2253,False,False
+c68839c1,state_machine,Finite State Machine,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.0,0,8,test_failed,19.11,2357,False,False
+c68839c1,state_machine,Finite State Machine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.0,0,8,test_failed,11.59,2740,False,False
+c68839c1,state_machine,Finite State Machine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,True,0.875,7,8,test_failed,24.79,2463,False,False
+c68839c1,state_machine,Finite State Machine,extreme,agent_3_codellama,codellama:7b-instruct,general,2,True,0.0,0,8,test_failed,26.48,2727,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.875,7,8,test_failed,9.62,2629,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,1,runtime_error,20.6,2531,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.125,1,8,test_failed,23.88,3265,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.875,7,8,test_failed,11.62,2645,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,False,0.0,0,1,runtime_error,20.6,2531,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_3_codellama,codellama:7b-instruct,general,2,True,0.125,1,8,test_failed,30.68,3455,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,True,0.875,7,8,test_failed,11.38,2629,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,False,0.0,0,1,runtime_error,20.6,2531,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_3_codellama,codellama:7b-instruct,general,3,True,0.125,1,8,test_failed,31.68,3578,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,False,0.875,7,8,test_failed,9.62,2629,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,False,0.0,0,1,runtime_error,20.6,2531,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_3_codellama,codellama:7b-instruct,general,4,True,0.25,2,8,test_failed,31.26,3486,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,5,True,0.875,7,8,test_failed,12.3,2752,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,5,False,0.0,0,1,runtime_error,20.6,2531,False,False
+87e7fd3d,task_scheduler,Priority Task Scheduler,extreme,agent_3_codellama,codellama:7b-instruct,general,5,True,0.25,2,8,test_failed,37.37,6042,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,1,False,0.125,1,8,test_failed,19.95,4982,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,1,False,0.0,0,1,syntax_error,33.89,3166,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_3_codellama,codellama:7b-instruct,general,1,False,0.25,2,8,test_failed,35.42,3284,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,2,True,0.125,1,8,test_failed,24.06,5257,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,2,False,0.0,0,1,syntax_error,33.89,3166,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_3_codellama,codellama:7b-instruct,general,2,True,0.25,2,8,test_failed,34.29,3473,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,3,True,0.125,1,8,test_failed,23.51,5030,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,3,True,0.125,1,8,test_failed,40.39,3294,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_3_codellama,codellama:7b-instruct,general,3,True,0.25,2,8,test_failed,35.47,3668,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,4,True,0.25,2,8,test_failed,24.28,5477,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,4,True,0.125,1,8,test_failed,48.69,4707,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_3_codellama,codellama:7b-instruct,general,4,False,0.25,2,8,test_failed,35.42,3284,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_1_qwen2.5-coder,qwen2.5-coder:7b,general,5,True,0.375,3,8,test_failed,24.84,5654,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_2_deepseek-coder,deepseek-coder:6.7b,general,5,True,0.125,1,8,test_failed,40.39,3294,False,False
+1aca1744,template_engine,Template Rendering Engine,extreme,agent_3_codellama,codellama:7b-instruct,general,5,True,0.25,2,8,test_failed,42.48,4474,False,False
