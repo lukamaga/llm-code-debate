@@ -1,0 +1,330 @@
+==============================================================================
+DEBATE TRANSCRIPT  |  Weighted Graph Shortest Path  (hard)
+==============================================================================
+Debate ID:   b946f1a7
+Mode:        debate
+Status:      early_stop
+Started:     2026-04-27T23:06:03
+Ended:       2026-04-27T23:06:35
+Duration:    31.2s
+Max rounds:  5
+Rounds run:  1
+Agents:      agent_1_granite-code (granite-code:8b), agent_2_codegeex4 (codegeex4:9b), agent_3_yi-coder (yi-coder:9b), agent_4_deepseek-coder-v2 (deepseek-coder-v2:16b)
+
+==============================================================================
+TASK
+==============================================================================
+ID: shortest_path
+Difficulty: hard
+
+Description:
+Implement a weighted directed graph with methods to add edges, find shortest path between two nodes using Dijkstra's algorithm, and detect negative cycles. The shortest_path method should return both the distance and the actual path.
+
+Constraints:
+  - All edge weights are non-negative
+  - Nodes are strings
+  - shortest_path returns (inf, []) if no path exists
+  - shortest_path returns (0, [start]) for same node
+  - Use Dijkstra's algorithm for efficiency
+
+Tests: 8
+
+==============================================================================
+ROUND 1  |  PROPOSAL
+==============================================================================
+Best pass rate: 100%  |  Avg: 58%  |  Bugs found: 0  |  Duration: 31.2s
+
+### Proposals
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  6/8 tests (75%)  gen=27.7s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpq2kubs9t
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpq2kubs9t/test_solu
+Quality: pylint=9.5/10, complexity=5.3, maintainability=41.1, LOC=55
+------------------------------------------------------------------------------
+from typing import Dict, List, Tuple
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = {}
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if u not in self.graph:
+            self.graph[u] = {}
+        if v not in self.graph:
+            self.graph[v] = {}
+        self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> Tuple[float, List[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        previous = {node: None for node in self.graph}
+        unvisited = set(self.graph)
+
+        while unvisited:
+            current = min(unvisited, key=lambda node: distances[node])
+            unvisited.remove(current)
+
+            for neighbor, weight in self.graph[current].items():
+                distance_to_neighbor = distances[current] + weight
+                if distance_to_neighbor < distances[neighbor]:
+                    distances[neighbor] = distance_to_neighbor
+                    previous[neighbor] = current
+
+        path = [end]
+        while previous[path[0]] is not None:
+            path.insert(0, previous[path[0]])
+
+        return (distances[end], path)
+
+    def all_shortest_from(self, start: str) -> Dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        previous = {node: None for node in self.graph}
+        unvisited = set(self.graph)
+
+        while unvisited:
+            current = min(unvisited, key=lambda node: distances[node])
+            unvisited.remove(current)
+
+            for neighbor, weight in self.graph[current].items():
+                distance_to_neighbor = distances[current] + weight
+                if distance_to_neighbor < distances[neighbor]:
+                    distances[neighbor] = distance_to_neighbor
+                    previous[neighbor] = current
+
+        return {node: distances[node] for node in self.graph}
+
+    def has_path(self, start: str, end: str) -> bool:
+        if start not in self.graph or end not in self.graph:
+            return False
+        queue = [start]
+        visited = set()
+
+        while queue:
+            current = queue.pop(0)
+            visited.add(current)
+
+            for neighbor in self.graph[current]:
+                if neighbor == end:
+                    return True
+                if neighbor not in visited and neighbor not in queue:
+                    queue.append(neighbor)
+
+        return False
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  0/8 tests (0%)  gen=22.9s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpo44ygsxd
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpo44ygsxd/test_solu
+Quality: pylint=9.5/10, complexity=4.3, maintainability=43.8, LOC=49
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from typing import Dict, List, Tuple
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph: Dict[str, Dict[str, float]] = {}
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if u not in self.graph:
+            self.graph[u] = {}
+        self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> Tuple[float, List[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        previous_nodes = {node: None for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+            if current_distance > distances[current_node]:
+                continue
+
+            for neighbor, weight in self.graph.get(current_node, {}).items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    previous_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        path, current_node = [], end
+        while current_node is not None:
+            path.append(current_node)
+            current_node = previous_nodes[current_node]
+        path.reverse()
+
+        if distances[end] == float('inf'):
+            return float('inf'), []
+
+        return distances[end], path
+
+    def all_shortest_from(self, start: str) -> Dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+            if current_distance > distances[current_node]:
+                continue
+
+            for neighbor, weight in self.graph.get(current_node, {}).items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    heappush(heap, (distance, neighbor))
+
+        return {node: distance for node, distance in distances.items() if node != start}
+
+    def has_path(self, start: str, end: str) -> bool:
+        _, path = self.shortest_path(start, end)
+        return end in path
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  8/8 tests (100%)  gen=28.6s
+Quality: pylint=9.5/10, complexity=4.0, maintainability=62.3, LOC=47
+------------------------------------------------------------------------------
+import heapq
+from typing import List, Tuple, Dict, Union
+
+class WeightedGraph:
+    def __init__(self):
+        # Use a dict of dicts to represent the graph
+        self.graph = {}
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if u not in self.graph:
+            self.graph[u] = {}
+        self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> Tuple[Union[int, float], List[str]]:
+        heap = [(0, start)]  # cost, node
+        distances = {start: 0}
+        paths = {start: []}
+
+        while heap:
+            (cost, current_node) = heapq.heappop(heap)
+
+            if current_node == end:
+                return (distances[end], paths[end] + [end])
+
+            for neighbor, weight in self.graph.get(current_node, {}).items():
+                new_cost = cost + weight
+                if neighbor not in distances or new_cost < distances[neighbor]:
+                    distances[neighbor] = new_cost
+                    paths[neighbor] = paths[current_node] + [current_node]
+                    heapq.heappush(heap, (new_cost, neighbor))
+        return float('inf'), []  # Return infinity and empty list if no path exists
+
+    def all_shortest_from(self, start: str) -> Dict[str, float]:
+        distances = {start: 0}
+        heap = [(0, start)]  # cost, node
+
+        while heap:
+            (cost, current_node) = heapq.heappop(heap)
+
+            for neighbor, weight in self.graph.get(current_node, {}).items():
+                new_cost = cost + weight
+                if neighbor not in distances or new_cost < distances[neighbor]:
+                    distances[neighbor] = new_cost
+                    heapq.heappush(heap, (new_cost, neighbor))
+        return distances
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]  # DFS stack
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            visited.add(node)
+            for neighbor in self.graph.get(node, {}):
+                if neighbor not in visited:
+                    stack.append(neighbor)
+        return False
+
+==============================================================================
+FINAL RESULT
+==============================================================================
+Winner: agent_3_yi-coder  (round 1, 100%)
+
+Final code:
+------------------------------------------------------------------------------
+import heapq
+from typing import List, Tuple, Dict, Union
+
+class WeightedGraph:
+    def __init__(self):
+        # Use a dict of dicts to represent the graph
+        self.graph = {}
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if u not in self.graph:
+            self.graph[u] = {}
+        self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> Tuple[Union[int, float], List[str]]:
+        heap = [(0, start)]  # cost, node
+        distances = {start: 0}
+        paths = {start: []}
+
+        while heap:
+            (cost, current_node) = heapq.heappop(heap)
+
+            if current_node == end:
+                return (distances[end], paths[end] + [end])
+
+            for neighbor, weight in self.graph.get(current_node, {}).items():
+                new_cost = cost + weight
+                if neighbor not in distances or new_cost < distances[neighbor]:
+                    distances[neighbor] = new_cost
+                    paths[neighbor] = paths[current_node] + [current_node]
+                    heapq.heappush(heap, (new_cost, neighbor))
+        return float('inf'), []  # Return infinity and empty list if no path exists
+
+    def all_shortest_from(self, start: str) -> Dict[str, float]:
+        distances = {start: 0}
+        heap = [(0, start)]  # cost, node
+
+        while heap:
+            (cost, current_node) = heapq.heappop(heap)
+
+            for neighbor, weight in self.graph.get(current_node, {}).items():
+                new_cost = cost + weight
+                if neighbor not in distances or new_cost < distances[neighbor]:
+                    distances[neighbor] = new_cost
+                    heapq.heappush(heap, (new_cost, neighbor))
+        return distances
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]  # DFS stack
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            visited.add(node)
+            for neighbor in self.graph.get(node, {}):
+                if neighbor not in visited:
+                    stack.append(neighbor)
+        return False
+
+Transcript generated: 2026-04-27T23:06:35
