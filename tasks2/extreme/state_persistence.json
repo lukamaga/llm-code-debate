@@ -1,0 +1,34 @@
+{
+  "id": "state_persistence",
+  "name": "State Snapshot and Restore",
+  "difficulty": "extreme",
+  "description": "Implement a state persistence system with snapshots and time-travel across two modules. Module snapshot_types.py must define: Snapshot dataclass with fields id (int), label (str), timestamp (float), data (dict, deep copy of state); ChangeLog dataclass with fields snapshot_id (int), key (str), old_value (Any), new_value (Any), op ('set'|'delete'). Module state_store.py must import from snapshot_types.py and implement Store class with constructor Store(initial_state: dict | None = None) and methods: get(key), set(key, value), delete(key) -> bool, snapshot(label: str = '') returns Snapshot id; restore(snapshot_id: int) -> bool restores state from given snapshot (without removing later snapshots); history() -> list[Snapshot] in id order; diff(snapshot_id_a: int, snapshot_id_b: int) -> list[ChangeLog] showing changes from a to b; rollback() reverts to previous snapshot, returns True if possible.",
+  "required_files": ["snapshot_types.py", "state_store.py"],
+  "test_imports": ["from snapshot_types import Snapshot, ChangeLog", "from state_store import Store"],
+  "signature": "# snapshot_types.py\nfrom dataclasses import dataclass, field\nfrom typing import Any\nimport time\n\n@dataclass\nclass Snapshot:\n    id: int\n    label: str\n    timestamp: float\n    data: dict\n\n@dataclass\nclass ChangeLog:\n    snapshot_id: int\n    key: str\n    old_value: Any\n    new_value: Any\n    op: str\n\n# state_store.py\nfrom snapshot_types import Snapshot, ChangeLog\n\nclass Store:\n    def __init__(self, initial_state: dict | None = None): ...\n    def get(self, key): ...\n    def set(self, key, value) -> None: ...\n    def delete(self, key) -> bool: ...\n    def snapshot(self, label: str = '') -> int: ...\n    def restore(self, snapshot_id: int) -> bool: ...\n    def history(self) -> list: ...\n    def diff(self, snapshot_id_a: int, snapshot_id_b: int) -> list: ...\n    def rollback(self) -> bool: ...",
+  "tests": [
+    "def test_basic_set_get():\n    s = Store()\n    s.set('x', 1)\n    assert s.get('x') == 1",
+    "def test_initial_state():\n    s = Store(initial_state={'a': 1, 'b': 2})\n    assert s.get('a') == 1\n    assert s.get('b') == 2",
+    "def test_delete():\n    s = Store()\n    s.set('x', 1)\n    assert s.delete('x') is True\n    assert s.get('x') is None\n    assert s.delete('x') is False",
+    "def test_snapshot_returns_id():\n    s = Store()\n    s.set('x', 1)\n    sid = s.snapshot('first')\n    assert isinstance(sid, int)",
+    "def test_restore_basic():\n    s = Store()\n    s.set('x', 1)\n    sid = s.snapshot()\n    s.set('x', 2)\n    assert s.restore(sid) is True\n    assert s.get('x') == 1",
+    "def test_restore_invalid():\n    s = Store()\n    assert s.restore(999) is False",
+    "def test_snapshot_isolation():\n    s = Store()\n    s.set('x', [1, 2])\n    sid = s.snapshot()\n    s.get('x').append(3) if isinstance(s.get('x'), list) else None\n    s.restore(sid)\n    assert s.get('x') == [1, 2]",
+    "def test_history():\n    s = Store()\n    s.set('a', 1)\n    s.snapshot('first')\n    s.set('a', 2)\n    s.snapshot('second')\n    h = s.history()\n    assert len(h) == 2\n    assert [snap.label for snap in h] == ['first', 'second']",
+    "def test_diff_set_change():\n    s = Store()\n    s.set('a', 1)\n    sid_a = s.snapshot('a')\n    s.set('a', 2)\n    sid_b = s.snapshot('b')\n    changes = s.diff(sid_a, sid_b)\n    assert len(changes) == 1\n    assert changes[0].key == 'a'\n    assert changes[0].old_value == 1\n    assert changes[0].new_value == 2",
+    "def test_diff_addition():\n    s = Store()\n    sid_a = s.snapshot('empty')\n    s.set('new_key', 'val')\n    sid_b = s.snapshot('with_key')\n    changes = s.diff(sid_a, sid_b)\n    assert any(c.key == 'new_key' and c.op == 'set' for c in changes)",
+    "def test_diff_deletion():\n    s = Store()\n    s.set('x', 1)\n    sid_a = s.snapshot('with_x')\n    s.delete('x')\n    sid_b = s.snapshot('without')\n    changes = s.diff(sid_a, sid_b)\n    assert any(c.key == 'x' and c.op == 'delete' for c in changes)",
+    "def test_rollback():\n    s = Store()\n    s.set('x', 1)\n    s.snapshot('one')\n    s.set('x', 2)\n    s.snapshot('two')\n    s.set('x', 3)\n    assert s.rollback() is True\n    assert s.get('x') == 2",
+    "def test_rollback_no_snapshots():\n    s = Store()\n    assert s.rollback() is False"
+  ],
+  "constraints": [
+    "Snapshots must be deep copies — modifying the store after snapshot must not affect the snapshot",
+    "Snapshot ids start at 1 and increase monotonically",
+    "restore copies data back to live state but does not remove snapshots taken after",
+    "rollback restores to the most recent snapshot (latest by id)",
+    "diff returns changes in deterministic order (sorted by key)",
+    "history returns snapshots ordered by id ascending"
+  ],
+  "helper_code": {},
+  "tags": ["state", "snapshot", "multi-file", "persistence"]
+}
