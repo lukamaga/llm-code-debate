@@ -1,0 +1,25 @@
+{
+  "id": "word_ladder",
+  "name": "Word Ladder",
+  "difficulty": "hard",
+  "description": "A transformation sequence from word beginWord to word endWord using a dictionary wordList is a sequence of words beginWord -> s1 -> s2 -> ... -> sk such that: Every adjacent pair of words differs by a single letter, every si is in wordList (beginWord does not need to be). Given two words and a dictionary, return the number of words in the shortest transformation sequence, or 0 if no such sequence exists.",
+  "signature": "def ladder_length(begin_word: str, end_word: str, word_list: list[str]) -> int:",
+  "tests": [
+    "def test_basic():\n    assert ladder_length('hit', 'cog', ['hot', 'dot', 'dog', 'lot', 'log', 'cog']) == 5",
+    "def test_no_path():\n    assert ladder_length('hit', 'cog', ['hot', 'dot', 'dog', 'lot', 'log']) == 0",
+    "def test_direct():\n    assert ladder_length('hot', 'dot', ['dot']) == 2",
+    "def test_same():\n    assert ladder_length('hot', 'hot', ['hot']) == 1",
+    "def test_longer():\n    assert ladder_length('cold', 'warm', ['cord', 'card', 'ward', 'warm']) == 5",
+    "def test_end_not_in_list():\n    assert ladder_length('hit', 'abc', ['hot', 'dot', 'dog']) == 0",
+    "def test_single_letter():\n    assert ladder_length('a', 'c', ['a', 'b', 'c']) == 3",
+    "def test_must_be_shortest():\n    # Multiple paths exist: hit->hot->dot->dog->cog (5) and hit->hot->lot->log->cog (5)\n    # A DFS might return a longer path if not careful\n    result = ladder_length('hit', 'cog', ['hot', 'dot', 'dog', 'lot', 'log', 'cog', 'hog'])\n    assert result == 4",
+    "def test_begin_equals_end_not_in_list():\n    assert ladder_length('abc', 'abc', []) == 1"
+  ],
+  "constraints": [
+    "1 <= beginWord.length <= 10",
+    "endWord.length == beginWord.length",
+    "1 <= wordList.length <= 5000",
+    "All words consist of lowercase English letters",
+    "All words have the same length"
+  ]
+}
