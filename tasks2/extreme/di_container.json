@@ -1,0 +1,30 @@
+{
+  "id": "di_container",
+  "name": "Dependency Injection Container",
+  "difficulty": "extreme",
+  "description": "Implement a dependency injection container across two modules. Module di_types.py must define: Lifetime enum with values SINGLETON, TRANSIENT; Registration dataclass with fields key (str), factory (callable taking container), lifetime (Lifetime); ResolutionError exception. Module di_container.py must import from di_types.py and implement Container class with methods: register(key: str, factory, lifetime: Lifetime = Lifetime.TRANSIENT); register_value(key: str, value) (always SINGLETON returning the same value); resolve(key: str) returns instance, raising ResolutionError on unknown key or detected circular dependency; has(key) -> bool. Factories may call container.resolve() to get other dependencies. Singleton instances must be cached after first resolution. Detect cycles where resolving A leads back to A through factories.",
+  "required_files": ["di_types.py", "di_container.py"],
+  "test_imports": ["from di_types import Lifetime, Registration, ResolutionError", "from di_container import Container"],
+  "signature": "# di_types.py\nfrom enum import Enum\nfrom dataclasses import dataclass\nfrom typing import Callable\n\nclass Lifetime(Enum):\n    SINGLETON = 'singleton'\n    TRANSIENT = 'transient'\n\n@dataclass\nclass Registration:\n    key: str\n    factory: Callable\n    lifetime: Lifetime\n\nclass ResolutionError(Exception): ...\n\n# di_container.py\nfrom di_types import Lifetime, Registration, ResolutionError\n\nclass Container:\n    def __init__(self): ...\n    def register(self, key: str, factory, lifetime: Lifetime = Lifetime.TRANSIENT) -> None: ...\n    def register_value(self, key: str, value) -> None: ...\n    def resolve(self, key: str): ...\n    def has(self, key: str) -> bool: ...",
+  "tests": [
+    "def test_register_value():\n    c = Container()\n    c.register_value('config', {'env': 'prod'})\n    assert c.resolve('config') == {'env': 'prod'}",
+    "def test_register_factory():\n    c = Container()\n    c.register('greeting', lambda cont: 'hello')\n    assert c.resolve('greeting') == 'hello'",
+    "def test_transient_creates_new():\n    c = Container()\n    counter = {'n': 0}\n    def factory(cont):\n        counter['n'] += 1\n        return counter['n']\n    c.register('num', factory, lifetime=Lifetime.TRANSIENT)\n    assert c.resolve('num') == 1\n    assert c.resolve('num') == 2",
+    "def test_singleton_caches():\n    c = Container()\n    counter = {'n': 0}\n    def factory(cont):\n        counter['n'] += 1\n        return counter['n']\n    c.register('num', factory, lifetime=Lifetime.SINGLETON)\n    a = c.resolve('num')\n    b = c.resolve('num')\n    assert a == b == 1",
+    "def test_dependency_chain():\n    c = Container()\n    c.register_value('name', 'Alice')\n    c.register('greeting', lambda cont: f\"Hello {cont.resolve('name')}\")\n    assert c.resolve('greeting') == 'Hello Alice'",
+    "def test_unknown_key_raises():\n    c = Container()\n    try:\n        c.resolve('missing')\n        assert False\n    except ResolutionError:\n        pass",
+    "def test_circular_dependency():\n    c = Container()\n    c.register('a', lambda cont: cont.resolve('b'))\n    c.register('b', lambda cont: cont.resolve('a'))\n    try:\n        c.resolve('a')\n        assert False\n    except ResolutionError:\n        pass",
+    "def test_has():\n    c = Container()\n    c.register_value('x', 1)\n    assert c.has('x') is True\n    assert c.has('y') is False",
+    "def test_register_value_is_singleton():\n    c = Container()\n    obj = object()\n    c.register_value('o', obj)\n    assert c.resolve('o') is obj\n    assert c.resolve('o') is obj",
+    "def test_singleton_with_dependencies():\n    c = Container()\n    c.register_value('multiplier', 3)\n    counter = {'calls': 0}\n    def factory(cont):\n        counter['calls'] += 1\n        return cont.resolve('multiplier') * 10\n    c.register('result', factory, lifetime=Lifetime.SINGLETON)\n    assert c.resolve('result') == 30\n    assert c.resolve('result') == 30\n    assert counter['calls'] == 1"
+  ],
+  "constraints": [
+    "Re-registering an existing key replaces it",
+    "Singleton caches the first resolved instance for the lifetime of the container",
+    "Circular dependencies must be detected and raise ResolutionError, not infinite-loop",
+    "Factories receive the container as their single argument",
+    "register_value behaves like a SINGLETON registration with constant factory"
+  ],
+  "helper_code": {},
+  "tags": ["dependency-injection", "multi-file", "design-pattern"]
+}
