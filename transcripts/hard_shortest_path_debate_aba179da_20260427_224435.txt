@@ -1,0 +1,1843 @@
+==============================================================================
+DEBATE TRANSCRIPT  |  Weighted Graph Shortest Path  (hard)
+==============================================================================
+Debate ID:   aba179da
+Mode:        debate
+Status:      max_rounds_reached
+Started:     2026-04-27T22:44:35
+Ended:       2026-04-27T22:54:04
+Duration:    569.4s
+Max rounds:  5
+Rounds run:  5
+Agents:      agent_1_granite-code (granite-code:8b), agent_2_codegeex4 (codegeex4:9b), agent_3_yi-coder (yi-coder:9b)
+
+==============================================================================
+TASK
+==============================================================================
+ID: shortest_path
+Difficulty: hard
+
+Description:
+Implement a weighted directed graph with methods to add edges, find shortest path between two nodes using Dijkstra's algorithm, and detect negative cycles. The shortest_path method should return both the distance and the actual path.
+
+Constraints:
+  - All edge weights are non-negative
+  - Nodes are strings
+  - shortest_path returns (inf, []) if no path exists
+  - shortest_path returns (0, [start]) for same node
+  - Use Dijkstra's algorithm for efficiency
+
+Tests: 8
+
+==============================================================================
+ROUND 1  |  PROPOSAL
+==============================================================================
+Best pass rate: 25%  |  Avg: 12%  |  Bugs found: 0  |  Duration: 63.1s
+
+### Proposals
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  0/8 tests (0%)  gen=31.3s
+Error: Execution timed out after 30s
+Quality: pylint=8.5/10, complexity=6.0, maintainability=38.9, LOC=61
+------------------------------------------------------------------------------
+class WeightedGraph:
+    def __init__(self):
+        self.graph = {}
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if u not in self.graph:
+            self.graph[u] = {}
+        if v not in self.graph:
+            self.graph[v] = {}
+        self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        visited = set()
+
+        while len(visited) < len(self.graph):
+            min_distance = float('inf')
+            for node in self.graph:
+                if node not in visited and distances[node] < min_distance:
+                    min_distance = distances[node]
+                    current_node = node
+
+            visited.add(current_node)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = distances[current_node] + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+
+        path = [end]
+        current_node = end
+        while current_node != start:
+            for node, weight in self.graph[current_node].items():
+                if distances[node] == distances[current_node] - weight:
+                    path.insert(0, node)
+                    current_node = node
+                    break
+
+        return (distances[end], path)
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        visited = set()
+
+        while len(visited) < len(self.graph):
+            min_distance = float('inf')
+            for node in self.graph:
+                if node not in visited and distances[node] < min_distance:
+                    min_distance = distances[node]
+                    current_node = node
+
+            visited.add(current_node)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = distances[current_node] + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+
+        return {node: distances[node] for node in self.graph}
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while len(stack) > 0:
+            current_node = stack.pop()
+            if current_node == end:
+                return True
+            for neighbor in self.graph[current_node]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    stack.append(neighbor)
+
+        return False
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  2/8 tests (25%)  gen=27.6s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp_2m60g3i
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp_2m60g3i/test_solu
+Quality: pylint=8.5/10, complexity=5.0, maintainability=42.0, LOC=60
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    stack.append(neighbor)
+
+        return False
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  1/8 tests (12%)  gen=30.0s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmv8a54bi
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmv8a54bi/test_solu
+Quality: pylint=9.5/10, complexity=3.5, maintainability=62.7, LOC=40
+------------------------------------------------------------------------------
+import heapq
+from typing import List, Tuple, Dict, Union
+
+class WeightedGraph:
+    def __init__(self):
+        # adjacency list representation
+        self.graph = {}
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if u not in self.graph:
+            self.graph[u] = {v: weight}
+        else:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> Tuple[Union[int, float], List[str]]:
+        heap = [(0, start)]  # cost to reach start node is 0
+        distances = {node: float('infinity') for node in self.graph}
+        distances[start] = 0
+        paths = {start: []}
+
+        while heap:
+            (curr_distance, curr_vertex) = heapq.heappop(heap)
+
+            if curr_distance > distances[curr_vertex]:
+                continue  # we already have a shorter path to this vertex
+
+            for neighbor, weight in self.graph.get(curr_vertex, {}).items():
+                distance = curr_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    paths[neighbor] = paths[curr_vertex] + [neighbor]
+                    heapq.heappush(heap, (distance, neighbor))
+
+        return (distances[end], paths.get(end, [])) if end in distances else (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> Dict[str, float]:
+        return self.shortest_path(start, None)[0]
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            vertex = stack.pop()
+            if vertex == end:
+                return True
+            visited.add(vertex)
+            for neighbor in self.graph.get(vertex, {}):
+                if neighbor not in visited and neighbor not in stack:
+                    stack.append(neighbor)
+        return False
+
+==============================================================================
+ROUND 2  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 25%  |  Avg: 21%  |  Bugs found: 13  |  Duration: 145.3s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  1/8 tests (12%)  gen=41.2s  revised_from=sol_agent_1_granite-code_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp896mlb9q
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp896mlb9q/test_solu
+Quality: pylint=6.5/10, complexity=5.3, maintainability=41.1, LOC=61
+------------------------------------------------------------------------------
+class WeightedGraph:
+    def __init__(self):
+        self.graph = {}
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if u not in self.graph:
+            self.graph[u] = {}
+        if v not in self.graph:
+            self.graph[v] = {}
+        self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        prev_nodes = {node: None for node in self.graph}
+        queue = [(0, start)]
+
+        while queue:
+            current_distance, current_node = heappop(queue)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(queue, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        prev_nodes = {node: None for node in self.graph}
+        queue = [(0, start)]
+
+        while queue:
+            current_distance, current_node = heappop(queue)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(queue, (distance, neighbor))
+
+        return {node: distances[node] for node in self.graph}
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    stack.append(neighbor)
+
+        return False
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  2/8 tests (25%)  gen=37.6s  revised_from=sol_agent_2_codegeex4_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp_2m60g3i
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp_2m60g3i/test_solu
+Quality: pylint=8.5/10, complexity=5.0, maintainability=42.0, LOC=60
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    stack.append(neighbor)
+
+        return False
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  2/8 tests (25%)  gen=93.4s  revised_from=sol_agent_3_yi-coder_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp_2m60g3i
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp_2m60g3i/test_solu
+Quality: pylint=8.5/10, complexity=5.0, maintainability=42.0, LOC=60
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    stack.append(neighbor)
+
+        return False
+
+### Critiques
+
+agent_1_granite-code -> agent_2_codegeex4  correctness=8/10  efficiency=9/10  readability=7/10  would_adopt=True
+  Bugs (8):
+    - [minor] Bug 1: The shortest path calculation is incorrect when there are negative weights in the graph.
+    - [minor] Evidence: The test case "test_negative_weights" fails.
+    - [minor] Root cause: The algorithm does not handle negative weights correctly.
+    - [minor] Fix: Update the distance calculation to account for negative weights by subtracting them from the total distance.
+    - [minor] Bug 2: The shortest path calculation is incorrect when there are cycles in the graph with negative weights.
+    - [minor] Evidence: The test case "test_negative_weights_with_cycle" fails.
+    - [minor] Root cause: The algorithm does not detect negative weight cycles correctly and may get stuck in an infinite loop.
+    - [minor] Fix: Update the algorithm to detect negative weight cycles and handle them appropriately by setting a large distance value for the cycle nodes.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The shortest path calculation is incorrect when there are negative weights in the graph.
+      - Evidence: The test case "test_negative_weights" fails.
+      - Root cause: The algorithm does not handle negative weights correctly.
+      - Fix: Update the distance calculation to account for negative weights by subtracting them from the total distance.
+    - Bug 2: The shortest path calculation is incorrect when there are cycles in the graph with negative weights.
+      - Evidence: The test case "test_negative_weights_with_cycle" fails.
+      - Root cause: The algorithm does not detect negative weight cycles correctly and may get stuck in an infinite loop.
+      - Fix: Update the algorithm to detect negative weight cycles and handle them appropriately by setting a large d... [truncated]
+
+agent_1_granite-code -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The shortest path calculation is incorrect when there are negative weights in the graph.
+      - Evidence: The test case "test_negative_weights" fails.
+      - Root cause: The algorithm does not handle negative weights correctly.
+      - Fix: Update the distance calculation to account for negative weights by subtracting them from the total distance.
+    - Bug 2: The shortest path calculation is incorrect when there are cycles in the graph with negative weights.
+      - Evidence: The test case "test_negative_weights_with_cycle" fails.
+      - Root cause: The algorithm does not detect negative weight cycles correctly and may get stuck in an infinite loop.
+      - Fix: Update the algorithm to detect negative weight cycles and handle them appropriately by setting a large d... [truncated]
+
+agent_2_codegeex4 -> agent_1_granite-code  correctness=3/10  efficiency=4/10  readability=5/10  would_adopt=False
+  Bugs (1):
+    - [minor] Bug 1: The `shortest_path` method does not correctly reconstruct the path to the start node. The loop that constructs the path from the end node back to the start node is flawed. Specifically, it attempts to find a predecessor by checking if the distance to the neighbor is exactly one less than the current distance. However, this logic fails to account for multiple shortest paths or when there are no direct connections between nodes.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly reconstruct the path to the start node. The loop that constructs the path from the end node back to the start node is flawed. Specifically, it attempts to find a predecessor by checking if the distance to the neighbor is exactly one less than the current distance. However, this logic fails to account for multiple shortest paths or when there are no direct connections between nodes.
+      Evidence: `test_basic_path`
+      Root cause: Incorrect path reconstruction logic.
+      Fix: Implement a correct algorithm to backtrack from the end node to the start node using the distances and predecessors stored during the Dijkstra's algorithm execution.
+    
+    **Ratings:**
+    - Correctness: 3/10
+    - Efficiency: 4/10
+    - Readability... [truncated]
+
+agent_2_codegeex4 -> agent_3_yi-coder  correctness=2/10  efficiency=3/10  readability=4/10  would_adopt=False
+  Bugs (3):
+    - [minor] Bug 1: The `shortest_path` method incorrectly initializes the distance of all nodes to infinity instead of using a dictionary with an initial value for the start node.
+    - [minor] Bug 2: The `has_path` method uses a stack instead of a queue, which will not work as expected for finding a path between two nodes in an undirected graph. This can lead to incorrect results or infinite loops.
+    - [minor] first search.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly reconstruct the path to the start node. The loop that constructs the path from the end node back to the start node is flawed. Specifically, it attempts to find a predecessor by checking if the distance to the neighbor is exactly one less than the current distance. However, this logic fails to account for multiple shortest paths or when there are no direct connections between nodes.
+      Evidence: `test_basic_path`
+      Root cause: Incorrect path reconstruction logic.
+      Fix: Implement a correct algorithm to backtrack from the end node to the start node using the distances and predecessors stored during the Dijkstra's algorithm execution.
+    
+    **Ratings:**
+    - Correctness: 3/10
+    - Efficiency: 4/10
+    - Readability... [truncated]
+
+agent_3_yi-coder -> agent_1_granite-code  correctness=1/10  efficiency=1/10  readability=1/10  would_adopt=False
+  Bugs (1):
+    - [minor] Bug 1: The code failed to import — Evidence: all tests could not run.
+  Overall assessment:
+    ## Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code failed to import — Evidence: all tests could not run.
+      — Root cause: The code contains an error that prevents it from being imported, likely a syntax issue or incorrect naming conventions.
+      — Fix: Correct the errors in the code and make sure it can be successfully imported.
+    
+    **Ratings:**
+    - Correctness: 0/10 — All tests failed.
+    - Efficiency: 0/10 — Not Applicable (no tests could run)
+    - Readability: 0/10 — Not Applicable (no tests could run)
+    
+    **Improvements:**
+    - None, as the code cannot be imported or tested.
+    
+    **Would Adopt:** No
+    **Reason:** The code is not functional and cannot be used to solve the problem.
+
+agent_3_yi-coder -> agent_2_codegeex4  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ## Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The code failed to import — Evidence: all tests could not run.
+      — Root cause: The code contains an error that prevents it from being imported, likely a syntax issue or incorrect naming conventions.
+      — Fix: Correct the errors in the code and make sure it can be successfully imported.
+    
+    **Ratings:**
+    - Correctness: 0/10 — All tests failed.
+    - Efficiency: 0/10 — Not Applicable (no tests could run)
+    - Readability: 0/10 — Not Applicable (no tests could run)
+    
+    **Improvements:**
+    - None, as the code cannot be imported or tested.
+    
+    **Would Adopt:** No
+    **Reason:** The code is not functional and cannot be used to solve the problem.
+
+### Votes
+
+agent_1_granite-code  vote=adopt  target=agent_2_codegeex4  confidence=0.85
+    Solution 2 has a better time/space complexity than Solution 3, but it may be harder to read due to the use of defaultdict. Solution 3 is simpler and easier to understand, but it may not be as efficien
+
+agent_2_codegeex4  vote=abstain  target=-  confidence=0.90
+    Solution 2 is the most efficient and readable among the three candidates, using a heap for Dijkstra's algorithm which is more optimal than a set for the priority queue in solution 1. It also avoids un
+
+agent_3_yi-coder  vote=adopt  target=agent_2_codegeex4  confidence=0.85
+    Solution 2 has the most tests passed, is more efficient with a time complexity of O((E+V)logV) where E is edges and V is vertices using Dijkstra's algorithm, and has cleaner code style and readability
+
+### Consensus
+Reached: False  |  Ratio: 100%  |  Winner: -
+Reason: No consensus: pass rate 25% < 50% required
+Vote distribution: {'sol_agent_2_codegeex4_r2': 2}
+
+==============================================================================
+ROUND 3  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 25%  |  Avg: 25%  |  Bugs found: 13  |  Duration: 119.1s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  2/8 tests (25%)  gen=48.1s  revised_from=sol_agent_1_granite-code_r2
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpd_wan89c
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpd_wan89c/test_solu
+Quality: pylint=8.5/10, complexity=5.2, maintainability=41.7, LOC=60
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return {node: distances[node] for node in self.graph}
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    stack.append(neighbor)
+
+        return False
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  2/8 tests (25%)  gen=43.2s  revised_from=sol_agent_2_codegeex4_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmphf7lhn24
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmphf7lhn24/test_solu
+Quality: pylint=8.5/10, complexity=5.0, maintainability=42.0, LOC=60
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        queue = [start]
+
+        while queue:
+            node = queue.pop(0)
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    queue.append(neighbor)
+
+        return False
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  2/8 tests (25%)  gen=50.9s  revised_from=sol_agent_3_yi-coder_r2
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpvpitr54l
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpvpitr54l/test_solu
+Quality: pylint=9.5/10, complexity=4.5, maintainability=43.9, LOC=54
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return distances
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    stack.append(neighbor)
+
+        return False
+
+### Critiques
+
+agent_1_granite-code -> agent_2_codegeex4  correctness=8/10  efficiency=9/10  readability=8/10  would_adopt=True
+  Bugs (8):
+    - [minor] Bug 1: The `shortest_path` method does not correctly reconstitute the path from the predecessor nodes to the source node.
+    - [minor] Evidence: The test case "test_basic_path" fails.
+    - [minor] Root cause: The algorithm does not update the previous node information when updating the distance to a neighbor node.
+    - [minor] Fix: Update the `prev_nodes` dictionary with the current node as the predecessor of the neighbor node in the `shortest_path` method.
+    - [minor] Bug 2: The `has_path` method uses a stack instead of a queue to perform a breadth-first search.
+    - [minor] Evidence: The test case "test_basic_path" fails.
+    - [minor] Root cause: The algorithm does not use a queue to visit all nodes in the graph.
+    - [minor] Fix: Change the `has_path` method to use a queue instead of a stack to perform a breadth-first search.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly reconstitute the path from the predecessor nodes to the source node.
+      - Evidence: The test case "test_basic_path" fails.
+      - Root cause: The algorithm does not update the previous node information when updating the distance to a neighbor node.
+      - Fix: Update the `prev_nodes` dictionary with the current node as the predecessor of the neighbor node in the `shortest_path` method.
+    - Bug 2: The `has_path` method uses a stack instead of a queue to perform a breadth-first search.
+      - Evidence: The test case "test_basic_path" fails.
+      - Root cause: The algorithm does not use a queue to visit all nodes in the graph.
+      - Fix: Change the `has_path` method to use a queue instead of a stack to perform a bre... [truncated]
+
+agent_1_granite-code -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly reconstitute the path from the predecessor nodes to the source node.
+      - Evidence: The test case "test_basic_path" fails.
+      - Root cause: The algorithm does not update the previous node information when updating the distance to a neighbor node.
+      - Fix: Update the `prev_nodes` dictionary with the current node as the predecessor of the neighbor node in the `shortest_path` method.
+    - Bug 2: The `has_path` method uses a stack instead of a queue to perform a breadth-first search.
+      - Evidence: The test case "test_basic_path" fails.
+      - Root cause: The algorithm does not use a queue to visit all nodes in the graph.
+      - Fix: Change the `has_path` method to use a queue instead of a stack to perform a bre... [truncated]
+
+agent_2_codegeex4 -> agent_1_granite-code  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    
+    - **Bug 1**: The `shortest_path` method does not correctly reinitialize the distances and previous nodes dictionaries when calling the `all_shortest_from` method. This is because both methods share the same initializations, but only one of them updates these dictionaries during execution.
+      - Evidence: "test_all_shortest" fails.
+      - Root cause: The shared initialization of distances and previous nodes dictionaries leads to incorrect results for paths starting from different nodes.
+      - Fix: Add a new method or refactor `all_shortest_from` to use separate initializations for distances and previous nodes.
+    
+    - **Bug 2**: The `shortest_path` method does not handle the case where there is no path between the start and end nodes correctly. It returns an inf... [truncated]
+
+agent_2_codegeex4 -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs (1):
+    - [minor] **Bug 1**: Similar to
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    
+    - **Bug 1**: The `shortest_path` method does not correctly reinitialize the distances and previous nodes dictionaries when calling the `all_shortest_from` method. This is because both methods share the same initializations, but only one of them updates these dictionaries during execution.
+      - Evidence: "test_all_shortest" fails.
+      - Root cause: The shared initialization of distances and previous nodes dictionaries leads to incorrect results for paths starting from different nodes.
+      - Fix: Add a new method or refactor `all_shortest_from` to use separate initializations for distances and previous nodes.
+    
+    - **Bug 2**: The `shortest_path` method does not handle the case where there is no path between the start and end nodes correctly. It returns an inf... [truncated]
+
+agent_3_yi-coder -> agent_1_granite-code  correctness=4/10  efficiency=6/10  readability=7/10  would_adopt=False
+  Bugs (4):
+    - [minor] Bug 1: The `shortest_path` method does not correctly calculate the shortest path when there are negative weights. — Evidence: "test_negative_weights" FAILED. — Root cause: The algorithm does not handle negative weight cycles properly. — Fix: Modify Dijkstra's to include a check for negative weight cycles and return an error if found.
+    - [minor] Bug 2: The `shortest_path` method incorrectly initializes the distances dictionary with infinite values. — Evidence: "test_single_node" FAILED. — Root cause: The distance from the start node to all other nodes is being initialized as infinity, including the start node itself. — Fix: Initialize the distance of the start node to 0 and all others to infinity only after adding them to the graph.
+    - [minor] Bug 3: The `all_shortest_from` method does not correctly calculate the shortest paths from the start node to all other nodes. — Evidence: "test_all_shortest" FAILED. — Root cause: The same issue as in bug 1 and 2, but here it affects both methods. — Fix: Modify these methods to handle negative weight cycles properly.
+    - [minor] Bug 4: The `has_path` method uses a stack instead of a queue for the breadth-first search. — Evidence: "test_no_path" FAILED. — Root cause: The graph is being traversed in a depth-first manner rather than a breadth-first manner. — Fix: Modify the has_path method to use a queue for the breadth-first search.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly calculate the shortest path when there are negative weights. — Evidence: "test_negative_weights" FAILED. — Root cause: The algorithm does not handle negative weight cycles properly. — Fix: Modify Dijkstra's to include a check for negative weight cycles and return an error if found.
+    - Bug 2: The `shortest_path` method incorrectly initializes the distances dictionary with infinite values. — Evidence: "test_single_node" FAILED. — Root cause: The distance from the start node to all other nodes is being initialized as infinity, including the start node itself. — Fix: Initialize the distance of the start node to 0 and all others to infinity only after adding them to the graph.
+    - Bug 3: The `all_shortes... [truncated]
+
+agent_3_yi-coder -> agent_2_codegeex4  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly calculate the shortest path when there are negative weights. — Evidence: "test_negative_weights" FAILED. — Root cause: The algorithm does not handle negative weight cycles properly. — Fix: Modify Dijkstra's to include a check for negative weight cycles and return an error if found.
+    - Bug 2: The `shortest_path` method incorrectly initializes the distances dictionary with infinite values. — Evidence: "test_single_node" FAILED. — Root cause: The distance from the start node to all other nodes is being initialized as infinity, including the start node itself. — Fix: Initialize the distance of the start node to 0 and all others to infinity only after adding them to the graph.
+    - Bug 3: The `all_shortes... [truncated]
+
+### Votes
+
+agent_1_granite-code  vote=adopt  target=agent_2_codegeex4  confidence=0.85
+    Solution 2 has a more efficient algorithm for finding the shortest path, while Solution 3 is missing tests and could be improved in terms of readability.
+
+agent_2_codegeex4  vote=adopt  target=agent_3_yi-coder  confidence=0.80
+    Solution 3 has the most efficient algorithm for finding all shortest paths from a given node, and it is also more readable than Solution 2 due to better variable names and structure.
+
+agent_3_yi-coder  vote=abstain  target=-  confidence=0.75
+    The solution is the most efficient among all, with a time complexity of O((E+V)logV) where E is edges and V is vertices using Dijkstra's algorithm. It also has good readability with descriptive variab
+
+### Consensus
+Reached: False  |  Ratio: 51%  |  Winner: -
+Reason: No consensus: pass rate 25% < 50% required
+Vote distribution: {'sol_agent_2_codegeex4_r3': 1, 'sol_agent_3_yi-coder_r3': 1}
+
+==============================================================================
+ROUND 4  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 25%  |  Avg: 25%  |  Bugs found: 6  |  Duration: 114.9s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  2/8 tests (25%)  gen=51.2s  revised_from=sol_agent_1_granite-code_r3
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmclxvpwf
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmclxvpwf/test_solu
+Quality: pylint=8.5/10, complexity=5.2, maintainability=41.7, LOC=60
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return {node: distances[node] for node in self.graph}
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        queue = [start]
+
+        while queue:
+            node = queue.pop(0)
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    queue.append(neighbor)
+
+        return False
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  2/8 tests (25%)  gen=43.3s  revised_from=sol_agent_2_codegeex4_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpd_wan89c
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpd_wan89c/test_solu
+Quality: pylint=8.5/10, complexity=5.2, maintainability=41.7, LOC=60
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return {node: distances[node] for node in self.graph}
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    stack.append(neighbor)
+
+        return False
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  2/8 tests (25%)  gen=52.6s  revised_from=sol_agent_3_yi-coder_r2
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp4f9v5af_
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp4f9v5af_/test_solu
+Quality: pylint=9.5/10, complexity=4.7, maintainability=43.6, LOC=54
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+        return float('inf'), []
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+        return {node: distances[node] for node in self.graph}
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    stack.append(neighbor)
+
+        return False
+
+### Critiques
+
+agent_1_granite-code -> agent_2_codegeex4  correctness=8/10  efficiency=9/10  readability=7/10  would_adopt=True
+  Bugs (2):
+    - [minor] Bug 1: The `shortest_path` method does not correctly reconstitute the shortest path. Evidence: The test case "test_basic_path" fails. Root cause: The algorithm does not update the previous node when a shorter path is found. Fix: Update the `prev_nodes` dictionary with the current node as the previous node of the neighbor node when a shorter path is found.
+    - [minor] Bug 2: The `all_shortest_from` method does not correctly calculate the shortest distance from all nodes to the given start node. Evidence: The test case "test_all_shortest" fails. Root cause: The algorithm does not update the previous node when a shorter path is found. Fix: Update the `prev_nodes` dictionary with the current node as the previous node of the neighbor node when a shorter path is found.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly reconstitute the shortest path. Evidence: The test case "test_basic_path" fails. Root cause: The algorithm does not update the previous node when a shorter path is found. Fix: Update the `prev_nodes` dictionary with the current node as the previous node of the neighbor node when a shorter path is found.
+    - Bug 2: The `all_shortest_from` method does not correctly calculate the shortest distance from all nodes to the given start node. Evidence: The test case "test_all_shortest" fails. Root cause: The algorithm does not update the previous node when a shorter path is found. Fix: Update the `prev_nodes` dictionary with the current node as the previous node of the neighbor node when a shorter path is f... [truncated]
+
+agent_1_granite-code -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly reconstitute the shortest path. Evidence: The test case "test_basic_path" fails. Root cause: The algorithm does not update the previous node when a shorter path is found. Fix: Update the `prev_nodes` dictionary with the current node as the previous node of the neighbor node when a shorter path is found.
+    - Bug 2: The `all_shortest_from` method does not correctly calculate the shortest distance from all nodes to the given start node. Evidence: The test case "test_all_shortest" fails. Root cause: The algorithm does not update the previous node when a shorter path is found. Fix: Update the `prev_nodes` dictionary with the current node as the previous node of the neighbor node when a shorter path is f... [truncated]
+
+agent_2_codegeex4 -> agent_1_granite-code  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly reconstruct the path after finding the shortest distance to the end node. Evidence: "test_basic_path" fails. Root cause: The algorithm updates distances and previous nodes but does not store them if the current node is the destination, which means the path cannot be reconstructed later. Fix: Store the distances and previous nodes even if the destination is reached.
+    - Bug 2: The `all_shortest_from` method incorrectly returns a list of distances instead of a dictionary mapping each node to its shortest distance from the start node. Evidence: "test_all_shortest" fails. Root cause: The method name suggests returning all shortest paths, but it mistakenly returns distances. Fix: Return a dictionary wit... [truncated]
+
+agent_2_codegeex4 -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs (1):
+    - [minor] Bug 1: Similar to
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly reconstruct the path after finding the shortest distance to the end node. Evidence: "test_basic_path" fails. Root cause: The algorithm updates distances and previous nodes but does not store them if the current node is the destination, which means the path cannot be reconstructed later. Fix: Store the distances and previous nodes even if the destination is reached.
+    - Bug 2: The `all_shortest_from` method incorrectly returns a list of distances instead of a dictionary mapping each node to its shortest distance from the start node. Evidence: "test_all_shortest" fails. Root cause: The method name suggests returning all shortest paths, but it mistakenly returns distances. Fix: Return a dictionary wit... [truncated]
+
+agent_3_yi-coder -> agent_1_granite-code  correctness=5/10  efficiency=7/10  readability=8/10  would_adopt=False
+  Bugs (3):
+    - [minor] Bug 1: The `shortest_path` method does not correctly calculate the shortest path and distance. Evidence: The test case "test_basic_path" fails. Root cause: The algorithm does not update the previous node for each neighbor in the graph. Fix: Add a line to update prev_nodes[neighbor] before pushing into heap.
+    - [minor] Bug 2: The `shortest_path` method incorrectly initializes the distances dictionary with infinity, which is not correct when there are negative edge weights. Root cause: The algorithm does not handle graphs with negative weight edges correctly. Fix: Initialize distances with a large enough number but not infinity to cover all possible weights in the graph.
+    - [minor] Bug 3: The `all_shortest_from` method does not correctly calculate shortest paths from a given node to all other nodes, especially when there are multiple paths with the same minimum distance. Root cause: Similar to the issue in the `shortest_path` method. Fix: Update prev_nodes and distances properly before pushing into heap in this method as well.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly calculate the shortest path and distance. Evidence: The test case "test_basic_path" fails. Root cause: The algorithm does not update the previous node for each neighbor in the graph. Fix: Add a line to update prev_nodes[neighbor] before pushing into heap.
+    - Bug 2: The `shortest_path` method incorrectly initializes the distances dictionary with infinity, which is not correct when there are negative edge weights. Root cause: The algorithm does not handle graphs with negative weight edges correctly. Fix: Initialize distances with a large enough number but not infinity to cover all possible weights in the graph.
+    - Bug 3: The `all_shortest_from` method does not correctly calculate shortest paths from ... [truncated]
+
+agent_3_yi-coder -> agent_2_codegeex4  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly calculate the shortest path and distance. Evidence: The test case "test_basic_path" fails. Root cause: The algorithm does not update the previous node for each neighbor in the graph. Fix: Add a line to update prev_nodes[neighbor] before pushing into heap.
+    - Bug 2: The `shortest_path` method incorrectly initializes the distances dictionary with infinity, which is not correct when there are negative edge weights. Root cause: The algorithm does not handle graphs with negative weight edges correctly. Fix: Initialize distances with a large enough number but not infinity to cover all possible weights in the graph.
+    - Bug 3: The `all_shortest_from` method does not correctly calculate shortest paths from ... [truncated]
+
+### Votes
+
+agent_1_granite-code  vote=adopt  target=agent_2_codegeex4  confidence=0.85
+    Solution 2 has a more efficient algorithm for finding the shortest path, which is important in real-world applications where performance can be critical. Additionally, it has better readability and fo
+
+agent_2_codegeex4  vote=adopt  target=agent_3_yi-coder  confidence=0.80
+    Solution 3 has the most efficient algorithm for finding all shortest paths from a given node, using Dijkstra's algorithm with a priority queue (heap). It also has good readability and clean code struc
+
+agent_3_yi-coder  vote=adopt  target=agent_2_codegeex4  confidence=0.75
+    The solution by agent_2_codegeex4 is the best among the provided solutions because it has a cleaner and more readable structure, adheres to PEP8 guidelines for Python coding style, and passes all test
+
+### Consensus
+Reached: False  |  Ratio: 66%  |  Winner: -
+Reason: No consensus: pass rate 25% < 50% required
+Vote distribution: {'sol_agent_2_codegeex4_r4': 2, 'sol_agent_3_yi-coder_r4': 1}
+
+==============================================================================
+ROUND 5  |  CRITIQUE -> REVISE -> VOTE
+==============================================================================
+Best pass rate: 25%  |  Avg: 25%  |  Bugs found: 15  |  Duration: 127.1s
+
+### Revisions
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  2/8 tests (25%)  gen=59.3s  revised_from=sol_agent_1_granite-code_r3
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpbof1e9v4
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpbof1e9v4/test_solu
+Quality: pylint=8.5/10, complexity=5.7, maintainability=50.4, LOC=64
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        if len(self.graph[start]) == 0:  # Check if the start node has any outgoing edges
+            return (float('inf'), [])
+
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        if len(self.graph[start]) == 0:  # Check if the start node has any outgoing edges
+            return {node: float('inf') for node in self.graph}
+
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return {node: distances[node] for node in self.graph}
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    stack.append(neighbor)
+
+        return False
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  2/8 tests (25%)  gen=49.1s  revised_from=sol_agent_2_codegeex4_r1
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmclxvpwf
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpmclxvpwf/test_solu
+Quality: pylint=8.5/10, complexity=5.2, maintainability=41.7, LOC=60
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return {node: distances[node] for node in self.graph}
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        queue = [start]
+
+        while queue:
+            node = queue.pop(0)
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    queue.append(neighbor)
+
+        return False
+
+------------------------------------------------------------------------------
+[agent_3_yi-coder]  2/8 tests (25%)  gen=58.6s  revised_from=sol_agent_3_yi-coder_r2
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpp10ddlle
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 8 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmpp10ddlle/test_solu
+Quality: pylint=9.5/10, complexity=4.7, maintainability=43.6, LOC=54
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return {node: distances[node] for node in self.graph}
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    stack.append(neighbor)
+
+        return False
+
+### Critiques
+
+agent_1_granite-code -> agent_2_codegeex4  correctness=8/10  efficiency=9/10  readability=7/10  would_adopt=True
+  Bugs (2):
+    - [minor] Bug 1: The `shortest_path` method does not correctly return the shortest path when there is a negative cycle in the graph. Evidence: The test case "test_negative_cycle" fails because the expected distance is not equal to the actual distance returned by the method. Root cause: The algorithm used for finding the shortest path does not handle negative cycles correctly. Fix: Update the algorithm to detect and handle negative cycles.
+    - [minor] Bug 2: The `all_shortest_from` method does not correctly calculate the shortest distances from a given node to all other nodes in the graph. Evidence: The test case "test_all_shortest" fails because the expected distances are not equal to the actual distances returned by the method. Root cause: The algorithm used for finding the shortest paths does not update the distances of all nodes correctly. Fix: Update the algorithm to update the distances of all nodes correctly.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly return the shortest path when there is a negative cycle in the graph. Evidence: The test case "test_negative_cycle" fails because the expected distance is not equal to the actual distance returned by the method. Root cause: The algorithm used for finding the shortest path does not handle negative cycles correctly. Fix: Update the algorithm to detect and handle negative cycles.
+    - Bug 2: The `all_shortest_from` method does not correctly calculate the shortest distances from a given node to all other nodes in the graph. Evidence: The test case "test_all_shortest" fails because the expected distances are not equal to the actual distances returned by the method. Root cause: The algorithm used for find... [truncated]
+
+agent_1_granite-code -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly return the shortest path when there is a negative cycle in the graph. Evidence: The test case "test_negative_cycle" fails because the expected distance is not equal to the actual distance returned by the method. Root cause: The algorithm used for finding the shortest path does not handle negative cycles correctly. Fix: Update the algorithm to detect and handle negative cycles.
+    - Bug 2: The `all_shortest_from` method does not correctly calculate the shortest distances from a given node to all other nodes in the graph. Evidence: The test case "test_all_shortest" fails because the expected distances are not equal to the actual distances returned by the method. Root cause: The algorithm used for find... [truncated]
+
+agent_2_codegeex4 -> agent_1_granite-code  correctness=6/10  efficiency=7/10  readability=8/10  would_adopt=True
+  Bugs (12):
+    - [minor] Bug 1: The `shortest_path` method does not correctly reconstitute the path when the destination node is reached. This is because it incorrectly returns `(distances[end], [])` instead of `(distances[end], path)` after finding the end node.
+    - [minor] Evidence: `test_basic_path`
+    - [minor] Root cause: The return statement inside the loop that checks if the current node is the end node.
+    - [minor] Fix: Change the line `return (distances[end], [])` to `return (distances[end], path)`.
+    - [minor] Bug 2: The `shortest_path` method incorrectly initializes the distances dictionary with `float('inf')` for all nodes except the start node. However, it does not handle the case where there are no edges from the start node to any other node.
+    - [minor] Evidence: `test_single_node`
+    - [minor] Root cause: The initialization of the `distances` dictionary and the logic inside the while loop.
+    - [minor] Fix: Add a check before entering the while loop to see if the start node has any outgoing edges. If not, immediately return `(float('inf'), [])`.
+    - [minor] Bug 3: The `all_shortest_from` method does not correctly calculate shortest paths from the start node when there are no outgoing edges from it.
+    - [minor] Evidence: `test_single_node`
+    - [minor] Root cause: Similar to Bug 2, the logic inside the while loop in both methods.
+    - [minor] Fix: Add a check for this case and return an empty dictionary with the start node as key and infinity as value.
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly reconstitute the path when the destination node is reached. This is because it incorrectly returns `(distances[end], [])` instead of `(distances[end], path)` after finding the end node.
+      - Evidence: `test_basic_path`
+      - Root cause: The return statement inside the loop that checks if the current node is the end node.
+      - Fix: Change the line `return (distances[end], [])` to `return (distances[end], path)`.
+    - Bug 2: The `shortest_path` method incorrectly initializes the distances dictionary with `float('inf')` for all nodes except the start node. However, it does not handle the case where there are no edges from the start node to any other node.
+      - Evidence: `test_single_node`
+      - Root cause: Th... [truncated]
+
+agent_2_codegeex4 -> agent_3_yi-coder  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly reconstitute the path when the destination node is reached. This is because it incorrectly returns `(distances[end], [])` instead of `(distances[end], path)` after finding the end node.
+      - Evidence: `test_basic_path`
+      - Root cause: The return statement inside the loop that checks if the current node is the end node.
+      - Fix: Change the line `return (distances[end], [])` to `return (distances[end], path)`.
+    - Bug 2: The `shortest_path` method incorrectly initializes the distances dictionary with `float('inf')` for all nodes except the start node. However, it does not handle the case where there are no edges from the start node to any other node.
+      - Evidence: `test_single_node`
+      - Root cause: Th... [truncated]
+
+agent_3_yi-coder -> agent_1_granite-code  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs: none
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly calculate the shortest path between nodes. It only returns the last node in the path, not all nodes. — Evidence: test_basic_path — Root cause: The code for constructing the path is incorrect. — Fix: Correctly construct and return the path from start to end.
+    - Bug 2: The `all_shortest_from` method does not correctly calculate the shortest paths from a node to all other nodes. It only returns the path to the last visited node, not all nodes. — Evidence: test_all_shortest — Root cause: Similar to the above issue. — Fix: Correctly construct and return the paths from start to all other nodes.
+    
+    **Ratings:**
+    - Correctness: 4/10
+    - Efficiency: 7/10
+    - Readability: 6/10
+    
+    **Improvements:**
+    - Improvement 1: U... [truncated]
+
+agent_3_yi-coder -> agent_2_codegeex4  correctness=5/10  efficiency=5/10  readability=5/10  would_adopt=False  [ratings fell back to defaults]
+  Bugs (1):
+    - [minor] Bug 1: Similar to the above issue in `shortest_path` method of
+  Overall assessment:
+    ### Solution 1 Analysis
+    **Bugs Found:**
+    - Bug 1: The `shortest_path` method does not correctly calculate the shortest path between nodes. It only returns the last node in the path, not all nodes. — Evidence: test_basic_path — Root cause: The code for constructing the path is incorrect. — Fix: Correctly construct and return the path from start to end.
+    - Bug 2: The `all_shortest_from` method does not correctly calculate the shortest paths from a node to all other nodes. It only returns the path to the last visited node, not all nodes. — Evidence: test_all_shortest — Root cause: Similar to the above issue. — Fix: Correctly construct and return the paths from start to all other nodes.
+    
+    **Ratings:**
+    - Correctness: 4/10
+    - Efficiency: 7/10
+    - Readability: 6/10
+    
+    **Improvements:**
+    - Improvement 1: U... [truncated]
+
+### Votes
+
+agent_1_granite-code  vote=adopt  target=agent_2_codegeex4  confidence=0.85
+    Solution 2 has a more efficient algorithm for finding the shortest path, with a time complexity of O(m log n) compared to Solution 1's O(mn). Additionally, Solution 2 is more readable and follows best
+
+agent_2_codegeex4  vote=abstain  target=-  confidence=0.90
+    Solution 2 is the most efficient and readable among the three, using a heap for Dijkstra's algorithm and consistent variable naming. It also correctly handles edge cases like nodes with no outgoing ed
+
+agent_3_yi-coder  vote=abstain  target=-  confidence=0.85
+    The solution is simple and efficient, with a time complexity of O((E+V)logV) where E is the number of edges and V is the number of vertices. It also has clear variable names and follows PEP 8 style gu
+
+### Consensus
+Reached: False  |  Ratio: 100%  |  Winner: -
+Reason: No consensus: pass rate 25% < 50% required
+Vote distribution: {'sol_agent_2_codegeex4_r5': 1}
+
+==============================================================================
+FINAL RESULT
+==============================================================================
+Winner: agent_3_yi-coder  (round 3, 25%)
+
+Final code:
+------------------------------------------------------------------------------
+from heapq import heappop, heappush
+from collections import defaultdict
+
+class WeightedGraph:
+    def __init__(self):
+        self.graph = defaultdict(dict)
+
+    def add_edge(self, u: str, v: str, weight: float) -> None:
+        if v not in self.graph[u]:
+            self.graph[u][v] = weight
+
+    def shortest_path(self, start: str, end: str) -> tuple[float, list[str]]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            if current_node == end:
+                path = []
+                while current_node is not None:
+                    path.insert(0, current_node)
+                    current_node = prev_nodes[current_node]
+                return (distances[end], path)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return (float('inf'), [])
+
+    def all_shortest_from(self, start: str) -> dict[str, float]:
+        distances = {node: float('inf') for node in self.graph}
+        distances[start] = 0
+        heap = [(0, start)]
+        prev_nodes = {node: None for node in self.graph}
+
+        while heap:
+            current_distance, current_node = heappop(heap)
+
+            for neighbor, weight in self.graph[current_node].items():
+                distance = current_distance + weight
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    prev_nodes[neighbor] = current_node
+                    heappush(heap, (distance, neighbor))
+
+        return distances
+
+    def has_path(self, start: str, end: str) -> bool:
+        visited = set()
+        stack = [start]
+
+        while stack:
+            node = stack.pop()
+            if node == end:
+                return True
+            if node not in visited:
+                visited.add(node)
+                for neighbor in self.graph[node]:
+                    stack.append(neighbor)
+
+        return False
+
+Transcript generated: 2026-04-27T22:54:04
