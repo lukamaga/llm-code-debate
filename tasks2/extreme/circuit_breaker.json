@@ -1,0 +1,31 @@
+{
+  "id": "circuit_breaker",
+  "name": "Circuit Breaker Pattern",
+  "difficulty": "extreme",
+  "description": "Implement a circuit breaker pattern across two modules. Module breaker_types.py must define: CircuitState enum with values CLOSED, OPEN, HALF_OPEN; BreakerStats dataclass with fields successes (int), failures (int), state (CircuitState), opened_at (float | None); BreakerOpenError exception. Module circuit_breaker.py must import from breaker_types.py and implement CircuitBreaker class with constructor CircuitBreaker(failure_threshold: int, recovery_timeout: float, half_open_max_calls: int = 1) and methods: call(fn, *args, **kwargs) executes fn or raises BreakerOpenError if circuit is OPEN; reset() forces back to CLOSED with stats cleared; stats() returns BreakerStats snapshot. State transitions: CLOSED -> OPEN when consecutive failures >= failure_threshold; OPEN -> HALF_OPEN after recovery_timeout seconds; HALF_OPEN -> CLOSED if next call succeeds, -> OPEN if it fails. Exception types raised by fn (other than BreakerOpenError) count as failures.",
+  "required_files": ["breaker_types.py", "circuit_breaker.py"],
+  "test_imports": ["from breaker_types import CircuitState, BreakerStats, BreakerOpenError", "from circuit_breaker import CircuitBreaker"],
+  "signature": "# breaker_types.py\nfrom enum import Enum\nfrom dataclasses import dataclass\n\nclass CircuitState(Enum):\n    CLOSED = 'closed'\n    OPEN = 'open'\n    HALF_OPEN = 'half_open'\n\n@dataclass\nclass BreakerStats:\n    successes: int\n    failures: int\n    state: CircuitState\n    opened_at: float | None\n\nclass BreakerOpenError(Exception): ...\n\n# circuit_breaker.py\nfrom breaker_types import CircuitState, BreakerStats, BreakerOpenError\n\nclass CircuitBreaker:\n    def __init__(self, failure_threshold: int, recovery_timeout: float, half_open_max_calls: int = 1): ...\n    def call(self, fn, *args, **kwargs): ...\n    def reset(self) -> None: ...\n    def stats(self) -> BreakerStats: ...",
+  "tests": [
+    "def test_starts_closed():\n    cb = CircuitBreaker(failure_threshold=3, recovery_timeout=1.0)\n    assert cb.stats().state == CircuitState.CLOSED",
+    "def test_successful_call():\n    cb = CircuitBreaker(failure_threshold=3, recovery_timeout=1.0)\n    result = cb.call(lambda: 42)\n    assert result == 42\n    assert cb.stats().successes == 1",
+    "def test_failure_counted():\n    cb = CircuitBreaker(failure_threshold=3, recovery_timeout=1.0)\n    def bad():\n        raise RuntimeError('fail')\n    try:\n        cb.call(bad)\n    except RuntimeError:\n        pass\n    assert cb.stats().failures == 1",
+    "def test_opens_after_threshold():\n    cb = CircuitBreaker(failure_threshold=2, recovery_timeout=1.0)\n    def bad():\n        raise RuntimeError('fail')\n    for _ in range(2):\n        try:\n            cb.call(bad)\n        except RuntimeError:\n            pass\n    assert cb.stats().state == CircuitState.OPEN",
+    "def test_open_blocks_calls():\n    cb = CircuitBreaker(failure_threshold=1, recovery_timeout=1.0)\n    try:\n        cb.call(lambda: (_ for _ in ()).throw(RuntimeError()))\n    except RuntimeError:\n        pass\n    try:\n        cb.call(lambda: 1)\n        assert False, 'should have raised BreakerOpenError'\n    except BreakerOpenError:\n        pass",
+    "def test_half_open_after_timeout():\n    import time\n    cb = CircuitBreaker(failure_threshold=1, recovery_timeout=0.05)\n    try:\n        cb.call(lambda: (_ for _ in ()).throw(RuntimeError()))\n    except RuntimeError:\n        pass\n    time.sleep(0.1)\n    result = cb.call(lambda: 'ok')\n    assert result == 'ok'\n    assert cb.stats().state == CircuitState.CLOSED",
+    "def test_half_open_failure_reopens():\n    import time\n    cb = CircuitBreaker(failure_threshold=1, recovery_timeout=0.05)\n    try:\n        cb.call(lambda: (_ for _ in ()).throw(RuntimeError()))\n    except RuntimeError:\n        pass\n    time.sleep(0.1)\n    try:\n        cb.call(lambda: (_ for _ in ()).throw(RuntimeError()))\n    except RuntimeError:\n        pass\n    assert cb.stats().state == CircuitState.OPEN",
+    "def test_reset():\n    cb = CircuitBreaker(failure_threshold=1, recovery_timeout=1.0)\n    try:\n        cb.call(lambda: (_ for _ in ()).throw(RuntimeError()))\n    except RuntimeError:\n        pass\n    cb.reset()\n    s = cb.stats()\n    assert s.state == CircuitState.CLOSED\n    assert s.failures == 0\n    assert s.successes == 0",
+    "def test_consecutive_failures_required():\n    cb = CircuitBreaker(failure_threshold=2, recovery_timeout=1.0)\n    def bad():\n        raise RuntimeError()\n    try:\n        cb.call(bad)\n    except RuntimeError:\n        pass\n    cb.call(lambda: 'ok')\n    try:\n        cb.call(bad)\n    except RuntimeError:\n        pass\n    assert cb.stats().state == CircuitState.CLOSED",
+    "def test_passes_args_kwargs():\n    cb = CircuitBreaker(failure_threshold=3, recovery_timeout=1.0)\n    result = cb.call(lambda x, y: x + y, 1, y=2)\n    assert result == 3"
+  ],
+  "constraints": [
+    "Successful calls in CLOSED state reset the consecutive-failure counter",
+    "OPEN state must raise BreakerOpenError without invoking fn",
+    "Transition OPEN -> HALF_OPEN happens lazily on next call() after recovery_timeout",
+    "HALF_OPEN allows up to half_open_max_calls; failure during this window reopens",
+    "Use time.monotonic() for time tracking",
+    "reset() returns to CLOSED with all counters at zero"
+  ],
+  "helper_code": {},
+  "tags": ["resilience", "multi-file", "design-pattern", "state-machine"]
+}
