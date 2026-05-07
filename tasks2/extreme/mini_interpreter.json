@@ -1,0 +1,34 @@
+{
+  "id": "mini_interpreter",
+  "name": "Mini Language Interpreter",
+  "difficulty": "extreme",
+  "description": "Implement an interpreter for a tiny imperative language across three modules. Module lang_lexer.py must define Token dataclass (type: str, value: Any) and Lexer class with tokenize(text: str) -> list[Token]. Module lang_parser.py must define AST node classes (NumberNode, IdentNode, BinaryNode, AssignNode, IfNode, WhileNode, BlockNode, PrintNode) and Parser class with parse(tokens) -> AST. Module lang_runtime.py must define Interpreter class with run(text: str) returning list of printed values; supports: integer arithmetic with + - * /, variable assignment 'x = expr;', 'if cond { ... }' (no else needed), 'while cond { ... }', 'print expr;', comparisons '==' '<' '>'. Statements end with ';'. Truthiness: zero is false, non-zero true.",
+  "required_files": ["lang_lexer.py", "lang_parser.py", "lang_runtime.py"],
+  "test_imports": ["from lang_runtime import Interpreter"],
+  "signature": "# lang_lexer.py\nfrom dataclasses import dataclass\nfrom typing import Any\n\n@dataclass\nclass Token:\n    type: str\n    value: Any\n\nclass Lexer:\n    def tokenize(self, text: str) -> list: ...\n\n# lang_parser.py\nclass NumberNode: ...\nclass IdentNode: ...\nclass BinaryNode: ...\nclass AssignNode: ...\nclass IfNode: ...\nclass WhileNode: ...\nclass BlockNode: ...\nclass PrintNode: ...\n\nclass Parser:\n    def parse(self, tokens: list): ...\n\n# lang_runtime.py\nfrom lang_lexer import Lexer\nfrom lang_parser import Parser\n\nclass Interpreter:\n    def __init__(self): ...\n    def run(self, text: str) -> list: ...",
+  "tests": [
+    "def test_print_number():\n    i = Interpreter()\n    assert i.run('print 42;') == [42]",
+    "def test_arithmetic():\n    i = Interpreter()\n    assert i.run('print 1 + 2 * 3;') == [7]",
+    "def test_assignment():\n    i = Interpreter()\n    out = i.run('x = 10; print x;')\n    assert out == [10]",
+    "def test_multiple_prints():\n    i = Interpreter()\n    out = i.run('print 1; print 2; print 3;')\n    assert out == [1, 2, 3]",
+    "def test_if_true():\n    i = Interpreter()\n    out = i.run('if 1 { print 100; } print 200;')\n    assert out == [100, 200]",
+    "def test_if_false():\n    i = Interpreter()\n    out = i.run('if 0 { print 100; } print 200;')\n    assert out == [200]",
+    "def test_while_loop():\n    i = Interpreter()\n    out = i.run('x = 0; while x < 3 { print x; x = x + 1; }')\n    assert out == [0, 1, 2]",
+    "def test_comparison_eq():\n    i = Interpreter()\n    out = i.run('if 5 == 5 { print 1; }')\n    assert out == [1]",
+    "def test_comparison_lt():\n    i = Interpreter()\n    out = i.run('if 3 < 5 { print 1; }')\n    assert out == [1]",
+    "def test_comparison_gt():\n    i = Interpreter()\n    out = i.run('if 5 > 3 { print 1; }')\n    assert out == [1]",
+    "def test_variable_update():\n    i = Interpreter()\n    out = i.run('x = 1; x = x + 10; print x;')\n    assert out == [11]",
+    "def test_factorial():\n    i = Interpreter()\n    src = 'n = 5; r = 1; while n > 0 { r = r * n; n = n - 1; } print r;'\n    out = i.run(src)\n    assert out == [120]",
+    "def test_nested_if():\n    i = Interpreter()\n    src = 'x = 5; if x > 0 { if x < 10 { print x; } }'\n    out = i.run(src)\n    assert out == [5]"
+  ],
+  "constraints": [
+    "Statements terminate with semicolon",
+    "Block statements use curly braces",
+    "Only integer values; division is integer division",
+    "Variables are global (no scoping needed)",
+    "Comparisons return integer 1 (true) or 0 (false)",
+    "Each call to run() starts with fresh state"
+  ],
+  "helper_code": {},
+  "tags": ["interpreter", "language", "multi-file", "parser", "three-files"]
+}
