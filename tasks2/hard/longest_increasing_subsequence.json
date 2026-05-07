@@ -1,0 +1,26 @@
+{
+  "id": "longest_increasing_subsequence",
+  "name": "Longest Increasing Subsequence",
+  "difficulty": "hard",
+  "description": "Given an integer array nums, return the length of the longest strictly increasing subsequence. A subsequence is a sequence derived from the array by deleting some or no elements without changing the order of remaining elements. The expected time complexity is O(n log n) using binary search; an O(n^2) DP solution is also acceptable for small inputs but not optimal.",
+  "signature": "def length_of_lis(nums: list[int]) -> int:",
+  "tests": [
+    "def test_basic():\n    assert length_of_lis([10, 9, 2, 5, 3, 7, 101, 18]) == 4",
+    "def test_strictly_increasing():\n    assert length_of_lis([1, 2, 3, 4, 5]) == 5",
+    "def test_strictly_decreasing():\n    assert length_of_lis([5, 4, 3, 2, 1]) == 1",
+    "def test_all_same():\n    assert length_of_lis([7, 7, 7, 7]) == 1",
+    "def test_empty():\n    assert length_of_lis([]) == 0",
+    "def test_single():\n    assert length_of_lis([42]) == 1",
+    "def test_two_increasing():\n    assert length_of_lis([1, 2]) == 2",
+    "def test_two_decreasing():\n    assert length_of_lis([2, 1]) == 1",
+    "def test_negative():\n    assert length_of_lis([-3, -2, -1, 0]) == 4",
+    "def test_complex():\n    assert length_of_lis([0, 1, 0, 3, 2, 3]) == 4"
+  ],
+  "constraints": [
+    "1 <= len(nums) <= 2500 (or empty)",
+    "-10^4 <= nums[i] <= 10^4",
+    "Strictly increasing means each element must be greater than the previous",
+    "Expected O(n log n) time complexity"
+  ],
+  "tags": ["dynamic-programming", "binary-search"]
+}
