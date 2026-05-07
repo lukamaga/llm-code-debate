@@ -175,8 +175,20 @@ async def run_debate_cli(
     config: dict[str, Any],
     output_dir: str | None = None,
     judge: str | None = None,
+    adaptive_temperature: bool = False,
+    critique_history: bool = False,
+    revision_strategy: str = "uniform",
+    show_all_solutions: bool = False,
 ) -> Debate:
-    """Run a debate from CLI."""
+    """Run a debate from CLI.
+
+    The four behaviour flags (``adaptive_temperature``, ``critique_history``,
+    ``revision_strategy``, ``show_all_solutions``) default to OFF / "uniform"
+    so this signature stays backward compatible with existing callers (notably
+    test fixtures and ``hpc/run_experiment.sh``). The HPC ablation scripts
+    pass ``--adaptive-temperature`` / ``--critique-history`` explicitly to
+    flip them on.
+    """
     # Load task
     task = load_task(task_path)
 
@@ -222,12 +234,21 @@ async def run_debate_cli(
             role=AgentRole.JUDGE,
         ))
     
-    # Create debate config
+    # Create debate config. Behaviour flags come from CLI args (so HPC scripts
+    # can flip them explicitly) and fall back to ``config.yaml`` if the user
+    # passed only the defaults. Final priority: CLI > config.yaml > dataclass
+    # default. Keeping the dataclass defaults at False/"uniform" preserves
+    # backward compat for any caller that ignores these flags entirely.
     debate_cfg = config.get("debate", {})
     debate_config = DebateConfig(
         max_rounds=max_rounds or debate_cfg.get("max_rounds", 5),
         consensus_threshold=debate_cfg.get("consensus_threshold", 0.6),
         early_stop_on_perfect=debate_cfg.get("early_stop_on_perfect", True),
+        adaptive_temperature=adaptive_temperature or debate_cfg.get("adaptive_temperature", False),
+        critique_history=critique_history or debate_cfg.get("critique_history", False),
+        revision_strategy=revision_strategy if revision_strategy != "uniform"
+                          else debate_cfg.get("revision_strategy", "uniform"),
+        revision_show_all_solutions=show_all_solutions or debate_cfg.get("revision_show_all_solutions", False),
     )
     
     # Progress callback
@@ -301,6 +322,98 @@ async def run_debate_cli(
         with open(json_path, "w") as f:
             json.dump(debate.to_dict(), f, indent=2, default=str)
 
+        if HAS_RICH:
+            console.print(f"[dim]Results saved to {json_path}[/dim]")
+
+    return debate
+
+
+async def run_solo_cli(
+    task_path: str,
+    agent_model: str,
+    config: dict[str, Any],
+    output_dir: str | None = None,
+) -> Debate:
+    """Run a single agent (solo baseline) on one task — no debate.
+
+    The agent proposes one solution; tests run; result is saved to the same
+    DB and CSV pipeline as debates. Used by HPC scripts to compute the
+    canonical "single agent vs debate" baseline for the thesis.
+    """
+    task = load_task(task_path)
+
+    if HAS_RICH:
+        console.print(f"\n[bold]Task:[/bold] {task.name}")
+        console.print(f"[bold]Difficulty:[/bold] {task.difficulty}")
+        console.print(f"[bold]Solo agent:[/bold] {agent_model}")
+        console.print()
+    else:
+        print(f"\nTask: {task.name}")
+        print(f"Difficulty: {task.difficulty}")
+        print(f"Solo agent: {agent_model}")
+
+    ollama_config = config.get("ollama", {})
+    llm_client = MultiModelClient(
+        base_url=ollama_config.get("base_url", "http://localhost:11434"),
+        timeout=ollama_config.get("timeout", 120),
+    )
+
+    agent_config = AgentConfig(name="agent_1", model=agent_model)
+
+    debate_cfg = config.get("debate", {})
+    debate_config = DebateConfig(
+        max_rounds=1,
+        consensus_threshold=1.0,
+        early_stop_on_perfect=True,
+    )
+
+    orchestrator = DebateOrchestrator(
+        llm_client=llm_client,
+        config=debate_config,
+    )
+
+    if HAS_RICH:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            progress.add_task("Running solo...", total=None)
+            debate = await orchestrator.run_solo(task, agent_config)
+    else:
+        print("Running solo...")
+        debate = await orchestrator.run_solo(task, agent_config)
+
+    await llm_client.close_all()
+
+    collector = MetricsCollector()
+    metrics = collector.collect_debate_metrics(debate)
+    print_debate_result(debate, metrics)
+
+    db_config = config.get("database", {})
+    repository = DebateRepository(db_config.get("path", "debate_results.db"))
+    repository.save_debate(debate)
+
+    if HAS_RICH:
+        console.print(f"\n[dim]Results saved to database[/dim]")
+
+    try:
+        transcript_dir = Path(output_dir) / "transcripts" if output_dir else Path("transcripts")
+        visualizer = DebateVisualizer(output_dir=transcript_dir)
+        transcript_path = visualizer.generate_full_transcript(debate)
+        if HAS_RICH:
+            console.print(f"[dim]Transcript saved to {transcript_path}[/dim]")
+        else:
+            print(f"Transcript saved to {transcript_path}")
+    except Exception as e:
+        logger.warning(f"Failed to write transcript: {e}")
+
+    if output_dir:
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+        json_path = output_path / f"{debate.id}_result.json"
+        with open(json_path, "w") as f:
+            json.dump(debate.to_dict(), f, indent=2, default=str)
         if HAS_RICH:
             console.print(f"[dim]Results saved to {json_path}[/dim]")
 
@@ -395,7 +508,51 @@ Examples:
         action="store_true",
         help="Enable verbose logging",
     )
-    
+
+    # Debate behaviour flags. All default to off / "uniform" so existing
+    # invocations keep their old behaviour; HPC ablation scripts opt in
+    # explicitly. These are deliberately store_true / single-choice so the
+    # script's argv tells you exactly what configuration ran.
+    parser.add_argument(
+        "--adaptive-temperature",
+        action="store_true",
+        help="Increase revision temperature when pass_rate stagnates between rounds",
+    )
+    parser.add_argument(
+        "--critique-history",
+        action="store_true",
+        help="Include prior-round critique summaries in the critic prompt",
+    )
+    parser.add_argument(
+        "--revision-strategy",
+        type=str,
+        choices=["uniform", "diverse"],
+        default="uniform",
+        help=(
+            "uniform = all agents get the same revision prompt (baseline). "
+            "diverse = round-robin DMAD-style strategies "
+            "(step_by_step, test_driven, simplify, edge_cases)."
+        ),
+    )
+    parser.add_argument(
+        "--show-all-solutions",
+        action="store_true",
+        help=(
+            "Show all peer solutions in the revision prompt. Default is "
+            "'best only' — agent sees its own + the highest-passing peer, "
+            "which is cheaper and avoids copy-paste of broken peer code."
+        ),
+    )
+    parser.add_argument(
+        "--solo",
+        action="store_true",
+        help=(
+            "Run in SOLO mode (single agent, no debate). Uses the FIRST "
+            "model from --agents. Saves to the same DB/CSV pipeline as "
+            "debates with mode='solo'. Used for thesis baseline comparison."
+        ),
+    )
+
     args = parser.parse_args()
     
     if args.verbose:
@@ -412,15 +569,31 @@ Examples:
         run_web_server(config)
     
     elif args.task:
-        # Run CLI debate
-        asyncio.run(run_debate_cli(
-            task_path=args.task,
-            agents=args.agents,
-            max_rounds=args.max_rounds,
-            config=config,
-            output_dir=args.output,
-            judge=args.judge,
-        ))
+        if args.solo:
+            # Run solo (single agent, no debate)
+            if not args.agents:
+                print("ERROR: --solo requires --agents <model>", file=sys.stderr)
+                sys.exit(2)
+            asyncio.run(run_solo_cli(
+                task_path=args.task,
+                agent_model=args.agents[0],
+                config=config,
+                output_dir=args.output,
+            ))
+        else:
+            # Run CLI debate
+            asyncio.run(run_debate_cli(
+                task_path=args.task,
+                agents=args.agents,
+                max_rounds=args.max_rounds,
+                config=config,
+                output_dir=args.output,
+                judge=args.judge,
+                adaptive_temperature=args.adaptive_temperature,
+                critique_history=args.critique_history,
+                revision_strategy=args.revision_strategy,
+                show_all_solutions=args.show_all_solutions,
+            ))
     
     else:
         parser.print_help()
