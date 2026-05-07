@@ -1,0 +1,411 @@
+==============================================================================
+DEBATE TRANSCRIPT  |  Mini Key-Value Database  (extreme)
+==============================================================================
+Debate ID:   1c0defa7
+Mode:        debate
+Status:      early_stop
+Started:     2026-04-26T15:24:32
+Ended:       2026-04-26T15:25:09
+Duration:    37.2s
+Max rounds:  5
+Rounds run:  1
+Agents:      agent_1_yi-coder (yi-coder:9b), agent_2_codegeex4 (codegeex4:9b), agent_3_granite-code (granite-code:8b)
+
+==============================================================================
+TASK
+==============================================================================
+ID: mini_database
+Difficulty: extreme
+
+Description:
+Implement a mini in-memory key-value database as two separate modules. Module storage.py must implement StorageBackend class with methods: get(key) -> str|None, set(key, value), delete(key) -> bool, has(key) -> bool, keys() -> list[str], clear(), snapshot() -> dict[str,str] (returns copy of current state), restore(snapshot: dict) (restores from a snapshot). Module database.py must import StorageBackend from storage.py and implement Database class that wraps StorageBackend and adds transaction support: get, set, delete, begin() to start a transaction, commit() to apply changes, rollback() to discard changes. Nested transactions must be supported (begin inside begin). commit/rollback without active transaction must raise an exception.
+
+Constraints:
+  - Keys and values are strings
+  - Nested transactions must be supported
+  - commit/rollback without active transaction should raise an exception
+  - storage.py must provide StorageBackend with snapshot/restore
+  - database.py must import and use StorageBackend from storage.py
+
+Required files: storage.py, database.py
+
+Tests: 10
+
+==============================================================================
+ROUND 1  |  PROPOSAL
+==============================================================================
+Best pass rate: 100%  |  Avg: 73%  |  Bugs found: 0  |  Duration: 37.2s
+
+### Proposals
+
+------------------------------------------------------------------------------
+[agent_1_yi-coder]  7/10 tests (70%)  gen=35.2s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmph_gwrd3u
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 10 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmph_gwrd3u/test_sol
+Quality: pylint=3.5/10, complexity=1.6, maintainability=67.7, LOC=62
+------------------------------------------------------------------------------
+>>> FILE: storage.py
+from typing import Dict, List, Union
+
+class StorageBackend:
+    def __init__(self):
+        self.data = {}  # type: Dict[str, str]
+        self.snapshots = []  # type: List[Dict[str, str]]
+
+    def get(self, key: str) -> Union[str, None]:
+        return self.data.get(key)
+
+    def set(self, key: str, value: str) -> None:
+        self.data[key] = value
+
+    def delete(self, key: str) -> bool:
+        if key in self.data:
+            del self.data[key]
+            return True
+        else:
+            return False
+
+    def has(self, key: str) -> bool:
+        return key in self.data
+
+    def keys(self) -> List[str]:
+        return list(self.data.keys())
+
+    def clear(self) -> None:
+        self.data = {}
+
+    def snapshot(self) -> Dict[str, str]:
+        # Returns a copy of the current state
+        return self.data.copy()
+
+    def restore(self, snapshot: Dict[str, str]) -> None:
+        # Restores from a snapshot
+        self.clear()
+        for key, value in snapshot.items():
+            self.set(key, value)
+
+>>> FILE: database.py
+from typing import Dict, List, Union
+from storage import StorageBackend
+
+class Database:
+    def __init__(self):
+        self.storage = StorageBackend()  # type: StorageBackend
+        self.transaction_stack = []  # type: List[Dict[str, str]]
+
+    def get(self, key: str) -> Union[str, None]:
+        return self.storage.get(key)
+
+    def set(self, key: str, value: str) -> None:
+        if not self.transaction_stack:  # if there is no active transaction
+            self.storage.set(key, value)
+        else:
+            self.transaction_stack[-1][key] = value
+
+    def delete(self, key: str) -> bool:
+        if not self.transaction_stack:  # if there is no active transaction
+            return self.storage.delete(key)
+        elif key in self.transaction_stack[-1]:
+            del self.transaction_stack[-1][key]
+            return True
+        else:
+            return False
+
+    def begin(self) -> None:
+        # Start a new transaction by pushing a snapshot onto the stack
+        self.transaction_stack.append(self.storage.snapshot())
+
+    def commit(self) -> None:
+        if not self.transaction_stack:  # if there is no active transaction
+            raise Exception('No active transaction to commit')
+        else:
+            # Apply changes from the current transaction and pop it off the stack
+            for key, value in self.transaction_stack.pop().items():
+                self.storage.set(key, value)
+
+    def rollback(self) -> None:
+        if not self.transaction_stack:  # if there is no active transaction
+            raise Exception('No active transaction to rollback')
+        else:
+            # Restore the state from the snapshot at the top of the stack and pop it off
+            snapshot = self.transaction_stack.pop()
+            self.storage.restore(snapshot)
+
+
+------------------------------------------------------------------------------
+[agent_2_codegeex4]  10/10 tests (100%)  gen=29.1s
+Quality: pylint=5.5/10, complexity=1.9, maintainability=40.9, LOC=69
+------------------------------------------------------------------------------
+>>> FILE: storage.py
+class StorageBackend:
+    def __init__(self):
+        self.data = {}
+        self.transactions = []
+
+    def get(self, key: str) -> str | None:
+        return self.data.get(key)
+
+    def set(self, key: str, value: str) -> None:
+        self.data[key] = value
+
+    def delete(self, key: str) -> bool:
+        if key in self.data:
+            del self.data[key]
+            return True
+        return False
+
+    def has(self, key: str) -> bool:
+        return key in self.data
+
+    def keys(self) -> list[str]:
+        return list(self.data.keys())
+
+    def clear(self) -> None:
+        self.data.clear()
+
+    def snapshot(self) -> dict[str, str]:
+        return {k: v for k, v in self.data.items()}
+
+    def restore(self, snapshot: dict[str, str]) -> None:
+        self.data = snapshot.copy()
+
+>>> FILE: database.py
+from storage import StorageBackend
+
+class Database:
+    def __init__(self):
+        self.storage = StorageBackend()
+        self.transaction_stack = []
+
+    def get(self, key: str) -> str | None:
+        if not self.transaction_stack:
+            return self.storage.get(key)
+        else:
+            for transaction in reversed(self.transaction_stack):
+                if key in transaction['changes']:
+                    return transaction['changes'][key]
+            return self.storage.get(key)
+
+    def set(self, key: str, value: str) -> None:
+        if not self.transaction_stack:
+            self.storage.set(key, value)
+        else:
+            top_transaction = self.transaction_stack[-1]
+            top_transaction['changes'][key] = value
+
+    def delete(self, key: str) -> bool:
+        if not self.transaction_stack:
+            return self.storage.delete(key)
+        else:
+            top_transaction = self.transaction_stack[-1]
+            if key in top_transaction['changes']:
+                del top_transaction['changes'][key]
+                return True
+            elif self.storage.has(key):
+                top_transaction['changes'][key] = None
+                return True
+            return False
+
+    def begin(self) -> None:
+        self.transaction_stack.append({'changes': {}})
+
+    def commit(self) -> None:
+        if not self.transaction_stack:
+            raise Exception("No active transaction")
+        top_transaction = self.transaction_stack.pop()
+        for key, value in top_transaction['changes'].items():
+            if value is None:
+                self.storage.delete(key)
+            else:
+                self.storage.set(key, value)
+
+    def rollback(self) -> None:
+        if not self.transaction_stack:
+            raise Exception("No active transaction")
+        self.transaction_stack.pop()
+
+
+------------------------------------------------------------------------------
+[agent_3_granite-code]  5/10 tests (50%)  gen=11.4s
+Error: ============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.3, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp44xhbzam
+plugins: asyncio-0.24.0, anyio-4.5.0, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 10 items
+
+../../../../../../../var/folders/_t/_kcqr86x34v7wprb_tt62xw80000gn/T/tmp44xhbzam/test_sol
+Quality: pylint=7.0/10, complexity=1.3, maintainability=50.9, LOC=45
+------------------------------------------------------------------------------
+>>> FILE: storage.py
+class StorageBackend:
+    def __init__(self):
+        self.data = {}
+
+    def get(self, key: str) -> str | None:
+        return self.data.get(key)
+
+    def set(self, key: str, value: str) -> None:
+        self.data[key] = value
+
+    def delete(self, key: str) -> bool:
+        if key in self.data:
+            del self.data[key]
+            return True
+        else:
+            return False
+
+    def has(self, key: str) -> bool:
+        return key in self.data
+
+    def keys(self) -> list[str]:
+        return list(self.data.keys())
+
+    def clear(self) -> None:
+        self.data.clear()
+
+    def snapshot(self) -> dict[str, str]:
+        return self.data.copy()
+
+    def restore(self, snapshot: dict[str, str]) -> None:
+        self.data = snapshot
+
+>>> FILE: database.py
+from storage import StorageBackend
+
+class Database:
+    def __init__(self):
+        self.storage = StorageBackend()
+        self.transactions = []
+
+    def get(self, key: str) -> str | None:
+        return self.storage.get(key)
+
+    def set(self, key: str, value: str) -> None:
+        self.storage.set(key, value)
+
+    def delete(self, key: str) -> bool:
+        return self.storage.delete(key)
+
+    def begin(self) -> None:
+        self.transactions.append({})
+
+    def commit(self) -> None:
+        if not self.transactions:
+            raise Exception("No active transaction")
+
+        snapshot = self.transactions.pop()
+        self.storage.restore(snapshot)
+
+    def rollback(self) -> None:
+        if not self.transactions:
+            raise Exception("No active transaction")
+
+        self.transactions.pop()
+
+
+==============================================================================
+FINAL RESULT
+==============================================================================
+Winner: agent_2_codegeex4  (round 1, 100%)
+
+Final code:
+------------------------------------------------------------------------------
+>>> FILE: storage.py
+class StorageBackend:
+    def __init__(self):
+        self.data = {}
+        self.transactions = []
+
+    def get(self, key: str) -> str | None:
+        return self.data.get(key)
+
+    def set(self, key: str, value: str) -> None:
+        self.data[key] = value
+
+    def delete(self, key: str) -> bool:
+        if key in self.data:
+            del self.data[key]
+            return True
+        return False
+
+    def has(self, key: str) -> bool:
+        return key in self.data
+
+    def keys(self) -> list[str]:
+        return list(self.data.keys())
+
+    def clear(self) -> None:
+        self.data.clear()
+
+    def snapshot(self) -> dict[str, str]:
+        return {k: v for k, v in self.data.items()}
+
+    def restore(self, snapshot: dict[str, str]) -> None:
+        self.data = snapshot.copy()
+
+>>> FILE: database.py
+from storage import StorageBackend
+
+class Database:
+    def __init__(self):
+        self.storage = StorageBackend()
+        self.transaction_stack = []
+
+    def get(self, key: str) -> str | None:
+        if not self.transaction_stack:
+            return self.storage.get(key)
+        else:
+            for transaction in reversed(self.transaction_stack):
+                if key in transaction['changes']:
+                    return transaction['changes'][key]
+            return self.storage.get(key)
+
+    def set(self, key: str, value: str) -> None:
+        if not self.transaction_stack:
+            self.storage.set(key, value)
+        else:
+            top_transaction = self.transaction_stack[-1]
+            top_transaction['changes'][key] = value
+
+    def delete(self, key: str) -> bool:
+        if not self.transaction_stack:
+            return self.storage.delete(key)
+        else:
+            top_transaction = self.transaction_stack[-1]
+            if key in top_transaction['changes']:
+                del top_transaction['changes'][key]
+                return True
+            elif self.storage.has(key):
+                top_transaction['changes'][key] = None
+                return True
+            return False
+
+    def begin(self) -> None:
+        self.transaction_stack.append({'changes': {}})
+
+    def commit(self) -> None:
+        if not self.transaction_stack:
+            raise Exception("No active transaction")
+        top_transaction = self.transaction_stack.pop()
+        for key, value in top_transaction['changes'].items():
+            if value is None:
+                self.storage.delete(key)
+            else:
+                self.storage.set(key, value)
+
+    def rollback(self) -> None:
+        if not self.transaction_stack:
+            raise Exception("No active transaction")
+        self.transaction_stack.pop()
+
+
+Transcript generated: 2026-04-26T15:25:09
