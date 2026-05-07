@@ -1,0 +1,33 @@
+{
+  "id": "workflow_engine",
+  "name": "Workflow Engine with Conditional Steps",
+  "difficulty": "extreme",
+  "description": "Implement a workflow engine with conditional branching across two modules. Module workflow_types.py must define: StepStatus enum PENDING, RUNNING, COMPLETED, FAILED, SKIPPED; Step dataclass with fields name (str), action (callable taking context dict, returning Any or raising), condition (callable taking context dict, returning bool, default None means always run), on_failure ('fail'|'continue'|'skip', default 'fail'); WorkflowResult dataclass with fields completed (bool), step_results (dict[str, dict] with status and value/error). Module workflow.py must import from workflow_types.py and implement Workflow class with constructor Workflow(name: str) and methods: add_step(step: Step); run(context: dict) -> WorkflowResult; status(step_name: str) -> StepStatus; reset(). Steps execute in addition order. If step fails with on_failure='fail', remaining steps are SKIPPED and workflow completed=False. With 'continue', failure is logged but workflow proceeds. Conditions evaluated against current context (which step actions can mutate by writing context['key']).",
+  "required_files": ["workflow_types.py", "workflow.py"],
+  "test_imports": ["from workflow_types import StepStatus, Step, WorkflowResult", "from workflow import Workflow"],
+  "signature": "# workflow_types.py\nfrom enum import Enum\nfrom dataclasses import dataclass, field\nfrom typing import Callable\n\nclass StepStatus(Enum):\n    PENDING = 'pending'\n    RUNNING = 'running'\n    COMPLETED = 'completed'\n    FAILED = 'failed'\n    SKIPPED = 'skipped'\n\n@dataclass\nclass Step:\n    name: str\n    action: Callable\n    condition: Callable | None = None\n    on_failure: str = 'fail'\n\n@dataclass\nclass WorkflowResult:\n    completed: bool\n    step_results: dict = field(default_factory=dict)\n\n# workflow.py\nfrom workflow_types import StepStatus, Step, WorkflowResult\n\nclass Workflow:\n    def __init__(self, name: str): ...\n    def add_step(self, step: Step) -> None: ...\n    def run(self, context: dict) -> WorkflowResult: ...\n    def status(self, step_name: str) -> StepStatus: ...\n    def reset(self) -> None: ...",
+  "tests": [
+    "def test_single_step():\n    w = Workflow('w')\n    w.add_step(Step('s1', lambda ctx: ctx.update({'done': True})))\n    r = w.run({})\n    assert r.completed is True",
+    "def test_multiple_steps():\n    w = Workflow('w')\n    w.add_step(Step('a', lambda ctx: ctx.update({'a': 1})))\n    w.add_step(Step('b', lambda ctx: ctx.update({'b': ctx['a'] + 10})))\n    ctx = {}\n    r = w.run(ctx)\n    assert ctx['b'] == 11\n    assert r.completed is True",
+    "def test_failure_stops():\n    w = Workflow('w')\n    w.add_step(Step('a', lambda ctx: ctx.update({'a': 1})))\n    w.add_step(Step('b', lambda ctx: (_ for _ in ()).throw(RuntimeError('boom'))))\n    w.add_step(Step('c', lambda ctx: ctx.update({'c': 1})))\n    ctx = {}\n    r = w.run(ctx)\n    assert r.completed is False\n    assert w.status('c') == StepStatus.SKIPPED",
+    "def test_failure_continue():\n    w = Workflow('w')\n    w.add_step(Step('a', lambda ctx: (_ for _ in ()).throw(RuntimeError()), on_failure='continue'))\n    w.add_step(Step('b', lambda ctx: ctx.update({'b': 1})))\n    ctx = {}\n    r = w.run(ctx)\n    assert r.completed is True\n    assert ctx.get('b') == 1",
+    "def test_condition_skip():\n    w = Workflow('w')\n    w.add_step(Step('a', lambda ctx: ctx.update({'ran_a': True}), condition=lambda ctx: False))\n    ctx = {}\n    w.run(ctx)\n    assert 'ran_a' not in ctx\n    assert w.status('a') == StepStatus.SKIPPED",
+    "def test_condition_run():\n    w = Workflow('w')\n    w.add_step(Step('a', lambda ctx: ctx.update({'ran': True}), condition=lambda ctx: True))\n    ctx = {}\n    w.run(ctx)\n    assert ctx.get('ran') is True",
+    "def test_status_completed():\n    w = Workflow('w')\n    w.add_step(Step('a', lambda ctx: None))\n    w.run({})\n    assert w.status('a') == StepStatus.COMPLETED",
+    "def test_status_failed():\n    w = Workflow('w')\n    w.add_step(Step('a', lambda ctx: (_ for _ in ()).throw(ValueError())))\n    w.run({})\n    assert w.status('a') == StepStatus.FAILED",
+    "def test_status_pending_before_run():\n    w = Workflow('w')\n    w.add_step(Step('a', lambda ctx: None))\n    assert w.status('a') == StepStatus.PENDING",
+    "def test_reset_clears_status():\n    w = Workflow('w')\n    w.add_step(Step('a', lambda ctx: None))\n    w.run({})\n    w.reset()\n    assert w.status('a') == StepStatus.PENDING",
+    "def test_step_results_recorded():\n    w = Workflow('w')\n    w.add_step(Step('a', lambda ctx: 'value-a'))\n    r = w.run({})\n    assert 'a' in r.step_results",
+    "def test_dynamic_condition():\n    w = Workflow('w')\n    w.add_step(Step('init', lambda ctx: ctx.update({'enabled': True})))\n    w.add_step(Step('opt', lambda ctx: ctx.update({'opt_done': True}), condition=lambda ctx: ctx.get('enabled', False)))\n    ctx = {}\n    w.run(ctx)\n    assert ctx.get('opt_done') is True"
+  ],
+  "constraints": [
+    "Steps run in the order added",
+    "Condition evaluated immediately before action; if False the step status is SKIPPED",
+    "Action exception is captured; behavior depends on on_failure",
+    "After 'fail', subsequent steps are SKIPPED",
+    "After 'continue', subsequent steps run normally",
+    "reset() returns all step statuses back to PENDING and clears step_results"
+  ],
+  "helper_code": {},
+  "tags": ["workflow", "orchestration", "multi-file", "design-pattern"]
+}
