@@ -1,0 +1,25 @@
+{
+  "id": "minimum_window_substring",
+  "name": "Minimum Window Substring",
+  "difficulty": "hard",
+  "description": "Given two strings s and t, return the minimum window substring of s such that every character in t (including duplicates) is included in the window. If there is no such substring, return the empty string. If there are multiple minimum-length windows, return the one that appears first (leftmost).",
+  "signature": "def min_window(s: str, t: str) -> str:",
+  "tests": [
+    "def test_basic():\n    assert min_window('ADOBECODEBANC', 'ABC') == 'BANC'",
+    "def test_no_valid_window():\n    assert min_window('ADOBECODEBANC', 'XYZ') == ''",
+    "def test_t_longer_than_s():\n    assert min_window('A', 'AA') == ''",
+    "def test_duplicate_chars_in_t():\n    assert min_window('AAABBBCCC', 'AABC') == 'AABC'",
+    "def test_single_char_match():\n    assert min_window('ABCDEF', 'E') == 'E'",
+    "def test_exact_match():\n    assert min_window('ABC', 'ABC') == 'ABC'",
+    "def test_entire_string_is_window():\n    assert min_window('ab', 'ba') == 'ab'",
+    "def test_empty_t():\n    assert min_window('ADOBECODEBANC', '') == ''",
+    "def test_empty_s():\n    assert min_window('', 'ABC') == ''"
+  ],
+  "constraints": [
+    "1 <= s.length, t.length <= 10^5 (handle empty as edge case)",
+    "s and t consist of uppercase and lowercase English letters",
+    "Expected O(n) time complexity using sliding window",
+    "If t is empty, return empty string"
+  ],
+  "tags": ["sliding-window", "hash-map", "two-pointers", "string"]
+}
