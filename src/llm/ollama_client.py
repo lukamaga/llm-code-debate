@@ -4,6 +4,7 @@ Ollama LLM client implementation.
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 from typing import Any, AsyncGenerator
 
@@ -11,6 +12,8 @@ import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from .base import BaseLLMClient, LLMRequest, LLMResponse
+
+logger = logging.getLogger(__name__)
 
 
 class OllamaClient(BaseLLMClient):
@@ -91,18 +94,36 @@ class OllamaClient(BaseLLMClient):
             response = await client.post("/api/generate", json=payload)
             response.raise_for_status()
             data = response.json()
-            
+
             generation_time = time.time() - start_time
-            
+            finish_reason = data.get("done_reason", "stop")
+            tokens_used = data.get("eval_count", 0)
+
+            # Explicit truncation warning. Ollama sets done_reason="length"
+            # when num_predict (== request.max_tokens) was hit before the
+            # model emitted EOS. Without this log, truncations are SILENT —
+            # the response just looks short and downstream parsers see a
+            # half-finished critique / vote / code block.
+            #
+            # Action when you see this in batch logs: bump max_tokens for
+            # the affected agent (default 12288), or shrink prompt size.
+            if finish_reason == "length":
+                logger.warning(
+                    "LLM output TRUNCATED at num_predict limit "
+                    "(model=%s, tokens_used=%d, num_predict=%d, gen_time=%.1fs). "
+                    "Increase max_tokens or shorten prompt.",
+                    self.model, tokens_used, request.max_tokens, generation_time,
+                )
+
             return LLMResponse(
                 content=data.get("response", ""),
                 model=self.model,
-                tokens_used=data.get("eval_count", 0),
+                tokens_used=tokens_used,
                 generation_time=generation_time,
-                finish_reason=data.get("done_reason", "stop"),
+                finish_reason=finish_reason,
                 raw_response=data,
             )
-            
+
         except httpx.HTTPStatusError as e:
             raise RuntimeError(f"Ollama API error: {e.response.status_code}") from e
         except httpx.RequestError as e:
