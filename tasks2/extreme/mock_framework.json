@@ -1,0 +1,35 @@
+{
+  "id": "mock_framework",
+  "name": "Minimal Mock/Spy Framework",
+  "difficulty": "extreme",
+  "description": "Implement a minimal mocking framework across two modules. Module mock_types.py must define: Call dataclass with fields args (tuple), kwargs (dict), return_value (Any); MockSpec dataclass with fields name (str), return_value (Any, default None), side_effect (Any, default None — if Exception class or instance, mock raises it; if callable, mock calls it; if iterable, returns next element). Module mock_lib.py must import from mock_types.py and implement: Mock class with constructor Mock(name='mock', return_value=None, side_effect=None) and __call__ that records each call, returns according to side_effect/return_value rules, exposes call_count (int), call_history (list[Call]), called (bool), called_with(*args, **kwargs) -> bool, called_n_times(n: int) -> bool, reset(), and configure(return_value=..., side_effect=...). Spy class wraps a real callable and forwards all calls while recording them with same introspection API.",
+  "required_files": ["mock_types.py", "mock_lib.py"],
+  "test_imports": ["from mock_types import Call, MockSpec", "from mock_lib import Mock, Spy"],
+  "signature": "# mock_types.py\nfrom dataclasses import dataclass, field\nfrom typing import Any\n\n@dataclass\nclass Call:\n    args: tuple\n    kwargs: dict\n    return_value: Any = None\n\n@dataclass\nclass MockSpec:\n    name: str\n    return_value: Any = None\n    side_effect: Any = None\n\n# mock_lib.py\nfrom mock_types import Call, MockSpec\n\nclass Mock:\n    def __init__(self, name: str = 'mock', return_value=None, side_effect=None): ...\n    def __call__(self, *args, **kwargs): ...\n    @property\n    def call_count(self) -> int: ...\n    @property\n    def call_history(self) -> list: ...\n    @property\n    def called(self) -> bool: ...\n    def called_with(self, *args, **kwargs) -> bool: ...\n    def called_n_times(self, n: int) -> bool: ...\n    def reset(self) -> None: ...\n    def configure(self, return_value=..., side_effect=...) -> None: ...\n\nclass Spy:\n    def __init__(self, target): ...\n    def __call__(self, *args, **kwargs): ...",
+  "tests": [
+    "def test_basic_call():\n    m = Mock(return_value=42)\n    assert m() == 42",
+    "def test_call_count():\n    m = Mock()\n    m()\n    m()\n    m()\n    assert m.call_count == 3",
+    "def test_called_property():\n    m = Mock()\n    assert m.called is False\n    m()\n    assert m.called is True",
+    "def test_call_history():\n    m = Mock(return_value=1)\n    m(1, 2, x=3)\n    m('a')\n    assert len(m.call_history) == 2\n    assert m.call_history[0].args == (1, 2)\n    assert m.call_history[0].kwargs == {'x': 3}",
+    "def test_called_with():\n    m = Mock()\n    m(1, 2, x=3)\n    assert m.called_with(1, 2, x=3) is True\n    assert m.called_with(99) is False",
+    "def test_called_n_times():\n    m = Mock()\n    m()\n    m()\n    assert m.called_n_times(2) is True\n    assert m.called_n_times(3) is False",
+    "def test_side_effect_exception_class():\n    m = Mock(side_effect=ValueError)\n    try:\n        m()\n        assert False\n    except ValueError:\n        pass",
+    "def test_side_effect_exception_instance():\n    m = Mock(side_effect=RuntimeError('boom'))\n    try:\n        m()\n        assert False\n    except RuntimeError as e:\n        assert str(e) == 'boom'",
+    "def test_side_effect_callable():\n    m = Mock(side_effect=lambda x: x * 2)\n    assert m(5) == 10",
+    "def test_side_effect_iterable():\n    m = Mock(side_effect=[1, 2, 3])\n    assert m() == 1\n    assert m() == 2\n    assert m() == 3",
+    "def test_reset():\n    m = Mock()\n    m()\n    m()\n    m.reset()\n    assert m.call_count == 0\n    assert m.called is False",
+    "def test_configure():\n    m = Mock()\n    m.configure(return_value=99)\n    assert m() == 99",
+    "def test_spy_forwards():\n    def real(x): return x + 1\n    s = Spy(real)\n    assert s(5) == 6\n    assert s.call_count == 1",
+    "def test_spy_records():\n    s = Spy(lambda x, y: x * y)\n    s(3, 4)\n    assert s.called_with(3, 4) is True"
+  ],
+  "constraints": [
+    "Mock without configuration returns None and records the call",
+    "side_effect takes priority over return_value when set",
+    "If side_effect is an iterable (not str/bytes), iterate; raise StopIteration when exhausted",
+    "If side_effect is callable (not exception type), call with same args and return its result",
+    "If side_effect is an exception class or instance, raise it",
+    "Spy forwards args/kwargs to the wrapped target and returns its result"
+  ],
+  "helper_code": {},
+  "tags": ["testing", "mock", "multi-file", "design"]
+}
