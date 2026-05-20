@@ -21,7 +21,7 @@ A multi-agent debate framework where several local LLMs (run via Ollama) propose
 - `src/` - core debate orchestrator, LLM clients, web UI, database, analysis
 - `tasks/`, `tasks2/` - benchmark tasks (easy / medium / hard / extreme)
 - `hpc/` - Singularity / Slurm scripts for the VU MIF HPC cluster
-- `scripts/` — runners, validators and analysis helpers
+- `scripts/` - runners, validators and analysis helpers
 - `tests/` - unit tests
 - `results/`, `transcripts/` - outputs from completed runs
 
