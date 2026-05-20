@@ -31,4 +31,4 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-*Note: in-code comments and docstrings were drafted with the help of an AI assistant for readability and ease of navigation; the design, experiments and analysis are the author's own work.*
+*Note: in-code comments and docstrings were drafted with the help of an AI assistant for readability and ease of navigation; the system, design, experiments and analysis are the author's own work.*
