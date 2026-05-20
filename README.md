@@ -2,7 +2,7 @@
 
 **The Impact of Multi-Agent Debate on the Code Generation Effectiveness of Local Large Language Models (LLMs) Across Varying Task Complexities**
 
-Bachelor's thesis project — source code, experiments and web interface.
+Bachelor's thesis project - source code, experiments and web interface.
 
 ## About
 
@@ -18,16 +18,16 @@ A multi-agent debate framework where several local LLMs (run via Ollama) propose
 
 ## Layout
 
-- `src/` — core debate orchestrator, LLM clients, web UI, database, analysis
-- `tasks/`, `tasks2/` — benchmark tasks (easy / medium / hard / extreme)
-- `hpc/` — Singularity / Slurm scripts for the VU MIF HPC cluster
+- `src/` - core debate orchestrator, LLM clients, web UI, database, analysis
+- `tasks/`, `tasks2/` - benchmark tasks (easy / medium / hard / extreme)
+- `hpc/` - Singularity / Slurm scripts for the VU MIF HPC cluster
 - `scripts/` — runners, validators and analysis helpers
-- `tests/` — unit tests
-- `results/`, `transcripts/` — outputs from completed runs
+- `tests/` - unit tests
+- `results/`, `transcripts/` - outputs from completed runs
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).
 
 ---
 
