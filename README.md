@@ -9,8 +9,7 @@ Bachelor's thesis project — source code, experiments and web interface.
 - **Author:** Lukaš Patrik Magalinski
 - **University:** Vilnius University
 - **Faculty:** Faculty of Mathematics and Informatics
-- **Study programme:** Informatika
-- **Supervisor:** Prof. Dr. Aistis Raudys
+- **Study programme:** Informatics
 - **Year:** 2026
 
 ## Project summary
@@ -26,20 +25,10 @@ A multi-agent debate framework where several local LLMs (run via Ollama) propose
 - `tests/` — unit tests
 - `results/`, `transcripts/` — outputs from completed runs
 
-## Running locally
-
-```bash
-pip install -r requirements.txt
-ollama pull qwen2.5-coder:7b
-python -m src.web.app    # web UI on http://localhost:5050
-```
-
-CLI usage:
-
-```bash
-python scripts/quick_run.py --task tasks/medium/lru_cache.json
-```
-
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+
+*Note: in-code comments and docstrings were drafted with the help of an AI assistant for readability and ease of navigation; the design, experiments and analysis are the author's own work.*
