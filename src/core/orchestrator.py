@@ -200,10 +200,10 @@ def _looks_lazy(code: str) -> bool:
     Heuristic: if the file has at least 4 ``def`` declarations AND ≥25% of
     function bodies are placeholder-only, treat it as a stub. The thresholds
     are calibrated against real transcripts:
-      * yi-coder lazy (5 defs, 2 placeholders = 40%)   → flagged
-      * codegeex4 lazy (4 defs, 1 placeholder = 25%)   → flagged (boundary)
-      * granite lazy (4 defs, 3 placeholders = 75%)    → flagged
-      * abstract base + concrete (3 defs, 1 = 33%)     → NOT flagged (< 4 defs)
+      * yi-coder lazy (5 defs, 2 placeholders = 40%) → flagged
+      * codegeex4 lazy (4 defs, 1 placeholder = 25%) → flagged (boundary)
+      * granite lazy (4 defs, 3 placeholders = 75%) → flagged
+      * abstract base + concrete (3 defs, 1 = 33%) → NOT flagged (< 4 defs)
       * legit no-op hook in 5-method class (5 defs, 1 = 20%) → NOT flagged
 
     Implementation uses AST — robust to comments between ``def`` and body,
@@ -281,12 +281,12 @@ def should_revert_revision(
     in ``max_tokens``.
 
     Rules (ordered):
-      * No historical best or no prior execution result  →  keep.
-      * Revised code is syntactically / import-broken    →  revert.
-      * Revised code looks truncated (bracket imbalance, etc.) →  revert.
-      * Regression ≥ 2 tests                             →  revert.
-      * Regression == 1 test                             →  keep (exploration).
-      * No regression or improvement                     →  keep.
+      * No historical best or no prior execution result → keep.
+      * Revised code is syntactically / import-broken → revert.
+      * Revised code looks truncated (bracket imbalance, etc.) → revert.
+      * Regression ≥ 2 tests → revert.
+      * Regression == 1 test → keep (exploration).
+      * No regression or improvement → keep.
 
     Returns ``(should_revert, reason_code)``.
 
@@ -330,7 +330,7 @@ def should_revert_revision(
     if (
         revised_code is not None
         and _looks_lazy(revised_code)
-        and regression_size >= 0  # not strictly improving
+        and regression_size >= 0 # not strictly improving
     ):
         return (True, "lazy_skeleton")
 
@@ -360,7 +360,7 @@ def should_revert_revision(
 class DebateOrchestrator:
     """
     Orchestrates debates between multiple LLM agents.
-    
+
     Manages the entire debate lifecycle:
     1. Initialize agents
     2. Round 1: Collect initial proposals
@@ -368,7 +368,7 @@ class DebateOrchestrator:
     4. Detect consensus or reach max rounds
     5. Finalize and report results
     """
-    
+
     def __init__(
         self,
         llm_client: MultiModelClient,
@@ -379,7 +379,7 @@ class DebateOrchestrator:
     ):
         """
         Initialize the orchestrator.
-        
+
         Args:
             llm_client: Client for LLM inference.
             config: Debate configuration.
@@ -396,7 +396,7 @@ class DebateOrchestrator:
         self.on_round_complete = on_round_complete
         self.on_message = on_message
         self.on_phase = on_phase
-    
+
     async def run_debate(
         self,
         task: Task,
@@ -405,18 +405,18 @@ class DebateOrchestrator:
     ) -> Debate:
         """
         Run a complete debate on a task.
-        
+
         Args:
             task: The coding task to solve.
             agent_configs: Configuration for each agent.
-            
+
         Returns:
             Debate object with all results.
         """
         # Initialize debate
         debate_id = str(uuid.uuid4())[:8]
         agents = self._create_agents(agent_configs)
-        
+
         debate = Debate(
             id=debate_id,
             task=task,
@@ -425,17 +425,17 @@ class DebateOrchestrator:
             consensus_threshold=self.config.consensus_threshold,
         )
         debate.status = DebateStatus.RUNNING
-        
+
         logger.info(f"Starting debate {debate_id} on task '{task.name}' with {len(agents)} agents")
-        
+
         try:
             # Round 1: Initial proposals
             round1 = await self._run_proposal_round(debate)
             debate.add_round(round1)
-            
+
             if self.on_round_complete:
                 self.on_round_complete(round1)
-            
+
             # Check for early stop (perfect solution in round 1)
             if self.config.early_stop_on_perfect:
                 perfect = self.consensus_detector.check_perfect_solution(round1.solutions)
@@ -453,7 +453,7 @@ class DebateOrchestrator:
                     )
                     logger.info(f"Early stop: Perfect solution found in round 1")
                     return debate
-            
+
             # Rounds 2-N: Debate loop
             for round_num in range(2, self.config.max_rounds + 1):
                 # Check if stop was requested
@@ -468,10 +468,10 @@ class DebateOrchestrator:
 
                 round_summary = await self._run_debate_round(debate, round_num)
                 debate.add_round(round_summary)
-                
+
                 if self.on_round_complete:
                     self.on_round_complete(round_summary)
-                
+
                 # Check consensus (only exit if min_rounds reached)
                 if (round_summary.consensus_result and round_summary.consensus_result.reached
                         and round_num >= self.config.min_rounds):
@@ -525,14 +525,14 @@ class DebateOrchestrator:
                 final_solution=best_solution,
             )
             logger.info(f"Max rounds ({self.config.max_rounds}) reached")
-            
+
         except Exception as e:
             logger.exception(f"Debate failed with error: {e}")
             debate.finalize(
                 status=DebateStatus.ERROR,
                 error_message=str(e),
             )
-        
+
         return debate
 
     async def run_solo(
@@ -627,20 +627,20 @@ class DebateOrchestrator:
             agent_id = f"agent_{i+1}_{config.model.split(':')[0]}"
             agents.append(Agent(id=agent_id, config=config))
         return agents
-    
+
     async def _run_proposal_round(self, debate: Debate) -> RoundSummary:
         """Run the initial proposal round."""
         logger.info("Running proposal round (Round 1)")
         if self.on_phase:
             self.on_phase("propose", 1)
         round_summary = RoundSummary(round_num=1, solutions=[], critiques=[], votes=[])
-        
+
         # Collect proposals from all agents concurrently
         tasks = []
         for agent in debate.agents:
-            if agent.role != AgentRole.JUDGE:  # Judges don't propose
+            if agent.role != AgentRole.JUDGE: # Judges don't propose
                 tasks.append(self._get_proposal(agent, debate.task))
-        
+
         results = await asyncio.gather(*tasks, return_exceptions=True)
         solutions = [r for r in results if isinstance(r, Solution)]
 
@@ -649,7 +649,7 @@ class DebateOrchestrator:
             if solution:
                 result = await self.executor.execute(solution, debate.task)
                 solution.execution_result = result
-                
+
                 # Analyze quality
                 try:
                     quality = await self.quality_analyzer.analyze(
@@ -658,16 +658,16 @@ class DebateOrchestrator:
                     solution.quality_metrics = quality
                 except Exception as e:
                     logger.warning(f"Quality analysis failed: {e}")
-                
+
                 round_summary.solutions.append(solution)
                 logger.info(
                     f"Agent {solution.agent_id}: "
                     f"{result.tests_passed}/{result.tests_total} tests passed"
                 )
-        
+
         round_summary.end_time = datetime.now()
         return round_summary
-    
+
     async def _run_debate_round(self, debate: Debate, round_num: int) -> RoundSummary:
         """Run a debate round (critique → revise → vote)."""
         logger.info(f"Running debate round {round_num}")
@@ -703,7 +703,7 @@ class DebateOrchestrator:
             self.on_phase("critique", round_num)
         critique_tasks = []
         for agent in debate.agents:
-            if agent.role != AgentRole.PROPOSER:  # Proposers don't critique
+            if agent.role != AgentRole.PROPOSER: # Proposers don't critique
                 critique_tasks.append(
                     self._get_critique(
                         agent, debate.task, current_solutions, round_num,
@@ -812,7 +812,7 @@ class DebateOrchestrator:
                             previous_critiques_summary=prev_critique_summary,
                         )
                     )
-        
+
         revision_results = await asyncio.gather(*revision_tasks, return_exceptions=True)
         revised_solutions = [r for r in revision_results if isinstance(r, Solution)]
 
@@ -881,7 +881,7 @@ class DebateOrchestrator:
                     f"Agent {solution.agent_id} (revised): "
                     f"{solution.execution_result.tests_passed}/{solution.execution_result.tests_total} tests passed"
                 )
-        
+
         # Phase 3: Vote
         if self.on_phase:
             self.on_phase("vote", round_num)
@@ -890,7 +890,7 @@ class DebateOrchestrator:
             vote_tasks.append(
                 self._get_vote(agent, debate.task, round_summary.solutions, round_num)
             )
-        
+
         vote_results = await asyncio.gather(*vote_tasks, return_exceptions=True)
         round_summary.votes = [v for v in vote_results if isinstance(v, Vote)]
 
@@ -915,7 +915,7 @@ class DebateOrchestrator:
             debate.agents,
             round_num,
         )
-        
+
         round_summary.end_time = datetime.now()
         round_summary.compute_stats()
         return round_summary
@@ -1043,7 +1043,7 @@ class DebateOrchestrator:
         except Exception as e:
             logger.error(f"Agent {agent.id} failed to propose: {e}")
             return None
-    
+
     async def _get_critique(
         self,
         agent: Agent,
@@ -1089,7 +1089,7 @@ class DebateOrchestrator:
             # Get solutions to critique (all except own)
             other_solutions = [s for s in solutions if s.agent_id != agent.id]
             if not other_solutions:
-                other_solutions = solutions  # Edge case: critique own if only one
+                other_solutions = solutions # Edge case: critique own if only one
 
             parsed_critiques = parsed.get("critiques", [])
             # Build lookup by solution_num (1-based) for robust matching
@@ -1098,7 +1098,7 @@ class DebateOrchestrator:
             total_bugs = 0
 
             for i, target_sol in enumerate(other_solutions):
-                sol_num = i + 1  # 1-based, matches sequential numbering in prompt
+                sol_num = i + 1 # 1-based, matches sequential numbering in prompt
                 # Try matching by solution_num first, fall back to index
                 pc = pc_by_num.get(sol_num)
                 if pc is None:
@@ -1163,7 +1163,7 @@ class DebateOrchestrator:
         except Exception as e:
             logger.error(f"Agent {agent.id} failed to critique: {e}")
             return []
-    
+
     async def _get_revision(
         self,
         agent: Agent,
@@ -1348,7 +1348,7 @@ class DebateOrchestrator:
         except Exception as e:
             logger.error(f"Agent {agent.id} failed to revise: {e}")
             return None
-    
+
     async def _get_vote(
         self,
         agent: Agent,
@@ -1358,22 +1358,22 @@ class DebateOrchestrator:
     ) -> Vote | None:
         """Get vote from an agent."""
         prompt = build_voting_prompt(task, solutions, agent.id)
-        
+
         request = LLMRequest(
             prompt=prompt,
             system_prompt=SYSTEM_PROMPT_JUDGE,
-            temperature=0.1,  # Low temperature for deterministic voting
+            temperature=0.1, # Low temperature for deterministic voting
         )
-        
+
         try:
             response = await self.llm_client.generate(agent.model, request)
             parsed = parse_vote_response(response.content)
-            
+
             # Map vote to solution
             vote_type = VoteType(parsed["vote_type"])
             voted_solution_id = None
             voted_agent_id = None
-            
+
             if vote_type == VoteType.ADOPT and parsed.get("voted_solution"):
                 sol_index = parsed["voted_solution"] - 1
                 if 0 <= sol_index < len(solutions):
@@ -1430,7 +1430,7 @@ class DebateOrchestrator:
                 raw_response=response.content,
                 parse_failed=parse_failed,
             )
-            
+
             # Record message
             message = AgentMessage(
                 agent_id=agent.id,
@@ -1439,16 +1439,16 @@ class DebateOrchestrator:
                 content=response.content,
             )
             agent.add_message(message)
-            
+
             if self.on_message:
                 self.on_message(message)
-            
+
             return vote
-            
+
         except Exception as e:
             logger.error(f"Agent {agent.id} failed to vote: {e}")
             return None
-    
+
     def _get_solution_by_id(
         self,
         solutions: list[Solution],
@@ -1461,7 +1461,7 @@ class DebateOrchestrator:
             if sol.id == solution_id:
                 return sol
         return None
-    
+
     def _find_best_solution(self, solutions: list[Solution]) -> Solution | None:
         """Find the best solution based on test results, code quality, and votes."""
         if not solutions:
@@ -1477,10 +1477,10 @@ class DebateOrchestrator:
             maintainability = 0.0
 
             if s.quality_metrics:
-                pylint_score = s.quality_metrics.pylint_score / 10.0  # Normalize to 0-1
+                pylint_score = s.quality_metrics.pylint_score / 10.0 # Normalize to 0-1
                 # Lower complexity is better, invert and normalize
                 complexity_penalty = max(0, 1 - (s.quality_metrics.cyclomatic_complexity / 20.0))
-                maintainability = s.quality_metrics.maintainability_index / 100.0  # Normalize to 0-1
+                maintainability = s.quality_metrics.maintainability_index / 100.0 # Normalize to 0-1
 
             # 3. Votes received
             votes = s.votes_received

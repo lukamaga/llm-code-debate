@@ -11,13 +11,13 @@
 # LLM Code Debate — batch experiment on VU MIF HPC
 #
 # Usage:
-#   sbatch hpc/run_experiment.sh
+# sbatch hpc/run_experiment.sh
 #
 # Prerequisites:
-#   1. Ollama image: singularity pull ollama_latest.sif docker://ollama/ollama
-#   2. Move image: mv ollama_latest.sif hpc/
-#   3. Project copied to /scratch/lustre/home/$USER/llm-code-debate/
-#   4. See hpc/README.md for full setup instructions
+# 1. Ollama image: singularity pull ollama_latest.sif docker://ollama/ollama
+# 2. Move image: mv ollama_latest.sif hpc/
+# 3. Project copied to /scratch/lustre/home/$USER/llm-code-debate/
+# 4. See hpc/README.md for full setup instructions
 
 set -euo pipefail
 
@@ -39,10 +39,10 @@ PEERS="yi-coder:9b codegeex4:9b granite-code:8b"
 # Set to empty string to run without judge (baseline / no-judge ablation).
 #
 # VRAM math on V100 (32 GB):
-#   peers (5+5.5+4.6 = 15 GB) + judge:
-#     qwen2.5-coder:32b   = 19 GB → 34 GB total (overflows V100, slow offload)
-#     deepseek-coder-v2:16b = 9 GB → 24 GB total ✅ (fits, MoE = fast)
-#     "" (no judge)         = 15 GB total ✅ (fastest, baseline)
+# peers (5+5.5+4.6 = 15 GB) + judge:
+# qwen2.5-coder:32b = 19 GB → 34 GB total (overflows V100, slow offload)
+# deepseek-coder-v2:16b = 9 GB → 24 GB total (fits, MoE = fast)
+# "" (no judge) = 15 GB total (fastest, baseline)
 # DeepSeek-v2 is MoE (3B active params) → 2× faster inference than 32B.
 JUDGE="deepseek-coder-v2:16b"
 
@@ -63,11 +63,11 @@ cd "${PROJECT_DIR}"
 mkdir -p logs results "${OLLAMA_DATA}"
 
 echo "============================================"
-echo "Job ID:       ${SLURM_JOB_ID}"
-echo "Node:         $(hostname)"
-echo "GPU:          $(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || echo 'N/A')"
-echo "Start time:   $(date)"
-echo "Project dir:  ${PROJECT_DIR}"
+echo "Job ID: ${SLURM_JOB_ID}"
+echo "Node: $(hostname)"
+echo "GPU: $(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || echo 'N/A')"
+echo "Start time: $(date)"
+echo "Project dir: ${PROJECT_DIR}"
 echo "============================================"
 
 # ── Check Ollama image ────────────────────────────────────────────────────
@@ -146,8 +146,8 @@ fi
 
 echo ""
 echo "Running experiments..."
-echo "Peers:      ${PEERS}"
-echo "Judge:      ${JUDGE:-<none>}"
+echo "Peers: ${PEERS}"
+echo "Judge: ${JUDGE:-<none>}"
 echo "Max rounds: ${MAX_ROUNDS}"
 echo ""
 
@@ -207,7 +207,7 @@ if python3 -m src.analysis.csv_export \
         --db debate_results.db \
         --out "${CSV_OUT}" \
         --out-rounds "${CSV_ROUNDS}"; then
-    echo "[OK] Summary:   ${PROJECT_DIR}/${CSV_OUT}"
+    echo "[OK] Summary: ${PROJECT_DIR}/${CSV_OUT}"
     echo "[OK] Per-round: ${PROJECT_DIR}/${CSV_ROUNDS}"
 else
     echo "[WARN] CSV export failed — DB still contains all results, can re-export later"
@@ -217,14 +217,14 @@ fi
 echo ""
 echo "============================================"
 echo "EXPERIMENT COMPLETE"
-echo "Total tasks:  ${TOTAL}"
-echo "Passed:       ${PASSED}"
-echo "Failed:       ${FAILED}"
-echo "End time:     $(date)"
-echo "Results in:   ${PROJECT_DIR}/results/"
-echo "Database:     ${PROJECT_DIR}/debate_results.db"
-echo "CSV summary:  ${PROJECT_DIR}/${CSV_OUT}"
-echo "CSV rounds:   ${PROJECT_DIR}/${CSV_ROUNDS}"
+echo "Total tasks: ${TOTAL}"
+echo "Passed: ${PASSED}"
+echo "Failed: ${FAILED}"
+echo "End time: $(date)"
+echo "Results in: ${PROJECT_DIR}/results/"
+echo "Database: ${PROJECT_DIR}/debate_results.db"
+echo "CSV summary: ${PROJECT_DIR}/${CSV_OUT}"
+echo "CSV rounds: ${PROJECT_DIR}/${CSV_ROUNDS}"
 echo "============================================"
 
 # Cleanup is handled by the trap above

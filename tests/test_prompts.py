@@ -30,23 +30,23 @@ class TestExtractCode:
     """Tests for extract_code_from_response."""
 
     def test_python_block(self):
-        response = "Here's the solution:\n```python\ndef foo():\n    return 42\n```"
+        response = "Here's the solution:\n```python\ndef foo():\n return 42\n```"
         code = extract_code_from_response(response)
         assert "def foo():" in code
         assert "return 42" in code
 
     def test_generic_block(self):
-        response = "```\ndef bar():\n    pass\n```"
+        response = "```\ndef bar():\n pass\n```"
         code = extract_code_from_response(response)
         assert "def bar():" in code
 
     def test_no_block(self):
-        response = "def baz():\n    return 1"
+        response = "def baz():\n return 1"
         code = extract_code_from_response(response)
         assert "def baz():" in code
 
     def test_multiple_blocks(self):
-        response = "```python\ndef short():\n    pass\n```\n\n```python\ndef longer():\n    return 1\n    return 2\n```"
+        response = "```python\ndef short():\n pass\n```\n\n```python\ndef longer():\n return 1\n return 2\n```"
         code = extract_code_from_response(response)
         # Should return the longest block
         assert "longer" in code
@@ -59,16 +59,16 @@ class TestStripSpecialTokens:
     def test_deepseek_bos_inside_code(self):
         # Real failure pattern seen in experiments:
         # `return <｜begin▁of▁sentence｜>0` broke AST parsing.
-        raw = "def answer():\n    return <｜begin▁of▁sentence｜>0"
+        raw = "def answer():\n return <｜begin▁of▁sentence｜>0"
         cleaned = _strip_special_tokens(raw)
         assert "begin" not in cleaned
-        assert cleaned == "def answer():\n    return 0"
+        assert cleaned == "def answer():\n return 0"
 
     def test_deepseek_eos(self):
         assert _strip_special_tokens("x = 1<｜end▁of▁sentence｜>") == "x = 1"
 
     def test_deepseek_fim_triplet(self):
-        raw = "<｜fim▁begin｜>def f():<｜fim▁hole｜>    pass<｜fim▁end｜>"
+        raw = "<｜fim▁begin｜>def f():<｜fim▁hole｜> pass<｜fim▁end｜>"
         cleaned = _strip_special_tokens(raw)
         assert "fim" not in cleaned
         assert "def f():" in cleaned
@@ -90,12 +90,12 @@ class TestStripSpecialTokens:
         assert cleaned == "def g(): return 1"
 
     def test_no_special_tokens_unchanged(self):
-        raw = "def add(a, b):\n    return a + b  # simple"
+        raw = "def add(a, b):\n return a + b # simple"
         assert _strip_special_tokens(raw) == raw
 
     def test_empty_input(self):
         assert _strip_special_tokens("") == ""
-        assert _strip_special_tokens(None) is None  # type: ignore[arg-type]
+        assert _strip_special_tokens(None) is None # type: ignore[arg-type]
 
     def test_multiple_tokens_mixed(self):
         raw = "<｜begin▁of▁sentence｜>x = 1<|im_end|>\ny = 2<｜end▁of▁sentence｜>"
@@ -120,7 +120,7 @@ class TestExtractCodeSanitization:
             "Here is the fix:\n"
             "```python\n"
             "def answer():\n"
-            "    return <｜begin▁of▁sentence｜>0\n"
+            " return <｜begin▁of▁sentence｜>0\n"
             "```"
         )
         code = extract_code_from_response(response)
@@ -197,7 +197,7 @@ class TestParseVote:
     def test_missing_fields(self):
         response = "I think solution 1 is best"
         result = parse_vote_response(response)
-        assert result["confidence"] == 0.5  # default
+        assert result["confidence"] == 0.5 # default
 
 
 class TestBuildPrompts:
@@ -241,13 +241,13 @@ class TestTestGroundedFeedback:
     def test_first_failure_shown_in_full(self):
         long_err = (
             "AssertionError: assert justify(['This', 'is'], 16) == "
-            "'This          is'\n"
-            "  where actual = 'This is         '\n"
-            "  expected    = 'This          is'\n"
-            "  diff at char 5: ' ' vs ' '\n"
-            "  full traceback:\n"
-            "    File 'solution.py', line 42, in justify\n"
-            "      result = ' '.join(words) + ' ' * padding"
+            "'This is'\n"
+            " where actual = 'This is '\n"
+            " expected = 'This is'\n"
+            " diff at char 5: ' ' vs ' '\n"
+            " full traceback:\n"
+            " File 'solution.py', line 42, in justify\n"
+            " result = ' '.join(words) + ' ' * padding"
         )
         er = _make_exec_result([
             ("test_two_words", False, long_err),
@@ -273,14 +273,14 @@ class TestTestGroundedFeedback:
         assert "..." in out
         # But at least 800 of them should survive — that's the ground-truth window.
         assert out.count("X") >= 800
-        assert out.count("X") <= 900  # allow a little slack for "..." and framing
+        assert out.count("X") <= 900 # allow a little slack for "..." and framing
 
     def test_full_detail_false_preserves_legacy_200_char_limit(self):
-        long_err = "AssertionError: " + ("foo bar " * 100)  # ~800 chars
+        long_err = "AssertionError: " + ("foo bar " * 100) # ~800 chars
         er = _make_exec_result([("test_a", False, long_err)])
         out = _format_test_feedback(er, full_detail=False)
         # In legacy mode we keep the old 200-char cap.
-        assert len(out) < 400  # header + truncated line
+        assert len(out) < 400 # header + truncated line
         assert "..." in out
 
     def test_no_failures_no_ground_truth_block(self):
@@ -383,7 +383,7 @@ class TestVotingPromptAntiSelfVote:
                 task=_DummyTask(), solutions=sols, agent_id="agent_1",
             )
         assert "HARD RULE" in prompt
-        assert "Solution 1" in prompt  # agent_1 is the first in solutions list
+        assert "Solution 1" in prompt # agent_1 is the first in solutions list
         assert "MUST NOT" in prompt
         assert "YOUR OWN" in prompt.upper()
 

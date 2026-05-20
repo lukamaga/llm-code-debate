@@ -10,23 +10,23 @@
 #
 # Experiment 3/4 (dataset 2, R1 set): Pool B (9B) + REASONING judge
 # ─────────────────────────────────────────────────────────────────
-# Peers:        granite-code:8b + codegeex4:9b + yi-coder:9b
-# Judge:        deepseek-r1:14b  (REASONING model, not code-specialized)
-# Features:     adaptive_temperature ON, critique_history ON
-# Dataset:      tasks2/hard + tasks2/extreme
+# Peers: granite-code:8b + codegeex4:9b + yi-coder:9b
+# Judge: deepseek-r1:14b (REASONING model, not code-specialized)
+# Features: adaptive_temperature ON, critique_history ON
+# Dataset: tasks2/hard + tasks2/extreme
 #
 # Research question: does a REASONING-tuned judge (deepseek-r1:14b) improve
 # debate outcomes more or less than a CODE-tuned judge (deepseek-coder-v2:16b)?
 #
 # Comparison:
-#   run_9b_judge2.sh       → coder judge (deepseek-coder-v2:16b)
-#   run_9b_judge2_r1.sh    → reasoning judge (deepseek-r1:14b)  ← THIS SCRIPT
+# run_9b_judge2.sh → coder judge (deepseek-coder-v2:16b)
+# run_9b_judge2_r1.sh → reasoning judge (deepseek-r1:14b) THIS SCRIPT
 # Same peers, same dataset, same flags — only the judge differs.
 #
 # VRAM math on V100 (32 GB):
-#   peers ≈ 15 GB + r1:14b ≈ 9 GB + KV cache ≈ 5 GB → ~29 GB ⚠️ tight
-#   Flash Attention enabled in _lib_run.sh helps; if OOM, reduce MAX_ROUNDS
-#   or move to --gres=gpu:2 (2× V100 = 64 GB).
+# peers ≈ 15 GB + r1:14b ≈ 9 GB + KV cache ≈ 5 GB → ~29 GB tight
+# Flash Attention enabled in _lib_run.sh helps; if OOM, reduce MAX_ROUNDS
+# or move to --gres=gpu:2 (2× V100 = 64 GB).
 #
 # Usage: sbatch hpc/run_9b_judge2_r1.sh
 

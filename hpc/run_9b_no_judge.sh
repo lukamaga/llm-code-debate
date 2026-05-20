@@ -10,16 +10,16 @@
 #
 # Experiment 4/4: Pool B (8-9B class) — no judge (baseline)
 # ─────────────────────────────────────────────────────────────────
-# Peers:        granite-code:8b + codegeex4:9b + yi-coder:9b
-# Judge:        none (LLM-as-Judge ablation: shows pure peer-debate effect)
-# Features:     adaptive_temperature ON, critique_history ON,
-#               revision_strategy=uniform, show_all_solutions=OFF (best only)
+# Peers: granite-code:8b + codegeex4:9b + yi-coder:9b
+# Judge: none (LLM-as-Judge ablation: shows pure peer-debate effect)
+# Features: adaptive_temperature ON, critique_history ON,
+# revision_strategy=uniform, show_all_solutions=OFF (best only)
 #
 # Pair this with run_9b_judge.sh for the cleanest LLM-as-Judge ablation on
 # the strongest peer pool. Compare per-difficulty: judge effect should be
 # largest on extreme tasks where peers struggle to self-correct.
 #
-# VRAM math on V100 (32 GB):  peers ≈ 15 GB total ✅ (lots of headroom).
+# VRAM math on V100 (32 GB): peers ≈ 15 GB total (lots of headroom).
 #
 # Usage: sbatch hpc/run_9b_no_judge.sh
 

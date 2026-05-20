@@ -42,12 +42,12 @@ class CodeExecutor:
         """Convert relative imports to absolute for flat temp directory execution.
 
         LLMs sometimes generate `from .module import X` which requires a
-        package with __init__.py.  In our flat tmpdir layout, only absolute
+        package with __init__.py. In our flat tmpdir layout, only absolute
         imports work (e.g. `from module import X`).
         """
         import re as _re
-        # from .foo import X  →  from foo import X
-        # from .foo.bar import X  →  from foo.bar import X
+        # from .foo import X → from foo import X
+        # from .foo.bar import X → from foo.bar import X
         fixed = _re.sub(r'^(from\s+)\.(\w)', r'\1\2', code, flags=_re.MULTILINE)
         if fixed != code:
             logger.debug("Fixed relative imports in solution code")
@@ -71,8 +71,8 @@ class CodeExecutor:
 
             for node in tree.body:
                 if isinstance(node, _ast.FunctionDef) and node.name.startswith("test_"):
-                    start = node.lineno - 1  # 0-indexed
-                    end = node.end_lineno  # end_lineno is 1-indexed, exclusive after slicing
+                    start = node.lineno - 1 # 0-indexed
+                    end = node.end_lineno # end_lineno is 1-indexed, exclusive after slicing
                     remove_ranges.append((start, end))
 
             if not remove_ranges:
@@ -194,12 +194,12 @@ sys.path.insert(0, "{tmpdir}")
                     "import importlib, sys\n"
                     f'sys.path.insert(0, "{tmpdir}")\n'
                     "try:\n"
-                    "    _sol = importlib.import_module('solution')\n"
-                    "    for _name in dir(_sol):\n"
-                    "        if not _name.startswith('test_') and not _name.startswith('_'):\n"
-                    "            globals()[_name] = getattr(_sol, _name)\n"
+                    " _sol = importlib.import_module('solution')\n"
+                    " for _name in dir(_sol):\n"
+                    " if not _name.startswith('test_') and not _name.startswith('_'):\n"
+                    " globals()[_name] = getattr(_sol, _name)\n"
                     "except (ImportError, SyntaxError):\n"
-                    "    pass  # let tests fail naturally with NameError\n"
+                    " pass # let tests fail naturally with NameError\n"
                 )
 
                 # Write test file
@@ -312,7 +312,7 @@ sys.path.insert(0, "{tmpdir}")
         return ExecutionResult(
             status=status,
             tests_passed=tests_passed,
-            tests_total=max(tests_total, 1),  # Ensure at least 1 for division
+            tests_total=max(tests_total, 1), # Ensure at least 1 for division
             test_results=test_results,
             execution_time=execution_time,
             error_message=output[:500] if status != SolutionStatus.PASSED else None,
@@ -374,7 +374,7 @@ class CodeQualityAnalyzer:
             proc = await asyncio.create_subprocess_exec(
                 "python3", "-m", "pylint", filepath,
                 "--output-format=json",
-                "--disable=C0114,C0115,C0116",  # Disable docstring warnings
+                "--disable=C0114,C0115,C0116", # Disable docstring warnings
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
@@ -418,7 +418,7 @@ class CodeQualityAnalyzer:
             complexities = []
             for file_data in cc_data.values():
                 if not isinstance(file_data, list):
-                    continue  # radon returns {"error": "..."} for SyntaxError
+                    continue # radon returns {"error": "..."} for SyntaxError
                 for item in file_data:
                     complexities.append(item.get("complexity", 1))
 

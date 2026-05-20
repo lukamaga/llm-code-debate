@@ -90,10 +90,10 @@ Write a complete Python implementation that solves this task.
 Make sure your code handles all edge cases and follows the constraints.
 
 CRITICAL: Submit COMPLETE working code, not a skeleton.
-- ❌ DO NOT use `pass`, `...`, `# TODO`, or `raise NotImplementedError` as a function body.
-- ❌ DO NOT outline classes/methods and leave them empty.
-- ✅ EVERY function must have real, executable logic that returns the right value.
-- ✅ Prefer a simple brute-force solution that PASSES TESTS over an elegant stub that doesn't.
+- DO NOT use `pass`, `...`, `# TODO`, or `raise NotImplementedError` as a function body.
+- DO NOT outline classes/methods and leave them empty.
+- EVERY function must have real, executable logic that returns the right value.
+- Prefer a simple brute-force solution that PASSES TESTS over an elegant stub that doesn't.
 
 Wrap your code in ```python and ``` markers."""
 
@@ -114,7 +114,7 @@ def build_critique_prompt(
     counter = 0
     for sol in solutions:
         if sol.agent_id == agent_id:
-            continue  # Skip own solution
+            continue # Skip own solution
         counter += 1
         test_info = ""
         test_feedback = ""
@@ -260,7 +260,7 @@ def _format_test_feedback(execution_result, full_detail: bool = True) -> str:
     first_failure_shown = False
     for tr in execution_result.test_results:
         if tr.passed:
-            lines.append(f"  - {tr.test_name}: PASSED")
+            lines.append(f" - {tr.test_name}: PASSED")
             continue
 
         err = tr.error_message or ""
@@ -270,16 +270,16 @@ def _format_test_feedback(execution_result, full_detail: bool = True) -> str:
         if full_detail and not first_failure_shown and err:
             first_failure_shown = True
             detail = err if len(err) <= 800 else err[:800] + "..."
-            lines.append(f"  - {tr.test_name}: FAILED")
-            lines.append("      ↳ FULL ERROR (ground truth — base your fix on this):")
+            lines.append(f" - {tr.test_name}: FAILED")
+            lines.append(" FULL ERROR (ground truth — base your fix on this):")
             for raw_line in detail.splitlines():
-                lines.append(f"      {raw_line}")
+                lines.append(f" {raw_line}")
         else:
             short = err if len(err) <= 200 else err[:200] + "..."
             if short:
-                lines.append(f"  - {tr.test_name}: FAILED — {short}")
+                lines.append(f" - {tr.test_name}: FAILED — {short}")
             else:
-                lines.append(f"  - {tr.test_name}: FAILED")
+                lines.append(f" - {tr.test_name}: FAILED")
 
     if not lines:
         return ""
@@ -324,7 +324,7 @@ def build_revision_prompt(
     # Critiques received
     critiques_text = ""
     for crit in critiques:
-        bugs = "\n".join(f"  - {b.description}" for b in crit.bugs) or "  None found"
+        bugs = "\n".join(f" - {b.description}" for b in crit.bugs) or " None found"
         critiques_text += f"""
 From {crit.agent_id}:
 - Correctness: {crit.correctness_rating}/10
@@ -452,12 +452,12 @@ Work from concrete evidence, not guesses.
 
 ## CRITICAL: Submit COMPLETE working code, not a skeleton
 Your solution will be executed against the tests immediately. Stub functions FAIL.
-- ❌ DO NOT write `pass`, `...`, `# TODO`, `# Implement this`, or `raise NotImplementedError` as a function body.
-- ❌ DO NOT leave `def foo(): pass` for any function the tests will call.
-- ❌ DO NOT outline an architecture and skip the implementation.
-- ✅ EVERY function must contain real, executable logic that returns the right value.
-- ✅ If you cannot finish a complex algorithm, prefer a simple correct solution over an empty skeleton.
-- ✅ When in doubt, write a brute-force solution that passes the tests rather than an elegant stub that doesn't.
+- DO NOT write `pass`, `...`, `# TODO`, `# Implement this`, or `raise NotImplementedError` as a function body.
+- DO NOT leave `def foo(): pass` for any function the tests will call.
+- DO NOT outline an architecture and skip the implementation.
+- EVERY function must contain real, executable logic that returns the right value.
+- If you cannot finish a complex algorithm, prefer a simple correct solution over an empty skeleton.
+- When in doubt, write a brute-force solution that passes the tests rather than an elegant stub that doesn't.
 
 Provide your revised (or adopted) solution wrapped in ```python and ``` markers."""
 
@@ -542,20 +542,20 @@ REASONING: <one sentence>"""
 # Observed in experiments: `return <｜begin▁of▁sentence｜>0` inside revised code
 # caused 100% syntax failures on affected revisions.
 SPECIAL_TOKEN_PATTERNS = [
-    r"<｜begin▁of▁sentence｜>",  # deepseek BOS (fullwidth pipes + ideographic space)
-    r"<｜end▁of▁sentence｜>",    # deepseek EOS
-    r"<｜fim▁begin｜>",           # deepseek FIM
+    r"<｜begin▁of▁sentence｜>", # deepseek BOS (fullwidth pipes + ideographic space)
+    r"<｜end▁of▁sentence｜>", # deepseek EOS
+    r"<｜fim▁begin｜>", # deepseek FIM
     r"<｜fim▁hole｜>",
     r"<｜fim▁end｜>",
-    r"<\|endoftext\|>",          # GPT-style
-    r"<\|im_start\|>",           # ChatML (Qwen family)
+    r"<\|endoftext\|>", # GPT-style
+    r"<\|im_start\|>", # ChatML (Qwen family)
     r"<\|im_end\|>",
     r"<\|file_separator\|>",
     r"<\|fim_prefix\|>",
     r"<\|fim_middle\|>",
     r"<\|fim_suffix\|>",
-    r"<s>",                       # generic BOS if bare
-    r"</s>",                      # generic EOS if bare
+    r"<s>", # generic BOS if bare
+    r"</s>", # generic EOS if bare
 ]
 
 _SPECIAL_TOKEN_RE = re.compile("|".join(SPECIAL_TOKEN_PATTERNS))
@@ -625,10 +625,10 @@ def extract_code_from_response(response: str) -> str:
         stripped = line.strip()
         # Check if line looks like Python
         if _looks_like_python(stripped) or in_code:
-            if stripped.startswith(("def ", "class ", "import ", "from ", "if ", "for ", "while ", "return ", "    ")):
+            if stripped.startswith(("def ", "class ", "import ", "from ", "if ", "for ", "while ", "return ", " ")):
                 in_code = True
                 code_lines.append(line)
-            elif in_code and (line.startswith("    ") or line.startswith("\t") or not stripped):
+            elif in_code and (line.startswith(" ") or line.startswith("\t") or not stripped):
                 code_lines.append(line)
             elif in_code and stripped and not stripped.startswith("#"):
                 # End of code block
@@ -810,13 +810,13 @@ def parse_vote_response(response: str) -> dict:
     # Robust against the formats actually seen in transcripts (yi-coder uses
     # markdown emphasis: `**VOTE:** 2`) and against plausible variants that
     # could appear with future models. Three protections:
-    #   * \bVOTE\b — word boundary prevents matching VOTE inside REVOTE,
-    #     DEVOTED, VOTED, PIVOT, etc. (real false-positive in stress test).
-    #   * \*{0,2} around separator — tolerates `**VOTE**:`, `VOTE:**2**`,
-    #     `**VOTE: 2**` markdown wrappers.
-    #   * [:\-—–=>\s]* separator class — accepts colon, hyphen, em-dash,
-    #     en-dash, arrow `=>`, plain whitespace, OR no separator at all
-    #     (covers `VOTE 2`, `VOTE: 2`, `VOTE — 2`, `VOTE => 2`).
+    # * \bVOTE\b — word boundary prevents matching VOTE inside REVOTE,
+    # DEVOTED, VOTED, PIVOT, etc. (real false-positive in stress test).
+    # * \*{0,2} around separator — tolerates `**VOTE**:`, `VOTE:**2**`,
+    # `**VOTE: 2**` markdown wrappers.
+    # * [:\-—–=>\s]* separator class — accepts colon, hyphen, em-dash,
+    # en-dash, arrow `=>`, plain whitespace, OR no separator at all
+    # (covers `VOTE 2`, `VOTE: 2`, `VOTE — 2`, `VOTE => 2`).
     # Validated against 23 should-match and 8 should-not-match cases (31/31).
     vote_match = re.search(
         r"\bVOTE\b\s*\*{0,2}\s*[:\-—–=>\s]*\*{0,2}\s*(\d+)",
@@ -892,7 +892,7 @@ def build_chunked_file_proposal_prompt(
     """Build prompt for generating a single file in a multi-file task.
 
     Instead of asking the LLM to produce all files at once (which causes
-    truncation on 7B models), we generate one file per LLM call.  Each
+    truncation on 7B models), we generate one file per LLM call. Each
     call receives the task description, full signatures, and any files
     that were already generated so imports stay consistent.
     """
@@ -964,7 +964,7 @@ def build_chunked_file_revision_prompt(
     # Critiques
     critiques_text = ""
     for crit in critiques:
-        bugs = "\n".join(f"  - {b.description}" for b in crit.bugs) or "  None found"
+        bugs = "\n".join(f" - {b.description}" for b in crit.bugs) or " None found"
         critiques_text += f"""
 From {crit.agent_id}:
 - Correctness: {crit.correctness_rating}/10
@@ -1079,8 +1079,8 @@ def extract_multi_file_code_from_response(
     Extract multiple labeled code blocks from LLM response.
 
     Supports formats:
-    1. # FILE: filename.py  followed by ```python block
-    2. ### filename.py  followed by ```python block
+    1. # FILE: filename.py followed by ```python block
+    2. ### filename.py followed by ```python block
     3. Fallback: assign unnamed blocks to required_files in order
 
     Returns dict of filename -> code.

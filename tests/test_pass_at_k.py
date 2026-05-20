@@ -169,7 +169,7 @@ class TestDebateMetricsPassAtK:
         """Some solutions pass → check counts and pass@1."""
         task = _make_task()
         debate = _make_debate(task, [
-            [("a1", 3, 3), ("a2", 1, 3)],  # 1 pass, 1 fail
+            [("a1", 3, 3), ("a2", 1, 3)], # 1 pass, 1 fail
         ])
         collector = MetricsCollector()
         metrics = collector.collect_debate_metrics(debate)
@@ -215,10 +215,10 @@ class TestExperimentSummaryPassAtK:
         task1 = _make_task("t1", "easy")
         task2 = _make_task("t2", "hard")
         debate1 = _make_debate(task1, [
-            [("a1", 3, 3), ("a2", 3, 3)],  # all pass
+            [("a1", 3, 3), ("a2", 3, 3)], # all pass
         ])
         debate2 = _make_debate(task2, [
-            [("a1", 0, 3), ("a2", 0, 3)],  # none pass
+            [("a1", 0, 3), ("a2", 0, 3)], # none pass
         ])
         collector = MetricsCollector()
         summary = collector.collect_experiment_summary("exp1", "test", [debate1, debate2])
@@ -231,10 +231,10 @@ class TestExperimentSummaryPassAtK:
         task1 = _make_task("t1", "easy")
         task2 = _make_task("t2", "easy")
         debate1 = _make_debate(task1, [
-            [("a1", 3, 3), ("a2", 0, 3)],  # 1/2 pass
+            [("a1", 3, 3), ("a2", 0, 3)], # 1/2 pass
         ])
         debate2 = _make_debate(task2, [
-            [("a1", 3, 3), ("a2", 3, 3)],  # 2/2 pass
+            [("a1", 3, 3), ("a2", 3, 3)], # 2/2 pass
         ])
         collector = MetricsCollector()
         summary = collector.collect_experiment_summary("exp1", "test", [debate1, debate2])

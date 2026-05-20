@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class OllamaClient(BaseLLMClient):
     """
     Client for Ollama local LLM server.
-    
+
     Supports all Ollama models including:
     - qwen2.5-coder:7b
     - deepseek-coder:6.7b
@@ -28,7 +28,7 @@ class OllamaClient(BaseLLMClient):
     - llama3:latest
     - mistral:7b
     """
-    
+
     def __init__(
         self,
         base_url: str = "http://localhost:11434",
@@ -39,7 +39,7 @@ class OllamaClient(BaseLLMClient):
         self.timeout = timeout
         self.model = model
         self._client: httpx.AsyncClient | None = None
-    
+
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create the HTTP client."""
         if self._client is None:
@@ -48,7 +48,7 @@ class OllamaClient(BaseLLMClient):
                 timeout=httpx.Timeout(self.timeout),
             )
         return self._client
-    
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=10),
@@ -56,15 +56,15 @@ class OllamaClient(BaseLLMClient):
     async def generate(self, request: LLMRequest) -> LLMResponse:
         """
         Generate a response using Ollama.
-        
+
         Args:
             request: The LLM request.
-            
+
         Returns:
             LLMResponse with generated content.
         """
         client = await self._get_client()
-        
+
         # Build the payload
         payload: dict[str, Any] = {
             "model": self.model,
@@ -81,15 +81,15 @@ class OllamaClient(BaseLLMClient):
                 "num_ctx": 32768,
             },
         }
-        
+
         if request.system_prompt:
             payload["system"] = request.system_prompt
-        
+
         if request.stop_sequences:
             payload["options"]["stop"] = request.stop_sequences
-        
+
         start_time = time.time()
-        
+
         try:
             response = await client.post("/api/generate", json=payload)
             response.raise_for_status()
@@ -128,21 +128,21 @@ class OllamaClient(BaseLLMClient):
             raise RuntimeError(f"Ollama API error: {e.response.status_code}") from e
         except httpx.RequestError as e:
             raise RuntimeError(f"Ollama connection error: {e}") from e
-    
+
     async def generate_stream(
         self, request: LLMRequest
     ) -> AsyncGenerator[str, None]:
         """
         Generate a streaming response using Ollama.
-        
+
         Args:
             request: The LLM request.
-            
+
         Yields:
             Chunks of generated text.
         """
         client = await self._get_client()
-        
+
         payload: dict[str, Any] = {
             "model": self.model,
             "prompt": request.prompt,
@@ -170,12 +170,12 @@ class OllamaClient(BaseLLMClient):
                             yield data["response"]
                         if data.get("done", False):
                             break
-                            
+
         except httpx.HTTPStatusError as e:
             raise RuntimeError(f"Ollama API error: {e.response.status_code}") from e
         except httpx.RequestError as e:
             raise RuntimeError(f"Ollama connection error: {e}") from e
-    
+
     async def is_available(self) -> bool:
         """Check if Ollama is available."""
         try:
@@ -184,7 +184,7 @@ class OllamaClient(BaseLLMClient):
             return response.status_code == 200
         except Exception:
             return False
-    
+
     async def list_models(self) -> list[str]:
         """List available Ollama models."""
         try:
@@ -195,14 +195,14 @@ class OllamaClient(BaseLLMClient):
             return [m["name"] for m in data.get("models", [])]
         except Exception:
             return []
-    
+
     async def pull_model(self, model_name: str) -> bool:
         """
         Pull a model from Ollama registry.
-        
+
         Args:
             model_name: Name of the model to pull.
-            
+
         Returns:
             True if successful, False otherwise.
         """
@@ -211,18 +211,18 @@ class OllamaClient(BaseLLMClient):
             response = await client.post(
                 "/api/pull",
                 json={"name": model_name},
-                timeout=httpx.Timeout(600.0),  # 10 minutes for large models
+                timeout=httpx.Timeout(600.0), # 10 minutes for large models
             )
             return response.status_code == 200
         except Exception:
             return False
-    
+
     async def close(self) -> None:
         """Close the HTTP client."""
         if self._client:
             await self._client.aclose()
             self._client = None
-    
+
     def __repr__(self) -> str:
         return f"OllamaClient(model={self.model}, base_url={self.base_url})"
 
@@ -230,10 +230,10 @@ class OllamaClient(BaseLLMClient):
 class MultiModelClient:
     """
     Manager for multiple Ollama model clients.
-    
+
     Useful for debates with heterogeneous agents.
     """
-    
+
     def __init__(
         self,
         base_url: str = "http://localhost:11434",
@@ -242,7 +242,7 @@ class MultiModelClient:
         self.base_url = base_url
         self.timeout = timeout
         self._clients: dict[str, OllamaClient] = {}
-    
+
     def get_client(self, model: str) -> OllamaClient:
         """Get or create a client for a specific model."""
         if model not in self._clients:
@@ -252,14 +252,14 @@ class MultiModelClient:
                 model=model,
             )
         return self._clients[model]
-    
+
     async def generate(
         self, model: str, request: LLMRequest
     ) -> LLMResponse:
         """Generate using a specific model."""
         client = self.get_client(model)
         return await client.generate(request)
-    
+
     async def check_all_models(self, models: list[str]) -> dict[str, bool]:
         """Check availability of multiple models."""
         client = self.get_client(models[0])
@@ -268,7 +268,7 @@ class MultiModelClient:
             model: any(model in am for am in available_models)
             for model in models
         }
-    
+
     async def close_all(self) -> None:
         """Close all clients."""
         for client in self._clients.values():

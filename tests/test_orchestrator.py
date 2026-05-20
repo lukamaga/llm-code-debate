@@ -205,7 +205,7 @@ class TestGetRevision:
         self, patched_orchestrator, sample_agent, sample_task
     ):
         # Make original solution and LLM return identical code
-        code = "def solution(x: int) -> int:\n    return x + 1"
+        code = "def solution(x: int) -> int:\n return x + 1"
         original = Solution(
             id="sol_1", agent_id=sample_agent.id, round_num=1,
             code=f"```python\n{code}\n```",
@@ -707,7 +707,7 @@ class TestShouldRevertRevision:
         prev = _sol_with_result("a", passed=8, total=8)
         revert, reason = should_revert_revision(prev, _result(0, 8))
         assert revert is True
-        assert "8" in reason  # regressed by 8 tests
+        assert "8" in reason # regressed by 8 tests
 
     def test_syntax_error_always_reverts(self):
         prev = _sol_with_result("a", passed=3, total=5)

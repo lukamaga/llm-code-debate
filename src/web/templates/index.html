@@ -14,16 +14,16 @@
     <style>
         :root {
             /* Modern research dashboard — Notion-style tinted zones */
-            --bg-page: #0a0c12;             /* Page background — neutral dark behind panels */
-            --bg-panel: #171a22;            /* Default panel (neutral) — used by Arena */
-            --bg-panel-config: #141828;     /* Left panel — subtle indigo (control zone) */
-            --bg-panel-arena: #171a22;      /* Center panel — neutral (content zone) */
-            --bg-panel-activity: #191624;   /* Right panel — subtle violet (log zone) */
+            --bg-page: #0a0c12; /* Page background — neutral dark behind panels */
+            --bg-panel: #171a22; /* Default panel (neutral) — used by Arena */
+            --bg-panel-config: #141828; /* Left panel — subtle indigo (control zone) */
+            --bg-panel-arena: #171a22; /* Center panel — neutral (content zone) */
+            --bg-panel-activity: #191624; /* Right panel — subtle violet (log zone) */
             /* Semi-transparent so each control picks up its panel's tint */
-            --bg-elevated: rgba(255, 255, 255, 0.035);  /* Cards & chips — slight elevation */
-            --bg-hover: rgba(255, 255, 255, 0.07);      /* Hover state */
-            --bg-input: rgba(255, 255, 255, 0.025);     /* Inputs — subtle elevation, inherits panel tint */
-            --bg-elevated-solid: #1f2330;               /* Solid version for popovers/menus */
+            --bg-elevated: rgba(255, 255, 255, 0.035); /* Cards & chips — slight elevation */
+            --bg-hover: rgba(255, 255, 255, 0.07); /* Hover state */
+            --bg-input: rgba(255, 255, 255, 0.025); /* Inputs — subtle elevation, inherits panel tint */
+            --bg-elevated-solid: #1f2330; /* Solid version for popovers/menus */
             --bg-overlay: rgba(31, 35, 48, 0.97);
 
             /* Legacy aliases for existing class rules */
@@ -33,16 +33,16 @@
             --bg4: #232830;
 
             /* Text — high contrast for PDF print readability */
-            --text: #e8eaed;             /* Primary — almost white */
+            --text: #e8eaed; /* Primary — almost white */
             --text-bright: #ffffff;
-            --text2: #b3b9c7;            /* Secondary */
-            --text3: #8a91a3;            /* Tertiary */
-            --text-dim: #5a6275;         /* Muted */
+            --text2: #b3b9c7; /* Secondary */
+            --text3: #8a91a3; /* Tertiary */
+            --text-dim: #5a6275; /* Muted */
             --text-muted: #6e7585;
 
             /* Borders — semi-transparent so they adapt to each panel's tint */
-            --border: rgba(255, 255, 255, 0.05);     /* Subtle separators */
-            --border2: rgba(255, 255, 255, 0.09);    /* Input/control borders */
+            --border: rgba(255, 255, 255, 0.05); /* Subtle separators */
+            --border2: rgba(255, 255, 255, 0.09); /* Input/control borders */
             --border-bright: rgba(255, 255, 255, 0.16);
             --border-glow: rgba(99, 102, 241, 0.35);
 
@@ -185,13 +185,13 @@
         .panel {
             display: flex;
             flex-direction: column;
-            background: var(--bg-panel-config);   /* default = left config panel (indigo undertone) */
+            background: var(--bg-panel-config); /* default = left config panel (indigo undertone) */
             border-right: 1px solid var(--border);
             min-height: 0;
             position: relative;
         }
         .panel.arena-panel {
-            background: var(--bg-panel-arena);    /* center — neutral */
+            background: var(--bg-panel-arena); /* center — neutral */
         }
         .panel.right-panel {
             background: var(--bg-panel-activity); /* right — violet undertone */
@@ -425,7 +425,7 @@
             color: var(--text-dim) !important;
         }
         .stepper-btn.minus { border-right: 1px solid var(--border); }
-        .stepper-btn.plus  { border-left:  1px solid var(--border); }
+        .stepper-btn.plus { border-left: 1px solid var(--border); }
 
         /* ===== Custom Select Dropdown — Linear/HF style ===== */
         .cs-wrap {
@@ -788,10 +788,10 @@
         }
 
         .phase-badge.active { display: inline-block; }
-        .phase-badge.propose  { background: var(--blue-soft);   color: var(--blue-bright);   border-color: rgba(59,130,246,0.3); }
+        .phase-badge.propose { background: var(--blue-soft); color: var(--blue-bright); border-color: rgba(59,130,246,0.3); }
         .phase-badge.critique { background: var(--yellow-soft); color: var(--yellow-bright); border-color: rgba(245,158,11,0.3); }
-        .phase-badge.revise   { background: var(--green-soft);  color: var(--green-bright);  border-color: rgba(16,185,129,0.3); }
-        .phase-badge.vote     { background: var(--purple-soft); color: var(--purple-bright); border-color: rgba(168,85,247,0.3); }
+        .phase-badge.revise { background: var(--green-soft); color: var(--green-bright); border-color: rgba(16,185,129,0.3); }
+        .phase-badge.vote { background: var(--purple-soft); color: var(--purple-bright); border-color: rgba(168,85,247,0.3); }
 
         /* Debate Timeline */
         .timeline { display: flex; flex-direction: column; gap: 12px; }
@@ -1115,7 +1115,7 @@
         }
         @keyframes edgeFlow {
             from { stroke-dashoffset: 0; }
-            to   { stroke-dashoffset: -24; }
+            to { stroke-dashoffset: -24; }
         }
 
         .graph-particle { pointer-events: none; }
@@ -1227,10 +1227,10 @@
             width: 8px; height: 8px;
             border-radius: 50%;
         }
-        .graph-legend .legend-dot.propose  { background: var(--blue-bright);   }
+        .graph-legend .legend-dot.propose { background: var(--blue-bright); }
         .graph-legend .legend-dot.critique { background: var(--yellow-bright); }
-        .graph-legend .legend-dot.revise   { background: var(--green-bright);  }
-        .graph-legend .legend-dot.vote     { background: var(--purple-bright); }
+        .graph-legend .legend-dot.revise { background: var(--green-bright); }
+        .graph-legend .legend-dot.vote { background: var(--purple-bright); }
 
         /* Inbox layer — text bubbles around agents */
         .graph-inbox-layer {
@@ -1266,7 +1266,7 @@
         }
         @keyframes inboxThinking {
             0%, 100% { opacity: 1; }
-            50%      { opacity: 0.62; }
+            50% { opacity: 0.62; }
         }
         .graph-inbox .inbox-title {
             font-size: 11px;
@@ -1291,16 +1291,16 @@
             line-height: 1.4;
             word-break: break-word;
         }
-        .graph-inbox.propose  { border-color: rgba(59,130,246,0.5); }
-        .graph-inbox.propose  .inbox-title { color: var(--blue-bright); }
+        .graph-inbox.propose { border-color: rgba(59,130,246,0.5); }
+        .graph-inbox.propose .inbox-title { color: var(--blue-bright); }
         .graph-inbox.critique { border-color: rgba(245,158,11,0.5); }
         .graph-inbox.critique .inbox-title { color: var(--yellow-bright); }
-        .graph-inbox.revise   { border-color: rgba(16,185,129,0.5); }
-        .graph-inbox.revise   .inbox-title { color: var(--green-bright); }
-        .graph-inbox.vote     { border-color: rgba(168,85,247,0.5); }
-        .graph-inbox.vote     .inbox-title { color: var(--purple-bright); }
-        .graph-inbox.sent     { border-color: rgba(16,185,129,0.6); }
-        .graph-inbox.sent     .inbox-title { color: var(--green-bright); }
+        .graph-inbox.revise { border-color: rgba(16,185,129,0.5); }
+        .graph-inbox.revise .inbox-title { color: var(--green-bright); }
+        .graph-inbox.vote { border-color: rgba(168,85,247,0.5); }
+        .graph-inbox.vote .inbox-title { color: var(--purple-bright); }
+        .graph-inbox.sent { border-color: rgba(16,185,129,0.6); }
+        .graph-inbox.sent .inbox-title { color: var(--green-bright); }
 
         .graph-empty {
             position: absolute;
@@ -1408,10 +1408,10 @@
             flex-shrink: 0;
         }
 
-        .activity-tag.proposal { background: var(--blue-soft);   color: var(--blue-bright);   }
+        .activity-tag.proposal { background: var(--blue-soft); color: var(--blue-bright); }
         .activity-tag.critique { background: var(--yellow-soft); color: var(--yellow-bright); }
-        .activity-tag.revision { background: var(--green-soft);  color: var(--green-bright);  }
-        .activity-tag.vote     { background: var(--purple-soft); color: var(--purple-bright); }
+        .activity-tag.revision { background: var(--green-soft); color: var(--green-bright); }
+        .activity-tag.vote { background: var(--purple-soft); color: var(--purple-bright); }
 
         .activity-text {
             font-size: 12px;
@@ -1889,7 +1889,7 @@
                                 <input type="checkbox" id="adaptiveTemp" style="accent-color:var(--accent);" checked>
                                 Adaptive temperature
                             </label>
-                            <span style="font-size:10px; color:var(--text3);" title="Increase temperature when agents stagnate">↑ temp on stall</span>
+                            <span style="font-size:10px; color:var(--text3);" title="Increase temperature when agents stagnate"> temp on stall</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px;">
                             <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; flex:1;">
@@ -2150,7 +2150,7 @@
     <script>
         const socket = io();
         let currentAgents = ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b-instruct', 'mistral:7b'];
-        let currentJudge = null;  // Optional heterogeneous judge model; null = "No judge"
+        let currentJudge = null; // Optional heterogeneous judge model; null = "No judge"
         let agentData = {};
         let currentRoundEl = null;
         let currentMode = 'debate';
@@ -2270,10 +2270,10 @@
         // Inbox text per phase — описывает, что агент "держит у себя" в этот момент.
         // N = количество агентов, task = имя выбранной задачи (если есть).
         const INBOX_BY_PHASE = {
-            propose:  (n, task) => ({ title: 'Task',     body: task || 'problem specification' }),
-            critique: (n)       => ({ title: 'Review',   body: Math.max(1, n - 1) + ' solutions to review' }),
-            revise:   (n)       => ({ title: 'Feedback', body: 'critiques + test results' }),
-            vote:     (n)       => ({ title: 'Evaluate', body: n + ' candidates to rank' }),
+            propose: (n, task) => ({ title: 'Task', body: task || 'problem specification' }),
+            critique: (n) => ({ title: 'Review', body: Math.max(1, n - 1) + ' solutions to review' }),
+            revise: (n) => ({ title: 'Feedback', body: 'critiques + test results' }),
+            vote: (n) => ({ title: 'Evaluate', body: n + ' candidates to rank' }),
         };
 
         const GraphView = {
@@ -3577,7 +3577,7 @@
         });
 
         document.getElementById('revisionStrategy').addEventListener('change', function() {
-            renderAgents();  // re-render to show/hide strategy dropdowns
+            renderAgents(); // re-render to show/hide strategy dropdowns
         });
 
         document.getElementById('showAllSolutions').addEventListener('change', function() {
@@ -3617,7 +3617,7 @@
             socket.emit('start_debate', {
                 task_path: taskPath,
                 agents: currentAgents,
-                judge: currentJudge,  // null when "No judge" is selected
+                judge: currentJudge, // null when "No judge" is selected
                 max_rounds: maxRounds,
                 show_all_solutions: document.getElementById('showAllSolutions').checked,
                 revision_strategy: document.getElementById('revisionStrategy').value,
@@ -3879,7 +3879,7 @@
                 return;
             }
 
-            const arrow = c => c === transcriptSort.col ? (transcriptSort.dir === 'asc' ? ' ↑' : ' ↓') : '';
+            const arrow = c => c === transcriptSort.col ? (transcriptSort.dir === 'asc' ? ' ' : ' ') : '';
             let html = `
                 <table style="width:100%; border-collapse:collapse; font-size:12px;">
                     <thead>
@@ -4014,10 +4014,10 @@
 
             const configEl = document.getElementById('batchConfigInfo');
             let configHTML = '';
-            configHTML += '<span style="' + tagStyle(showAll) + '">' + (showAll ? '✓ All solutions' : 'Best only') + '</span>';
+            configHTML += '<span style="' + tagStyle(showAll) + '">' + (showAll ? ' All solutions' : 'Best only') + '</span>';
             if (mode === 'debate') {
-                configHTML += '<span style="' + tagStyle(adaptiveT) + '">' + (adaptiveT ? '✓ Adaptive temp' : '✗ Adaptive temp') + '</span>';
-                configHTML += '<span style="' + tagStyle(critHist) + '">' + (critHist ? '✓ Critique history' : '✗ Critique history') + '</span>';
+                configHTML += '<span style="' + tagStyle(adaptiveT) + '">' + (adaptiveT ? ' Adaptive temp' : ' Adaptive temp') + '</span>';
+                configHTML += '<span style="' + tagStyle(critHist) + '">' + (critHist ? ' Critique history' : ' Critique history') + '</span>';
                 configHTML += '<span style="' + tagStyle(true) + '">Strategy: ' + (strategy === 'diverse' ? 'Diverse (DMAD)' : 'Uniform') + '</span>';
             }
             configEl.innerHTML = configHTML;
@@ -4052,7 +4052,7 @@
             socket.emit('start_batch', {
                 task_paths: taskPaths,
                 agents: currentAgents,
-                judge: mode === 'debate' ? currentJudge : null,  // judge only applies to debate mode
+                judge: mode === 'debate' ? currentJudge : null, // judge only applies to debate mode
                 max_rounds: parseInt(document.getElementById('maxRounds').value),
                 mode: mode,
                 show_all_solutions: document.getElementById('showAllSolutions').checked,
@@ -4296,14 +4296,14 @@
                 stepper.dataset.wired = '1';
 
                 const minus = stepper.querySelector('[data-step="-1"]');
-                const plus  = stepper.querySelector('[data-step="1"]');
+                const plus = stepper.querySelector('[data-step="1"]');
 
                 const refresh = () => {
                     const val = parseInt(input.value, 10);
                     const min = parseInt(input.min, 10);
                     const max = parseInt(input.max, 10);
                     if (minus) minus.disabled = !isNaN(min) && !isNaN(val) && val <= min;
-                    if (plus)  plus.disabled  = !isNaN(max) && !isNaN(val) && val >= max;
+                    if (plus) plus.disabled = !isNaN(max) && !isNaN(val) && val >= max;
                 };
 
                 const bump = (step) => {
@@ -4315,7 +4315,7 @@
                     if (!isNaN(min)) val = Math.max(min, val);
                     if (!isNaN(max)) val = Math.min(max, val);
                     input.value = val;
-                    input.dispatchEvent(new Event('input',  { bubbles: true }));
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
                     input.dispatchEvent(new Event('change', { bubbles: true }));
                     refresh();
                 };
@@ -4328,7 +4328,7 @@
                     });
                 });
 
-                input.addEventListener('input',  refresh);
+                input.addEventListener('input', refresh);
                 input.addEventListener('change', refresh);
                 refresh();
             }

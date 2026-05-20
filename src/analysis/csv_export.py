@@ -140,8 +140,8 @@ def extract_metrics_from_record(record) -> dict:
 
     # Peak round detection — at which round did the BEST solution appear?
     # This is the core "did debate help?" metric for thesis analysis:
-    #   best_round=1 → solved on first try, debate added no value (early stop)
-    #   best_round=2+ → cross-pollination through critique/revise actually helped
+    # best_round=1 → solved on first try, debate added no value (early stop)
+    # best_round=2+ → cross-pollination through critique/revise actually helped
     # We pick the EARLIEST round that hit the global peak (ties → smaller round
     # number, since reaching peak earlier means less debate effort needed).
     best_round = 1
@@ -235,8 +235,8 @@ CSV_HEADER = [
     "most_active_agent", "most_successful_agent", "most_bugs_found_by",
     "status", "winning_agent",
     # Peak-round metrics — answer "did debate help, or solved on round 1?":
-    #   best_round=1 + peak_after_debate=False → trivial / early-stop case
-    #   best_round=N>1 + peak_after_debate=True → genuine MAD success
+    # best_round=1 + peak_after_debate=False → trivial / early-stop case
+    # best_round=N>1 + peak_after_debate=True → genuine MAD success
     "best_round", "best_round_pass_rate", "peak_after_debate",
 ]
 

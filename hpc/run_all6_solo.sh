@@ -10,11 +10,11 @@
 #
 # Experiment: SOLO baseline — each of 6 models runs all 60 tasks ALONE
 # ─────────────────────────────────────────────────────────────────
-# Models (6):   qwen2.5-coder:7b, deepseek-coder:6.7b, codellama:7b-instruct,
-#               granite-code:8b, codegeex4:9b, yi-coder:9b
-# Judge:        none (solo mode = no debate, no critique, no vote)
-# Dataset:      tasks/easy + tasks/medium + tasks/hard + tasks/extreme (60 tasks)
-# Total runs:   6 models × 60 tasks = 360 solo runs
+# Models (6): qwen2.5-coder:7b, deepseek-coder:6.7b, codellama:7b-instruct,
+# granite-code:8b, codegeex4:9b, yi-coder:9b
+# Judge: none (solo mode = no debate, no critique, no vote)
+# Dataset: tasks/easy + tasks/medium + tasks/hard + tasks/extreme (60 tasks)
+# Total runs: 6 models × 60 tasks = 360 solo runs
 #
 # Sequence: model 1 does ALL 60 tasks, then model 2 does all 60, etc.
 # Each task call uses --solo flag, runs single agent with no debate.
@@ -23,10 +23,10 @@
 # This is the SOLO BASELINE for the thesis — answers:
 # "Does debate (3 or 6 peers) actually beat a single agent?"
 #
-# VRAM math on V100 (32 GB): only 1 model loaded at a time = ~5 GB peak ✅
+# VRAM math on V100 (32 GB): only 1 model loaded at a time = ~5 GB peak
 #
 # Estimated runtime: ~6-8 hours (360 tasks × ~60s avg)
-#   Easy/medium tasks early-stop in seconds, hard/extreme take 30-90s each
+# Easy/medium tasks early-stop in seconds, hard/extreme take 30-90s each
 #
 # Usage: sbatch hpc/run_all6_solo.sh
 
@@ -56,13 +56,13 @@ cd "${PROJECT_DIR}"
 mkdir -p logs results "${OLLAMA_DATA}"
 
 echo "============================================"
-echo "Experiment:   ${EXP_TAG}"
-echo "Job ID:       ${SLURM_JOB_ID:-local}"
-echo "Node:         $(hostname)"
-echo "GPU:          $(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || echo 'N/A')"
-echo "Start time:   $(date)"
-echo "Models:       ${MODELS[*]}"
-echo "Total runs:   ${#MODELS[@]} models × tasks in (${TASK_DIRS})"
+echo "Experiment: ${EXP_TAG}"
+echo "Job ID: ${SLURM_JOB_ID:-local}"
+echo "Node: $(hostname)"
+echo "GPU: $(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null || echo 'N/A')"
+echo "Start time: $(date)"
+echo "Models: ${MODELS[*]}"
+echo "Total runs: ${#MODELS[@]} models × tasks in (${TASK_DIRS})"
 echo "============================================"
 
 # ── Check Ollama image ───────────────────────────────────────────────────
@@ -178,7 +178,7 @@ if python3 -m src.analysis.csv_export \
         --db debate_results.db \
         --out "${CSV_OUT}" \
         --out-rounds "${CSV_ROUNDS}"; then
-    echo "[OK] Summary:   ${PROJECT_DIR}/${CSV_OUT}"
+    echo "[OK] Summary: ${PROJECT_DIR}/${CSV_OUT}"
     echo "[OK] Per-round: ${PROJECT_DIR}/${CSV_ROUNDS}"
 else
     echo "[WARN] CSV export failed — DB still contains all results, can re-export later"
@@ -188,13 +188,13 @@ fi
 echo ""
 echo "============================================"
 echo "EXPERIMENT COMPLETE: ${EXP_TAG}"
-echo "Total runs:   ${TOTAL} (expected: 6 models × 60 tasks = 360)"
-echo "Passed:       ${PASSED}"
-echo "Failed:       ${FAILED}"
-echo "End time:     $(date)"
-echo "Results in:   ${PROJECT_DIR}/results/"
-echo "Database:     ${PROJECT_DIR}/debate_results.db"
-echo "Summary CSV:  ${PROJECT_DIR}/${CSV_OUT}"
-echo "Per-round:    ${PROJECT_DIR}/${CSV_ROUNDS}"
+echo "Total runs: ${TOTAL} (expected: 6 models × 60 tasks = 360)"
+echo "Passed: ${PASSED}"
+echo "Failed: ${FAILED}"
+echo "End time: $(date)"
+echo "Results in: ${PROJECT_DIR}/results/"
+echo "Database: ${PROJECT_DIR}/debate_results.db"
+echo "Summary CSV: ${PROJECT_DIR}/${CSV_OUT}"
+echo "Per-round: ${PROJECT_DIR}/${CSV_ROUNDS}"
 echo "============================================"
 echo "Job done."

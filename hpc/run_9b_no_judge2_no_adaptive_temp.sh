@@ -10,27 +10,27 @@
 #
 # Ablation: Pool B (8-9B class) — no judge, NO adaptive_temperature
 # ─────────────────────────────────────────────────────────────────
-# Peers:        granite-code:8b + codegeex4:9b + yi-coder:9b
-# Judge:        none (peer-only debate)
-# Features:     adaptive_temperature OFF  ← ablation target
-#               critique_history ON,
-#               revision_strategy=uniform, show_all_solutions=OFF (best only)
-# Dataset:      tasks2/hard + tasks2/extreme (same as run_9b_no_judge2.sh)
+# Peers: granite-code:8b + codegeex4:9b + yi-coder:9b
+# Judge: none (peer-only debate)
+# Features: adaptive_temperature OFF ablation target
+# critique_history ON,
+# revision_strategy=uniform, show_all_solutions=OFF (best only)
+# Dataset: tasks2/hard + tasks2/extreme (same as run_9b_no_judge2.sh)
 #
 # Purpose: A/B ablation для empirical validation of adaptive_temperature
 # mechanism. Pair-compare против run_9b_no_judge2.sh (same config, но с
 # --adaptive-temperature ON). Все остальные параметры идентичны.
 #
 # Expected analysis:
-#   - paired Student's t-test по 60 задачам (tasks2/)
-#   - difference в avg final_pass_rate (Pool B ON vs OFF)
-#   - distribution of stagnant_rounds count (was the mechanism triggered?)
-#   - effective temperature trace в logs (для verification)
+# - paired Student's t-test по 60 задачам (tasks2/)
+# - difference в avg final_pass_rate (Pool B ON vs OFF)
+# - distribution of stagnant_rounds count (was the mechanism triggered?)
+# - effective temperature trace в logs (для verification)
 #
 # Pair this with run_7b_no_judge2_no_adaptive_temp.sh for cross-pool sanity
 # check — does the effect (если есть) replicate в both 7B and 9B classes?
 #
-# VRAM math on V100 (32 GB):  peers ≈ 15 GB total ✅ (lots of headroom).
+# VRAM math on V100 (32 GB): peers ≈ 15 GB total (lots of headroom).
 #
 # Usage: sbatch hpc/run_9b_no_judge2_no_adaptive_temp.sh
 

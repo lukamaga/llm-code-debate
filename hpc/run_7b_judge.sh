@@ -10,13 +10,13 @@
 #
 # Experiment 1/4: Pool A (7B class) + judge (deepseek-coder-v2:16b)
 # ─────────────────────────────────────────────────────────────────
-# Peers:        qwen2.5-coder:7b + deepseek-coder:6.7b + codellama:7b-instruct
-# Judge:        deepseek-coder-v2:16b (MoE, 3B active params, ~9 GB VRAM)
-# Features:     adaptive_temperature ON, critique_history ON,
-#               revision_strategy=uniform, show_all_solutions=OFF (best only)
+# Peers: qwen2.5-coder:7b + deepseek-coder:6.7b + codellama:7b-instruct
+# Judge: deepseek-coder-v2:16b (MoE, 3B active params, ~9 GB VRAM)
+# Features: adaptive_temperature ON, critique_history ON,
+# revision_strategy=uniform, show_all_solutions=OFF (best only)
 #
-# VRAM math on V100 (32 GB):  peers ≈ 4.7+3.8+3.8 = 12.3 GB,
-# judge ≈ 9 GB → 21 GB total ✅ (comfortable fit, MoE = fast inference).
+# VRAM math on V100 (32 GB): peers ≈ 4.7+3.8+3.8 = 12.3 GB,
+# judge ≈ 9 GB → 21 GB total (comfortable fit, MoE = fast inference).
 #
 # Usage: sbatch hpc/run_7b_judge.sh
 
