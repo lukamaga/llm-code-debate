@@ -1,0 +1,167 @@
+==============================================================================
+DEBATE TRANSCRIPT  |  LRU Cache  (medium)
+==============================================================================
+Debate ID:   1e784bce
+Mode:        debate
+Status:      early_stop
+Started:     2026-05-16T18:59:43
+Ended:       2026-05-16T19:00:01
+Duration:    17.5s
+Max rounds:  3
+Rounds run:  1
+Agents:      agent_1_granite-code (granite-code:8b), agent_2_yi-coder (yi-coder:9b), agent_3_codegeex4 (codegeex4:9b)
+
+==============================================================================
+TASK
+==============================================================================
+ID: lru_cache
+Difficulty: medium
+
+Description:
+Design a data structure that follows the constraints of a Least Recently Used (LRU) cache. Implement the LRUCache class: LRUCache(int capacity) initializes the cache with positive size capacity. int get(int key) returns the value of the key if it exists, otherwise returns -1. void put(int key, int value) updates the value if the key exists, otherwise adds the key-value pair. If the number of keys exceeds the capacity, evict the least recently used key.
+
+Constraints:
+  - 1 <= capacity <= 3000
+  - 0 <= key <= 10^4
+  - 0 <= value <= 10^5
+  - get and put must run in O(1) average time complexity
+
+Tests: 8
+
+==============================================================================
+ROUND 1  |  PROPOSAL
+==============================================================================
+Best pass rate: 100%  |  Avg: 100%  |  Bugs found: 0  |  Duration: 17.5s
+
+### Proposals
+
+------------------------------------------------------------------------------
+[agent_1_granite-code]  8/8 tests (100%)  gen=15.5s
+Quality: pylint=8.0/10, complexity=2.2, maintainability=57.2, LOC=26
+------------------------------------------------------------------------------
+from typing import Dict, List
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.cache = {}
+        self.keys = []
+
+    def get(self, key: int) -> int:
+        if key in self.cache:
+            self.keys.remove(key)
+            self.keys.append(key)
+            return self.cache[key]
+        else:
+            return -1
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            self.cache[key] = value
+            self.keys.remove(key)
+            self.keys.append(key)
+        elif len(self.cache) == self.capacity:
+            oldest_key = self.keys.pop(0)
+            del self.cache[oldest_key]
+            self.cache[key] = value
+            self.keys.append(key)
+        else:
+            self.cache[key] = value
+            self.keys.append(key)
+
+------------------------------------------------------------------------------
+[agent_2_yi-coder]  8/8 tests (100%)  gen=15.1s
+Quality: pylint=9.0/10, complexity=3.2, maintainability=73.4, LOC=22
+------------------------------------------------------------------------------
+from collections import OrderedDict
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        assert 1 <= capacity <= 3000
+        self.capacity = capacity
+        self.cache = OrderedDict()
+
+    def get(self, key: int) -> int:
+        assert 0 <= key <= 10**4
+        if key in self.cache:
+            value = self.cache[key]
+            # Move the recently accessed key to the end of cache
+            self.cache.pop(key)
+            self.cache[key] = value
+            return value
+        else:
+            return -1
+
+    def put(self, key: int, value: int) -> None:
+        assert 0 <= key <= 10**4 and 0 <= value <= 10**5
+        if key in self.cache:
+            # If the key is already present, remove it first to re-insert at end later
+            self.cache.pop(key)
+        elif len(self.cache) == self.capacity:
+            # If cache is full, remove least recently used item (the one at start of OrderedDict)
+            self.cache.popitem(last=False)
+        self.cache[key] = value
+
+------------------------------------------------------------------------------
+[agent_3_codegeex4]  8/8 tests (100%)  gen=8.6s
+Quality: pylint=8.0/10, complexity=2.2, maintainability=61.3, LOC=17
+------------------------------------------------------------------------------
+from collections import OrderedDict
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.cache = OrderedDict()
+    
+    def get(self, key: int) -> int:
+        if key in self.cache:
+            self.cache.move_to_end(key)
+            return self.cache[key]
+        else:
+            return -1
+    
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            del self.cache[key]
+        elif len(self.cache) >= self.capacity:
+            self.cache.popitem(last=False)
+        self.cache[key] = value
+
+==============================================================================
+FINAL RESULT
+==============================================================================
+Winner: agent_1_granite-code  (round 1, 100%)
+
+Final code:
+------------------------------------------------------------------------------
+from typing import Dict, List
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.cache = {}
+        self.keys = []
+
+    def get(self, key: int) -> int:
+        if key in self.cache:
+            self.keys.remove(key)
+            self.keys.append(key)
+            return self.cache[key]
+        else:
+            return -1
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            self.cache[key] = value
+            self.keys.remove(key)
+            self.keys.append(key)
+        elif len(self.cache) == self.capacity:
+            oldest_key = self.keys.pop(0)
+            del self.cache[oldest_key]
+            self.cache[key] = value
+            self.keys.append(key)
+        else:
+            self.cache[key] = value
+            self.keys.append(key)
+
+Transcript generated: 2026-05-16T19:00:01
