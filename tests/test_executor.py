@@ -1,6 +1,3 @@
-"""
-Tests for code execution.
-"""
 import pytest
 from src.core.executor import CodeExecutor
 from src.models import Solution, Task, SolutionStatus
@@ -28,7 +25,6 @@ def simple_task():
 
 
 class TestCodeExecutor:
-    """Tests for CodeExecutor."""
 
     @pytest.mark.asyncio
     async def test_passing_solution(self, executor, simple_task):
@@ -75,8 +71,6 @@ class TestCodeExecutor:
             round_num=1,
             code="```python\ndef add_one(x: int) -> int:\n    return x + 1\n```",
         )
-        # First call
         result1 = await executor.execute(solution, simple_task)
-        # Second call (should be cached)
         result2 = await executor.execute(solution, simple_task)
         assert result1.tests_passed == result2.tests_passed

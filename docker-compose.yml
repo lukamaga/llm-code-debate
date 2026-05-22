@@ -1,10 +1,7 @@
-# LLM Code Debate System - Docker Setup
-# Use this for reproducible experiments
-
 version: '3.8'
 
 services:
-  # Ollama service for running LLMs
+
   ollama:
     image: ollama/ollama:latest
     container_name: debate-ollama
@@ -19,9 +16,8 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    # For CPU-only, comment out the deploy section above
+
     
-  # Debate system
   debate-system:
     build:
       context: .

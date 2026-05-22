@@ -1,6 +1,3 @@
-"""
-Pytest configuration and fixtures.
-"""
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
@@ -32,13 +29,8 @@ from src.llm import LLMRequest, LLMResponse, MultiModelClient
 from tests.helpers import make_proposal_response, make_critique_response, make_vote_response
 
 
-# =============================================================================
-# Task fixtures
-# =============================================================================
-
 @pytest.fixture
 def sample_task():
-    """Create a sample task for testing."""
     return Task(
         id="test_task",
         name="Test Task",
@@ -52,7 +44,6 @@ def sample_task():
 
 @pytest.fixture
 def simple_add_task():
-    """A simple add_one task with real executable tests."""
     return Task(
         id="add_one",
         name="Add One",
@@ -67,13 +58,8 @@ def simple_add_task():
     )
 
 
-# =============================================================================
-# Agent fixtures
-# =============================================================================
-
 @pytest.fixture
 def sample_agent_config():
-    """Create a sample agent config."""
     return AgentConfig(
         name="test_agent",
         model="qwen2.5-coder:7b",
@@ -82,13 +68,11 @@ def sample_agent_config():
 
 @pytest.fixture
 def sample_agent(sample_agent_config):
-    """Create a sample agent."""
     return Agent(id="agent_1", config=sample_agent_config)
 
 
 @pytest.fixture
 def agent_configs_3():
-    """Three agent configs with different models."""
     return [
         AgentConfig(name="agent_1", model="qwen2.5-coder:7b"),
         AgentConfig(name="agent_2", model="deepseek-coder:6.7b"),
@@ -98,7 +82,6 @@ def agent_configs_3():
 
 @pytest.fixture
 def agents_3(agent_configs_3):
-    """Three instantiated Agent objects."""
     return [
         Agent(id=f"agent_{i+1}_{c.model.split(':')[0]}", config=c)
         for i, c in enumerate(agent_configs_3)
@@ -107,17 +90,11 @@ def agents_3(agent_configs_3):
 
 @pytest.fixture
 def judge_agent_config():
-    """Agent config with JUDGE role."""
     return AgentConfig(name="judge", model="qwen2.5-coder:7b", role=AgentRole.JUDGE)
 
 
-# =============================================================================
-# Solution fixtures
-# =============================================================================
-
 @pytest.fixture
 def sample_solution(sample_task):
-    """Create a sample solution for testing."""
     return Solution(
         id="sol_1",
         agent_id="agent_1",
@@ -128,7 +105,6 @@ def sample_solution(sample_task):
 
 @pytest.fixture
 def passing_solution():
-    """Solution with all tests passing."""
     sol = Solution(
         id="sol_agent_1_r1",
         agent_id="agent_1_qwen2.5-coder",
@@ -145,7 +121,6 @@ def passing_solution():
 
 @pytest.fixture
 def failing_solution():
-    """Solution with some tests failing."""
     sol = Solution(
         id="sol_agent_2_r1",
         agent_id="agent_2_deepseek-coder",
@@ -160,13 +135,8 @@ def failing_solution():
     return sol
 
 
-# =============================================================================
-# Critique and Vote fixtures
-# =============================================================================
-
 @pytest.fixture
 def sample_critique():
-    """A realistic critique object."""
     return Critique(
         id="crit_agent_2_sol_1",
         agent_id="agent_2_deepseek-coder",
@@ -182,7 +152,6 @@ def sample_critique():
 
 @pytest.fixture
 def unanimous_votes():
-    """Three votes all for the same solution."""
     return [
         Vote(
             id="v1", agent_id="agent_1_qwen2.5-coder", round_num=2,
@@ -202,23 +171,13 @@ def unanimous_votes():
     ]
 
 
-# =============================================================================
-# Debate config fixtures
-# =============================================================================
-
 @pytest.fixture
 def debate_config():
-    """Standard debate config for testing."""
     return DebateConfig(max_rounds=3, min_rounds=2, consensus_threshold=0.6)
 
 
-# =============================================================================
-# Mock LLM client
-# =============================================================================
-
 @pytest.fixture
 def mock_llm_client():
-    """AsyncMock of MultiModelClient with prompt-dispatch side_effect."""
     client = AsyncMock(spec=MultiModelClient)
 
     async def _dispatch(model, request):
@@ -239,13 +198,8 @@ def mock_llm_client():
     return client
 
 
-# =============================================================================
-# Mock executor and quality analyzer
-# =============================================================================
-
 @pytest.fixture
 def mock_execution_result():
-    """A passing execution result."""
     return ExecutionResult(
         status=SolutionStatus.PASSED,
         tests_passed=3,
@@ -256,7 +210,6 @@ def mock_execution_result():
 
 @pytest.fixture
 def mock_quality_metrics():
-    """Decent quality metrics."""
     return CodeQualityMetrics(
         pylint_score=8.0,
         cyclomatic_complexity=3.0,

@@ -1,5 +1,3 @@
-"""Reference: lock_manager, b_tree, ast_calculator, template_compiler, mock_framework."""
-
 LOCK = {
     "lock_types.py": '''
 from enum import Enum

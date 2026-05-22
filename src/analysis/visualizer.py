@@ -1,6 +1,3 @@
-"""
-Visualization tools for debate analysis.
-"""
 from __future__ import annotations
 
 import json
@@ -13,25 +10,12 @@ if TYPE_CHECKING:
 
 
 class DebateVisualizer:
-    """
-    Generates visualizations and reports for debates.
-    """
 
     def __init__(self, output_dir: str | Path = "visualizations"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
 
     def generate_report(self, debate: "Debate", metrics: "DebateMetrics") -> str:
-        """
-        Generate a text report for a debate.
-
-        Args:
-            debate: The debate object
-            metrics: Collected metrics
-
-        Returns:
-            Path to generated report
-        """
         report_lines = [
             f"# Debate Report: {debate.id}",
             f"Task: {debate.task.name}",
@@ -82,23 +66,12 @@ class DebateVisualizer:
 
         report = "\n".join(report_lines)
 
-        # Save report
         report_path = self.output_dir / f"report_{debate.id}.md"
         report_path.write_text(report)
 
         return str(report_path)
 
     def export_json(self, debate: "Debate", metrics: "DebateMetrics") -> str:
-        """
-        Export debate data as JSON.
-
-        Args:
-            debate: The debate object
-            metrics: Collected metrics
-
-        Returns:
-            Path to generated JSON file
-        """
         data = {
             "debate_id": debate.id,
             "task": {
@@ -154,16 +127,6 @@ class DebateVisualizer:
         debate: "Debate",
         out_dir: str | Path | None = None,
     ) -> str:
-        """
-        Write a human-readable .txt transcript of the full debate.
-
-        Contains every proposal/revision code, every critique with bugs and
-        ratings, every vote with reasoning, consensus per round, and the final
-        solution. Pure read of existing Debate data — no side effects on the
-        debate itself.
-
-        Returns the path to the written file.
-        """
         from datetime import datetime as _dt
 
         target_dir = Path(out_dir) if out_dir else self.output_dir
@@ -174,7 +137,6 @@ class DebateVisualizer:
         difficulty = debate.task.difficulty or "unknown"
         task_id = debate.task.id or "task"
         ts = debate.start_time.strftime("%Y%m%d_%H%M%S")
-        # Strip "solo_" prefix to avoid "solo_solo_xxx" in filename
         debate_id_short = debate.id[5:] if debate.id.startswith("solo_") else debate.id
         filename = f"{difficulty}_{task_id}_{mode}_{debate_id_short}_{ts}.txt"
 
@@ -182,7 +144,6 @@ class DebateVisualizer:
         sub = "-" * 78
         lines: list[str] = []
 
-        # Header
         lines.append(sep)
         lines.append(f"DEBATE TRANSCRIPT  |  {debate.task.name}  ({difficulty})")
         lines.append(sep)
@@ -201,7 +162,6 @@ class DebateVisualizer:
             lines.append(f"Error:       {debate.error_message}")
         lines.append("")
 
-        # Task
         lines.append(sep)
         lines.append("TASK")
         lines.append(sep)
@@ -222,7 +182,6 @@ class DebateVisualizer:
         lines.append(f"Tests: {len(debate.task.tests)}")
         lines.append("")
 
-        # Rounds
         for r in debate.rounds:
             is_first_round = r.round_num == 1
             phase_label = "PROPOSAL" if is_first_round else "CRITIQUE -> REVISE -> VOTE"
@@ -237,7 +196,6 @@ class DebateVisualizer:
             )
             lines.append("")
 
-            # Solutions
             if r.solutions:
                 heading = "Proposals" if is_first_round else "Revisions"
                 lines.append(f"### {heading}")
@@ -282,7 +240,6 @@ class DebateVisualizer:
                         lines.append(sol.extract_code_block() or "(no code extracted)")
                     lines.append("")
 
-            # Critiques
             if r.critiques:
                 lines.append("### Critiques")
                 lines.append("")
@@ -317,7 +274,6 @@ class DebateVisualizer:
                             lines.append(f"    {ln}")
                     lines.append("")
 
-            # Votes
             if r.votes:
                 lines.append("### Votes")
                 lines.append("")
@@ -337,7 +293,6 @@ class DebateVisualizer:
                             lines.append(f"    {ln}")
                     lines.append("")
 
-            # Consensus
             if r.consensus_result:
                 cr = r.consensus_result
                 lines.append("### Consensus")
@@ -351,7 +306,6 @@ class DebateVisualizer:
                     lines.append(f"Vote distribution: {cr.vote_distribution}")
                 lines.append("")
 
-        # Final
         lines.append(sep)
         lines.append("FINAL RESULT")
         lines.append(sep)
@@ -382,15 +336,6 @@ class DebateVisualizer:
         return str(out_path)
 
     def generate_summary_table(self, debates: list["Debate"]) -> str:
-        """
-        Generate a summary table for multiple debates.
-
-        Args:
-            debates: List of debates to summarize
-
-        Returns:
-            Markdown table as string
-        """
         headers = ["Debate ID", "Task", "Rounds", "Pass Rate", "Winner", "Status"]
         rows = []
 
@@ -408,7 +353,6 @@ class DebateVisualizer:
                 debate.status.value,
             ])
 
-        # Build table
         lines = ["| " + " | ".join(headers) + " |"]
         lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
         for row in rows:

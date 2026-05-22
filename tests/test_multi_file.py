@@ -1,6 +1,3 @@
-"""
-Tests for multi-file task support (extreme difficulty).
-"""
 import json
 import pytest
 
@@ -13,15 +10,9 @@ from src.core.prompts import (
 from src.core.executor import CodeExecutor
 
 
-# ============================================================================
-# Parser Tests
-# ============================================================================
-
 class TestExtractMultiFileCode:
-    """Tests for extract_multi_file_code_from_response."""
 
     def test_standard_format(self):
-        """# FILE: x.py labels followed by code blocks."""
         response = """Here's my solution:
 
 # FILE: tokenizer.py
@@ -48,7 +39,6 @@ class Evaluator:
         assert "from tokenizer import Tokenizer" in result["evaluator.py"]
 
     def test_alt_format_headers(self):
-        """### filename.py headers followed by code blocks."""
         response = """
 ### tokenizer.py
 ```python
@@ -69,7 +59,6 @@ class Evaluator:
         assert "evaluator.py" in result
 
     def test_fallback_by_order(self):
-        """Unnamed code blocks assigned to required_files in order."""
         response = """
 ```python
 class Storage:
@@ -90,7 +79,6 @@ class Database:
         assert "class Database:" in result["database.py"]
 
     def test_partial_extraction(self):
-        """Only some files found — returns partial dict."""
         response = """
 # FILE: tokenizer.py
 ```python
@@ -105,7 +93,6 @@ class Tokenizer:
         assert "evaluator.py" not in result
 
     def test_extra_files_ignored(self):
-        """Extra files in response don't cause issues."""
         response = """
 # FILE: tokenizer.py
 ```python
@@ -130,16 +117,10 @@ def helper():
         )
         assert "tokenizer.py" in result
         assert "evaluator.py" in result
-        # Extra file is included (not filtered out)
         assert "utils.py" in result
 
 
-# ============================================================================
-# Model Tests
-# ============================================================================
-
 class TestTaskMultiFile:
-    """Tests for Task multi-file fields."""
 
     def test_is_multi_file_true(self):
         task = Task(
@@ -170,7 +151,6 @@ class TestTaskMultiFile:
         assert task.is_multi_file is True
 
     def test_from_dict_without_required_files(self):
-        """Old-format JSON without required_files still loads."""
         data = {
             "id": "old", "name": "Old", "difficulty": "easy",
             "description": "desc", "signature": "sig",
@@ -198,7 +178,6 @@ class TestTaskMultiFile:
 
 
 class TestSolutionMultiFile:
-    """Tests for Solution code_files field."""
 
     def test_extract_code_files_strips_markdown(self):
         sol = Solution(
@@ -229,12 +208,7 @@ class TestSolutionMultiFile:
         assert "code_files" not in d
 
 
-# ============================================================================
-# Prompt Tests
-# ============================================================================
-
 class TestMultiFilePrompt:
-    """Tests for multi-file prompt builder."""
 
     def test_contains_required_files(self):
         task = Task(
@@ -260,7 +234,6 @@ class TestMultiFilePrompt:
 
 
 class TestFormatMultiFileDisplay:
-    """Tests for format_multi_file_code_display."""
 
     def test_multi_file_display(self):
         sol = Solution(
@@ -282,12 +255,7 @@ class TestFormatMultiFileDisplay:
         assert "# FILE:" not in display
 
 
-# ============================================================================
-# Executor Tests
-# ============================================================================
-
 class TestMultiFileExecutor:
-    """Tests for CodeExecutor with multi-file solutions."""
 
     @pytest.fixture
     def executor(self):
@@ -307,7 +275,6 @@ class TestMultiFileExecutor:
         )
 
     async def test_multi_file_execution_passes(self, executor, multi_file_task):
-        """Multi-file solution with correct code passes tests."""
         sol = Solution(
             id="s1", agent_id="a1", round_num=1,
             code="# combined",
@@ -321,12 +288,10 @@ class TestMultiFileExecutor:
         assert result.tests_passed == 1
 
     async def test_multi_file_import_error(self, executor, multi_file_task):
-        """Missing file causes import error."""
         sol = Solution(
             id="s1", agent_id="a1", round_num=1,
             code="# combined",
             code_files={
-                # Missing helper.py — main.py will fail to import
                 "main.py": "from helper import Helper\n\nclass Main:\n    def greet(self):\n        return Helper().message()",
             },
         )
@@ -334,7 +299,6 @@ class TestMultiFileExecutor:
         assert result.status != SolutionStatus.PASSED
 
     async def test_single_file_unchanged(self, executor):
-        """Single-file path still works."""
         task = Task(
             id="sf_test", name="Single File", difficulty="easy",
             description="desc",
@@ -349,7 +313,6 @@ class TestMultiFileExecutor:
         assert result.status == SolutionStatus.PASSED
 
     async def test_multi_file_caching(self, executor, multi_file_task):
-        """Multi-file solutions are cached correctly."""
         sol = Solution(
             id="s1", agent_id="a1", round_num=1,
             code="# combined",
@@ -360,15 +323,10 @@ class TestMultiFileExecutor:
         )
         result1 = await executor.execute(sol, multi_file_task)
         result2 = await executor.execute(sol, multi_file_task)
-        assert result1 is result2  # Same object from cache
+        assert result1 is result2
 
-
-# ============================================================================
-# Task JSON Loading Tests
-# ============================================================================
 
 class TestExtremeTaskLoading:
-    """Test that extreme task JSON files load correctly."""
 
     @pytest.fixture(params=["calculator", "mini_database", "event_system"])
     def extreme_task(self, request):
@@ -387,5 +345,4 @@ class TestExtremeTaskLoading:
         assert len(extreme_task.test_imports) >= 1
 
     def test_no_helper_code(self, extreme_task):
-        """Extreme tasks should NOT provide pre-written helper code."""
         assert extreme_task.helper_code == {}

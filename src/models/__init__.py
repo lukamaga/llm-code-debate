@@ -1,6 +1,3 @@
-"""
-Data models for the LLM Code Debate System.
-"""
 from .agent import (
     Agent,
     AgentConfig,
@@ -39,20 +36,17 @@ from .metrics import (
 )
 
 __all__ = [
-    # Agent
     "Agent",
     "AgentConfig",
     "AgentMessage",
     "AgentRole",
     "AgentStats",
-    # Solution
     "CodeQualityMetrics",
     "ExecutionResult",
     "Solution",
     "SolutionStatus",
     "Task",
     "TestResult",
-    # Critique
     "Bug",
     "BugSeverity",
     "ConsensusResult",
@@ -61,12 +55,10 @@ __all__ = [
     "ImprovementType",
     "Vote",
     "VoteType",
-    # Debate
     "Debate",
     "DebateConfig",
     "DebateStatus",
     "RoundSummary",
-    # Metrics
     "AgentProfile",
     "DebateMetrics",
     "ExperimentSummary",

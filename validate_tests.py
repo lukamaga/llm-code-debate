@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Validate tests in all hard and extreme task JSON files."""
 
 import json
 import os
@@ -14,7 +13,6 @@ TASK_DIRS = [
     Path("/Users/lukashm/Desktop/llm-code-debate/tasks/extreme"),
 ]
 
-# Reference implementations for HARD tasks
 HARD_IMPLEMENTATIONS = {
     "alien_dictionary": '''
 from collections import defaultdict, deque
@@ -449,7 +447,6 @@ def ladder_length(begin_word: str, end_word: str, word_list: list[str]) -> int:
 ''',
 }
 
-# Reference implementations for EXTREME multi-file tasks
 EXTREME_IMPLEMENTATIONS = {
     "calculator": {
         "tokenizer.py": '''
@@ -2224,7 +2221,6 @@ class QueryEngine:
 }
 
 def validate_hard_task(task_path: Path) -> dict:
-    """Validate a single-file hard task."""
     with open(task_path) as f:
         task = json.load(f)
 
@@ -2234,16 +2230,12 @@ def validate_hard_task(task_path: Path) -> dict:
         return {"task": task_id, "status": "SKIP", "message": "No reference implementation"}
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        # Write implementation
         impl_file = os.path.join(tmpdir, "solution.py")
         with open(impl_file, "w") as f:
             f.write(impl)
 
-        # Write test file
         test_file = os.path.join(tmpdir, "test_solution.py")
-        # Extract function/class name from signature
         sig = task["signature"]
-        # Import everything from solution
         test_code = "import sys\nsys.path.insert(0, '" + tmpdir + "')\nfrom solution import *\n\n"
         for t in task["tests"]:
             test_code += t + "\n\n"
@@ -2251,7 +2243,6 @@ def validate_hard_task(task_path: Path) -> dict:
         with open(test_file, "w") as f:
             f.write(test_code)
 
-        # Run pytest
         result = subprocess.run(
             ["python3", "-m", "pytest", test_file, "-v", "--tb=short", "--no-header"],
             capture_output=True, text=True, timeout=30,
@@ -2270,7 +2261,6 @@ def validate_hard_task(task_path: Path) -> dict:
 
 
 def validate_extreme_task(task_path: Path) -> dict:
-    """Validate a multi-file extreme task."""
     with open(task_path) as f:
         task = json.load(f)
 
@@ -2280,13 +2270,11 @@ def validate_extreme_task(task_path: Path) -> dict:
         return {"task": task_id, "status": "SKIP", "message": "No reference implementation"}
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        # Write all required files
         for filename, content in files.items():
             filepath = os.path.join(tmpdir, filename)
             with open(filepath, "w") as f:
                 f.write(content)
 
-        # Write test file
         test_file = os.path.join(tmpdir, "test_task.py")
         test_code = f"import sys\nsys.path.insert(0, '{tmpdir}')\n"
 
@@ -2300,7 +2288,6 @@ def validate_extreme_task(task_path: Path) -> dict:
         with open(test_file, "w") as f:
             f.write(test_code)
 
-        # Run pytest
         result = subprocess.run(
             ["python3", "-m", "pytest", test_file, "-v", "--tb=short", "--no-header"],
             capture_output=True, text=True, timeout=30,
@@ -2321,7 +2308,6 @@ def validate_extreme_task(task_path: Path) -> dict:
 def main():
     results = []
 
-    # Validate hard tasks
     hard_dir = Path("/Users/lukashm/Desktop/llm-code-debate/tasks/hard")
     for task_file in sorted(hard_dir.glob("*.json")):
         print(f"Validating hard/{task_file.name}...")
@@ -2333,7 +2319,6 @@ def main():
             results.append({"task": task_file.stem, "status": "ERROR", "message": str(e)})
             print(f"  -> ERROR: {e}")
 
-    # Validate extreme tasks
     extreme_dir = Path("/Users/lukashm/Desktop/llm-code-debate/tasks/extreme")
     for task_file in sorted(extreme_dir.glob("*.json")):
         print(f"Validating extreme/{task_file.name}...")
@@ -2345,7 +2330,6 @@ def main():
             results.append({"task": task_file.stem, "status": "ERROR", "message": str(e)})
             print(f"  -> ERROR: {e}")
 
-    # Summary
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)

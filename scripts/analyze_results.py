@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-"""
-Analyze experiment results and generate reports.
-
-Usage:
-    python scripts/analyze_results.py --input results/ --output analysis/
-"""
 from __future__ import annotations
 
 import argparse
@@ -13,7 +7,6 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-# Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.database import DebateRepository
@@ -21,7 +14,6 @@ from src.analysis import MetricsCollector, DebateVisualizer
 
 
 def load_results(results_dir: Path) -> list[dict]:
-    """Load all result files from directory."""
     results = []
     for f in results_dir.glob("*_results.json"):
         with open(f) as file:
@@ -30,7 +22,6 @@ def load_results(results_dir: Path) -> list[dict]:
 
 
 def analyze_pass_rates(results: list[dict]) -> dict:
-    """Analyze pass rates across experiments."""
     analysis = {
         "by_experiment": {},
         "by_difficulty": defaultdict(list),
@@ -56,7 +47,6 @@ def analyze_pass_rates(results: list[dict]) -> dict:
                 if "pass_rate" in d:
                     analysis["by_difficulty"][d["difficulty"]].append(d["pass_rate"])
     
-    # Compute difficulty averages
     analysis["difficulty_summary"] = {
         diff: {
             "mean": sum(rates) / len(rates),
@@ -69,12 +59,10 @@ def analyze_pass_rates(results: list[dict]) -> dict:
 
 
 def analyze_agent_behavior(results: list[dict], repository: DebateRepository) -> dict:
-    """Analyze agent behavior patterns."""
     from src.analysis import MetricsCollector
     
     collector = MetricsCollector()
     
-    # Get all agent stats from database
     models_seen = set()
     for result in results:
         for debate in result.get("debates", []):
@@ -84,7 +72,6 @@ def analyze_agent_behavior(results: list[dict], repository: DebateRepository) ->
                     for agent in db_debate.full_debate_data.get("agents", []):
                         models_seen.add(agent.get("model"))
     
-    # Build profiles
     profiles = {}
     for model in models_seen:
         stats = repository.get_agent_stats_by_model(model)
@@ -113,7 +100,6 @@ def compare_with_baseline(
     experiment_results: list[dict],
     baseline_path: Path,
 ) -> dict:
-    """Compare multi-agent results with single-agent baseline."""
     if not baseline_path.exists():
         return {"error": "Baseline results not found"}
     
@@ -164,13 +150,11 @@ def generate_report(
     comparison: dict,
     output_dir: Path,
 ):
-    """Generate markdown report."""
     report = []
     
     report.append("# LLM Code Debate - Experiment Analysis Report\n")
     report.append(f"Generated from {len(results)} experiment(s)\n")
     
-    # Overall Results
     report.append("## Overall Results\n")
     
     if analysis["overall"]:
@@ -178,7 +162,6 @@ def generate_report(
         report.append(f"- **Average Pass Rate**: {avg_pass*100:.1f}%")
         report.append(f"- **Total Debates**: {len(analysis['overall'])}")
     
-    # By Experiment
     report.append("\n## Results by Experiment\n")
     report.append("| Experiment | Avg Pass Rate | Min | Max | Count |")
     report.append("|------------|---------------|-----|-----|-------|")
@@ -190,7 +173,6 @@ def generate_report(
             f"{stats['count']} |"
         )
     
-    # By Difficulty
     report.append("\n## Results by Difficulty\n")
     report.append("| Difficulty | Avg Pass Rate | Count |")
     report.append("|------------|---------------|-------|")
@@ -198,7 +180,6 @@ def generate_report(
     for diff, stats in analysis.get("difficulty_summary", {}).items():
         report.append(f"| {diff} | {stats['mean']*100:.1f}% | {stats['count']} |")
     
-    # Agent Profiles
     if agent_profiles:
         report.append("\n## Agent Behavior Profiles\n")
         report.append("| Model | Win Rate | Critiques/Debate | Bugs Found/Debate | Personality |")
@@ -212,7 +193,6 @@ def generate_report(
                 f"{profile.get('personality_type', 'unknown')} |"
             )
     
-    # Comparison with Baseline
     if comparison and "summary" in comparison:
         report.append("\n## Comparison with Single-Agent Baseline\n")
         summary = comparison["summary"]
@@ -221,10 +201,8 @@ def generate_report(
         report.append(f"- **Tasks Same**: {summary.get('tasks_same', 0)}")
         report.append(f"- **Tasks Worse**: {summary.get('tasks_worse', 0)}")
     
-    # Key Findings
     report.append("\n## Key Findings\n")
     
-    # Auto-generate some findings
     if analysis["by_experiment"]:
         best_exp = max(analysis["by_experiment"].items(), key=lambda x: x[1]["mean"])
         report.append(f"1. **Best Configuration**: {best_exp[0]} achieved {best_exp[1]['mean']*100:.1f}% average pass rate")
@@ -239,7 +217,6 @@ def generate_report(
         most_bugs = max(agent_profiles.items(), key=lambda x: x[1].get("avg_bugs_found_per_debate", 0))
         report.append(f"3. **Best Bug Finder**: {most_bugs[0]} finds {most_bugs[1]['avg_bugs_found_per_debate']:.1f} bugs/debate on average")
     
-    # Write report
     report_path = output_dir / "analysis_report.md"
     report_path.write_text("\n".join(report))
     
@@ -280,10 +257,8 @@ def main():
     
     args = parser.parse_args()
     
-    # Setup
     args.output.mkdir(parents=True, exist_ok=True)
     
-    # Load results
     results = load_results(args.input)
     if not results:
         print("No results found!")
@@ -291,10 +266,8 @@ def main():
     
     print(f"Loaded {len(results)} result files")
     
-    # Initialize repository
     repository = DebateRepository(args.db_path)
     
-    # Run analyses
     print("Analyzing pass rates...")
     pass_analysis = analyze_pass_rates(results)
     
@@ -305,7 +278,6 @@ def main():
     baseline_path = args.input / "baseline_results.json"
     comparison = compare_with_baseline(results, baseline_path)
     
-    # Save raw analysis
     analysis_file = args.output / "analysis_data.json"
     with open(analysis_file, "w") as f:
         json.dump({
@@ -314,7 +286,6 @@ def main():
             "comparison": comparison,
         }, f, indent=2, default=str)
     
-    # Generate report
     print("Generating report...")
     generate_report(
         results=results,
@@ -324,19 +295,15 @@ def main():
         output_dir=args.output,
     )
     
-    # Generate visualizations
     if args.visualize:
         print("Generating visualizations...")
         visualizer = DebateVisualizer(output_dir=args.output / "charts")
         
-        # Load debates from database for visualization
         for result in results:
             for debate_info in result.get("debates", []):
                 if "debate_id" in debate_info:
                     db_record = repository.get_debate(debate_info["debate_id"])
                     if db_record and db_record.full_debate_data:
-                        # Reconstruct debate for visualization
-                        # This is simplified - full implementation would use the data
                         pass
     
     print(f"\nAnalysis complete! Check {args.output}/")

@@ -1,6 +1,3 @@
-"""
-Database models for persisting debate results.
-"""
 from __future__ import annotations
 
 from datetime import datetime
@@ -25,7 +22,6 @@ Base = declarative_base()
 
 
 class DebateRecord(Base):
-    """Record of a completed debate."""
     
     __tablename__ = "debates"
     
@@ -34,17 +30,14 @@ class DebateRecord(Base):
     task_name = Column(String(200))
     task_difficulty = Column(String(50), index=True)
     
-    # Status
     status = Column(String(50), nullable=False)
     error_message = Column(Text)
     
-    # Configuration
     num_agents = Column(Integer)
     max_rounds = Column(Integer)
     consensus_threshold = Column(Float)
-    agent_models = Column(JSON)  # List of model names
+    agent_models = Column(JSON)
     
-    # Results
     final_pass_rate = Column(Float)
     tests_passed = Column(Integer)
     tests_total = Column(Integer)
@@ -52,19 +45,15 @@ class DebateRecord(Base):
     consensus_reached = Column(Boolean, default=False)
     consensus_ratio = Column(Float)
     
-    # Timing
     total_rounds = Column(Integer)
     duration_seconds = Column(Float)
     start_time = Column(DateTime, default=datetime.utcnow)
     end_time = Column(DateTime)
 
-    # Mode
     is_solo = Column(Boolean, default=False)
 
-    # Full data (JSON)
     full_debate_data = Column(JSON)
     
-    # Relationships
     rounds = relationship("RoundRecord", back_populates="debate", cascade="all, delete-orphan")
     agent_stats = relationship("AgentStatRecord", back_populates="debate", cascade="all, delete-orphan")
     
@@ -88,7 +77,6 @@ class DebateRecord(Base):
 
 
 class RoundRecord(Base):
-    """Record of a single debate round."""
     
     __tablename__ = "rounds"
     
@@ -96,27 +84,22 @@ class RoundRecord(Base):
     debate_id = Column(String(50), ForeignKey("debates.id"), nullable=False)
     round_num = Column(Integer, nullable=False)
     
-    # Stats
     best_pass_rate = Column(Float)
     avg_pass_rate = Column(Float)
     bugs_found = Column(Integer)
     improvements_suggested = Column(Integer)
     
-    # Timing
     duration_seconds = Column(Float)
     
-    # Data
     solutions_data = Column(JSON)
     critiques_data = Column(JSON)
     votes_data = Column(JSON)
     consensus_data = Column(JSON)
     
-    # Relationship
     debate = relationship("DebateRecord", back_populates="rounds")
 
 
 class AgentStatRecord(Base):
-    """Record of agent statistics for a debate."""
     
     __tablename__ = "agent_stats"
     
@@ -126,7 +109,6 @@ class AgentStatRecord(Base):
     model = Column(String(100), nullable=False, index=True)
     role = Column(String(50))
     
-    # Stats
     solutions_proposed = Column(Integer, default=0)
     solutions_revised = Column(Integer, default=0)
     critiques_given = Column(Integer, default=0)
@@ -136,12 +118,10 @@ class AgentStatRecord(Base):
     times_won_debate = Column(Integer, default=0)
     total_generation_time = Column(Float, default=0.0)
     
-    # Relationship
     debate = relationship("DebateRecord", back_populates="agent_stats")
 
 
 class TaskRecord(Base):
-    """Record of a task."""
     
     __tablename__ = "tasks"
     
@@ -154,14 +134,12 @@ class TaskRecord(Base):
     constraints = Column(JSON)
     tags = Column(JSON)
     
-    # Stats
     total_debates = Column(Integer, default=0)
     avg_pass_rate = Column(Float)
     best_pass_rate = Column(Float)
 
 
 class ExperimentRecord(Base):
-    """Record of an experiment (multiple debates)."""
     
     __tablename__ = "experiments"
     
@@ -169,42 +147,20 @@ class ExperimentRecord(Base):
     name = Column(String(200), nullable=False)
     description = Column(Text)
     
-    # Configuration
     config = Column(JSON)
     
-    # Results
     total_debates = Column(Integer, default=0)
     overall_pass_rate = Column(Float)
     avg_rounds = Column(Float)
     consensus_rate = Column(Float)
     
-    # Timing
     start_time = Column(DateTime, default=datetime.utcnow)
     end_time = Column(DateTime)
     
-    # Debate IDs
     debate_ids = Column(JSON)
 
 
 def create_database(db_path: str = "debate_results.db") -> sessionmaker:
-    """
-    Create database and return session maker.
-
-    Args:
-        db_path: Path to SQLite database file.
-
-    Returns:
-        sessionmaker for creating database sessions.
-
-    Notes:
-        - ``check_same_thread=False`` is required because the web app runs
-          debates on a worker thread and saves results from there, while the
-          engine is created on the main thread. Without this SQLite raises
-          obscure errors (including spurious "readonly database" under load).
-        - ``StaticPool`` reuses a single underlying connection, which is safe
-          for SQLite and avoids per-thread connection state that can also
-          surface as "readonly" when WAL / journal files are contended.
-    """
     engine = create_engine(
         f"sqlite:///{db_path}",
         echo=False,

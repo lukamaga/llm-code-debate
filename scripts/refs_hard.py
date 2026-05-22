@@ -1,5 +1,3 @@
-"""Reference implementations for new hard tasks in tasks2/hard/."""
-
 EDIT_DISTANCE = '''
 def min_distance(word1, word2):
     m, n = len(word1), len(word2)

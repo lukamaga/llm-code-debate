@@ -1,8 +1,3 @@
-"""
-LLM Code Debate System
-
-Multi-Agent LLM Debate System for Code Generation.
-"""
 __version__ = "1.0.0"
 __author__ = "Lukaš Patrik Magalinski"
 

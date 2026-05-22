@@ -1,6 +1,3 @@
-"""
-Tests for data models: Task, Solution, Agent, Critique, Debate, DebateConfig, Metrics.
-"""
 from __future__ import annotations
 
 from datetime import datetime
@@ -34,10 +31,6 @@ from src.models import (
     VoteType,
 )
 
-
-# =============================================================================
-# TestTask
-# =============================================================================
 
 class TestTask:
     def test_from_dict(self):
@@ -73,10 +66,6 @@ class TestTask:
         code = sample_task.get_test_code()
         assert "test_basic" in code
 
-
-# =============================================================================
-# TestSolution
-# =============================================================================
 
 class TestSolution:
     def test_extract_code_block_python(self):
@@ -118,10 +107,6 @@ class TestSolution:
         assert d["is_revision"] is False
 
 
-# =============================================================================
-# TestAgent
-# =============================================================================
-
 class TestAgent:
     def test_properties(self, sample_agent):
         assert sample_agent.model == "qwen2.5-coder:7b"
@@ -140,7 +125,6 @@ class TestAgent:
             content="review", metadata={"bugs": ["bug1", "bug2"]},
         )
         sample_agent.add_message(msg)
-        # critiques_given is updated in orchestrator, not add_message
         assert sample_agent.stats.critiques_given == 0
         assert sample_agent.stats.bugs_found == 2
 
@@ -185,10 +169,6 @@ class TestAgent:
         assert "stats" in d
 
 
-# =============================================================================
-# TestAgentConfig
-# =============================================================================
-
 class TestAgentConfig:
     def test_from_dict(self):
         data = {"name": "ag", "model": "codellama:7b-instruct", "role": "judge", "temperature": 0.5}
@@ -203,10 +183,6 @@ class TestAgentConfig:
         assert config.role == AgentRole.GENERAL
         assert config.temperature == 0.3
 
-
-# =============================================================================
-# TestCritique
-# =============================================================================
 
 class TestCritique:
     def test_average_rating(self, sample_critique):
@@ -242,10 +218,6 @@ class TestCritique:
         assert len(restored.bugs) == len(sample_critique.bugs)
 
 
-# =============================================================================
-# TestVote
-# =============================================================================
-
 class TestVote:
     def test_to_dict_from_dict_roundtrip(self):
         vote = Vote(
@@ -259,10 +231,6 @@ class TestVote:
         assert restored.confidence == 0.9
         assert restored.reasoning == "best one"
 
-
-# =============================================================================
-# TestDebate
-# =============================================================================
 
 class TestDebate:
     @pytest.fixture
@@ -323,10 +291,6 @@ class TestDebate:
         assert len(d["agents"]) == 3
 
 
-# =============================================================================
-# TestDebateConfig
-# =============================================================================
-
 class TestDebateConfig:
     def test_from_dict(self):
         data = {"max_rounds": 10, "consensus_threshold": 0.8, "execution_timeout": 60}
@@ -341,10 +305,6 @@ class TestDebateConfig:
         assert config.consensus_threshold == 0.6
         assert config.early_stop_on_perfect is True
 
-
-# =============================================================================
-# TestRoundSummary
-# =============================================================================
 
 class TestRoundSummary:
     def test_compute_stats(self, passing_solution, failing_solution):
@@ -364,10 +324,6 @@ class TestRoundSummary:
         assert rs.best_pass_rate == 0.0
         assert rs.avg_pass_rate == 0.0
 
-
-# =============================================================================
-# TestBug and TestImprovement
-# =============================================================================
 
 class TestBug:
     def test_to_dict_from_dict(self):
@@ -392,10 +348,6 @@ class TestImprovement:
         assert restored.priority == 3
 
 
-# =============================================================================
-# TestConsensusResult
-# =============================================================================
-
 class TestConsensusResult:
     def test_to_dict_from_dict(self):
         cr = ConsensusResult(
@@ -407,10 +359,6 @@ class TestConsensusResult:
         assert restored.reached is True
         assert restored.consensus_ratio == 0.85
 
-
-# =============================================================================
-# TestDebateMetrics
-# =============================================================================
 
 class TestDebateMetrics:
     def test_compute_derived_bug_fix_rate(self):
@@ -439,10 +387,6 @@ class TestDebateMetrics:
         assert m.most_successful_agent == "a1"
         assert m.most_bugs_found_by == "a1"
 
-
-# =============================================================================
-# TestAgentProfile
-# =============================================================================
 
 class TestAgentProfile:
     def test_classify_aggressive_critic(self):

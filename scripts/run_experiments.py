@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-"""
-Run batch experiments across multiple tasks.
-"""
 import argparse
 import asyncio
 import json
@@ -26,36 +23,28 @@ async def run_experiment(
     output_dir: Path,
     repository: DebateRepository,
 ) -> dict:
-    """Run a single experiment."""
-    # Load task
     with open(task_path) as f:
         task_data = json.load(f)
     task = Task.from_dict(task_data)
 
     logger.info(f"Running experiment: {task.name}")
 
-    # Create agents
     agent_configs = [
         AgentConfig(name=f"agent_{i+1}", model=model)
         for i, model in enumerate(models)
     ]
 
-    # Create orchestrator
     llm_client = MultiModelClient()
     config = DebateConfig(max_rounds=max_rounds)
     orchestrator = DebateOrchestrator(llm_client=llm_client, config=config)
 
-    # Run debate
     debate = await orchestrator.run_debate(task, agent_configs)
 
-    # Save to database
     repository.save_debate(debate)
 
-    # Collect metrics
     collector = MetricsCollector()
     metrics = collector.collect_debate_metrics(debate)
 
-    # Generate visualizations
     visualizer = DebateVisualizer(output_dir / "visualizations")
     visualizer.generate_report(debate, metrics)
     visualizer.export_json(debate, metrics)
@@ -82,10 +71,8 @@ async def main():
     output_dir = Path(args.output)
     output_dir.mkdir(exist_ok=True)
 
-    # Initialize database
     repository = DebateRepository(str(output_dir / "experiments.db"))
 
-    # Find all tasks
     task_files = []
     if args.difficulty == "all":
         for difficulty in ["easy", "medium", "hard"]:
@@ -99,7 +86,6 @@ async def main():
 
     logger.info(f"Found {len(task_files)} tasks to run")
 
-    # Run experiments
     results = []
     for task_path in task_files:
         try:
@@ -116,7 +102,6 @@ async def main():
             logger.error(f"Failed {task_path}: {e}")
             results.append({"task": str(task_path), "status": "error", "error": str(e)})
 
-    # Save summary
     summary_path = output_dir / f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     with open(summary_path, "w") as f:
         json.dump(results, f, indent=2)

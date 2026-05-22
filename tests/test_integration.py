@@ -1,9 +1,3 @@
-"""
-Integration tests: full debate flow with mocked LLM but real CodeExecutor.
-
-These tests verify that the orchestrator, executor, consensus detector,
-and database all work together correctly.
-"""
 from __future__ import annotations
 
 from unittest.mock import AsyncMock
@@ -23,18 +17,7 @@ from src.models import (
 from tests.helpers import make_critique_response, make_vote_response
 
 
-# =============================================================================
-# Helpers
-# =============================================================================
-
 def _make_smart_llm_mock(good_code, bad_code=None):
-    """
-    Create a mock LLM client that dispatches by prompt content.
-
-    For proposal calls, alternates between good_code and bad_code
-    (if provided). For critique/revision/vote calls, returns
-    appropriate formatted responses.
-    """
     from src.llm.ollama_client import MultiModelClient
 
     client = AsyncMock(spec=MultiModelClient)
@@ -68,10 +51,6 @@ def _make_smart_llm_mock(good_code, bad_code=None):
     return client
 
 
-# =============================================================================
-# Integration tests
-# =============================================================================
-
 class TestIntegration:
     @pytest.fixture
     def add_one_task(self):
@@ -87,13 +66,11 @@ class TestIntegration:
         )
 
     async def test_full_debate_with_real_executor(self, add_one_task):
-        """Full debate with real code execution — LLM returns working code."""
         good_code = "def add_one(x: int) -> int:\n    return x + 1"
         mock_llm = _make_smart_llm_mock(good_code)
 
         config = DebateConfig(max_rounds=3, early_stop_on_perfect=True)
         orch = DebateOrchestrator(llm_client=mock_llm, config=config)
-        # Don't mock quality_analyzer — let it fail silently (broad except)
 
         configs = [
             AgentConfig(name="a1", model="model-a:7b"),
@@ -107,7 +84,6 @@ class TestIntegration:
         assert len(debate.rounds) >= 1
 
     async def test_full_debate_saves_to_db(self, add_one_task):
-        """Debate results can be persisted to the database."""
         good_code = "def add_one(x: int) -> int:\n    return x + 1"
         mock_llm = _make_smart_llm_mock(good_code)
 
@@ -124,9 +100,8 @@ class TestIntegration:
         assert record is not None
 
     async def test_improvement_over_rounds(self, add_one_task):
-        """Agent starts with broken code, gets good code via revision."""
         good_code = "def add_one(x: int) -> int:\n    return x + 1"
-        bad_code = "def add_one(x: int) -> int:\n    return x"  # broken
+        bad_code = "def add_one(x: int) -> int:\n    return x"
 
         mock_llm = _make_smart_llm_mock(good_code, bad_code=bad_code)
 
@@ -141,13 +116,11 @@ class TestIntegration:
 
         assert debate is not None
         assert len(debate.rounds) >= 1
-        # At least one solution should pass all tests
         all_sols = debate.all_solutions
         any_passing = any(s.pass_rate == 1.0 for s in all_sols)
         assert any_passing
 
     async def test_single_agent_debate(self, add_one_task):
-        """Edge case: single agent debate should still complete."""
         good_code = "def add_one(x: int) -> int:\n    return x + 1"
         mock_llm = _make_smart_llm_mock(good_code)
 

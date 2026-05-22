@@ -1,12 +1,3 @@
-"""
-Web interface for the LLM Code Debate System.
-
-Provides:
-- Real-time debate visualization
-- Task management
-- Results dashboard
-- Experiment configuration
-"""
 from __future__ import annotations
 
 import asyncio
@@ -28,7 +19,6 @@ from ..llm import MultiModelClient
 from ..models import AgentConfig, AgentMessage, AgentRole, DebateConfig, RoundSummary, Task
 from ..analysis import MetricsCollector, DebateVisualizer
 
-# Configure logging to show in console
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -37,7 +27,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-# Create Flask app
 app = Flask(__name__, 
     template_folder=os.path.join(os.path.dirname(__file__), 'templates'),
     static_folder=os.path.join(os.path.dirname(__file__), 'static')
@@ -46,27 +35,19 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'debate-secret-key-chang
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
-# Global instances
 repository: DebateRepository | None = None
 llm_client: MultiModelClient | None = None
 current_debate_thread: Thread | None = None
 _debate_lock = __import__('threading').Lock()
 debate_stop_event: Event = Event()
 
-# Last finished debate state — used to recover the UI when a client missed the
-# ``debate_complete`` / ``debate_error`` event (e.g. WebSocket disconnect right
-# before the debate finishes, browser tab reload, sleep/wake on macOS).
-# Holds {"event": str, "payload": dict, "timestamp": float, "debate_id": str}
-# or None. Reset only when a new debate starts.
 _last_finished_state: dict | None = None
-_LAST_STATE_TTL_SEC = 60 * 60  # 1 hour — older results are stale, don't replay
+_LAST_STATE_TTL_SEC = 60 * 60
 
-# Directory for human-readable debate transcripts
 TRANSCRIPTS_DIR = Path("transcripts")
 
 
 def _save_transcript(debate) -> None:
-    """Save a human-readable transcript of a debate. Never raises."""
     try:
         TRANSCRIPTS_DIR.mkdir(parents=True, exist_ok=True)
         visualizer = DebateVisualizer(output_dir=TRANSCRIPTS_DIR)
@@ -77,12 +58,6 @@ def _save_transcript(debate) -> None:
 
 
 def _remember_finished(event_name: str, payload: dict) -> None:
-    """Stash the latest debate completion so a reconnecting client can recover.
-
-    Called right before/after every ``debate_complete`` / ``debate_error``
-    socket emit. The state is replayed once on the next ``connect`` event if
-    it's fresh (within ``_LAST_STATE_TTL_SEC``). Reset on ``debate_started``.
-    """
     global _last_finished_state
     import time as _time
     _last_finished_state = {
@@ -94,21 +69,12 @@ def _remember_finished(event_name: str, payload: dict) -> None:
 
 
 def _try_save_debate(debate) -> bool:
-    """Persist a debate to the database. Never raises.
-
-    A failure to save MUST NOT prevent the UI from receiving
-    ``debate_complete`` — the debate already ran for minutes and the user
-    needs to see results (transcripts + final solution are independent and
-    still get saved/emitted). Returns True on success, False otherwise.
-    """
     if not repository:
         return False
     try:
         repository.save_debate(debate)
         return True
     except Exception as e:
-        # Common causes: SQLite locked / readonly under concurrency,
-        # JSON payload too large, disk full. All are non-fatal here.
         logger.error(
             "Failed to save debate %s to DB — results will still be emitted to UI: %s",
             getattr(debate, "id", "?"), e,
@@ -117,12 +83,10 @@ def _try_save_debate(debate) -> bool:
 
 
 def init_app(db_path: str = "debate_results.db", ollama_url: str = "http://localhost:11434"):
-    """Initialize the application with dependencies."""
     global repository, llm_client
     repository = DebateRepository(db_path)
     llm_client = MultiModelClient(base_url=ollama_url)
 
-    # Migrate existing database: add is_solo column if missing
     try:
         import sqlite3
         conn = sqlite3.connect(db_path)
@@ -137,25 +101,18 @@ def init_app(db_path: str = "debate_results.db", ollama_url: str = "http://local
         logger.debug(f"Database migration check: {e}")
 
 
-# =============================================================================
-# Routes
-# =============================================================================
-
 @app.route('/')
 def index():
-    """Main dashboard page."""
     return render_template('index.html')
 
 
 @app.route('/api/health')
 def health_check():
-    """Health check endpoint."""
     return jsonify({"status": "ok"})
 
 
 @app.route('/api/models')
 def list_models():
-    """List available Ollama models."""
     if not llm_client:
         return jsonify({"error": "LLM client not initialized"}), 500
 
@@ -172,7 +129,6 @@ def list_models():
 
 @app.route('/api/tasks', methods=['GET'])
 def list_tasks():
-    """List available tasks."""
     tasks_dir = Path(__file__).parent.parent.parent / 'tasks'
     tasks = []
     
@@ -197,7 +153,6 @@ def list_tasks():
 
 @app.route('/api/tasks/<task_id>')
 def get_task(task_id: str):
-    """Get a specific task by ID."""
     tasks_dir = Path(__file__).parent.parent.parent / 'tasks'
     
     for difficulty in ['easy', 'medium', 'hard', 'extreme']:
@@ -217,7 +172,6 @@ def get_task(task_id: str):
 
 @app.route('/api/debates', methods=['GET'])
 def list_debates():
-    """List all debates."""
     if not repository:
         return jsonify({"error": "Repository not initialized"}), 500
     
@@ -229,7 +183,6 @@ def list_debates():
 
 @app.route('/api/debates/<debate_id>')
 def get_debate(debate_id: str):
-    """Get a specific debate."""
     if not repository:
         return jsonify({"error": "Repository not initialized"}), 500
     
@@ -242,7 +195,6 @@ def get_debate(debate_id: str):
 
 @app.route('/api/stats')
 def get_stats():
-    """Get summary statistics."""
     if not repository:
         return jsonify({"error": "Repository not initialized"}), 500
 
@@ -251,11 +203,6 @@ def get_stats():
 
 
 def _parse_transcript_filename(name: str) -> dict:
-    """Parse metadata from transcript filename.
-
-    Expected: {difficulty}_{task_id}_{mode}_{debate_id}_{timestamp}.txt
-    Falls back to partial info if the shape is unexpected.
-    """
     stem = name[:-4] if name.endswith('.txt') else name
     parts = stem.split('_')
     meta = {
@@ -268,24 +215,19 @@ def _parse_transcript_filename(name: str) -> dict:
     if len(parts) >= 5:
         meta['difficulty'] = parts[0]
         meta['timestamp'] = parts[-2] + '_' + parts[-1]
-        # Find mode token by scanning from the right
         if parts[-3] in ('solo', 'debate'):
             meta['mode'] = parts[-3]
             meta['debate_id'] = parts[-3] + '_' + parts[-4] if parts[-3] == 'solo' else parts[-4]
-            # Actually debate_id for solo starts with "solo_", so we need different logic
-        # Simpler: detect mode by presence of 'solo' or 'debate' token
         for i, p in enumerate(parts):
             if p in ('solo', 'debate'):
                 meta['mode'] = p
                 meta['task_id'] = '_'.join(parts[1:i])
-                # debate_id is whatever is between mode and timestamp (last 2 parts)
                 meta['debate_id'] = '_'.join(parts[i+1:-2]) if len(parts) > i + 3 else parts[i+1] if len(parts) > i + 1 else '-'
                 break
     return meta
 
 
 def _scan_transcript_metadata(path: Path) -> dict:
-    """Read first ~30 lines to extract pass rate and task name."""
     info = {'task_name': '-', 'status': '-', 'pass_rate': None, 'rounds': None}
     try:
         with path.open('r', encoding='utf-8') as f:
@@ -293,7 +235,6 @@ def _scan_transcript_metadata(path: Path) -> dict:
         for line in head:
             line = line.strip()
             if line.startswith('DEBATE TRANSCRIPT'):
-                # Format: DEBATE TRANSCRIPT  |  Task Name  (difficulty)
                 after = line.split('|', 1)[-1].strip() if '|' in line else ''
                 if '(' in after:
                     info['task_name'] = after.rsplit('(', 1)[0].strip()
@@ -306,12 +247,10 @@ def _scan_transcript_metadata(path: Path) -> dict:
                     info['rounds'] = int(line.split(':', 1)[1].strip())
                 except ValueError:
                     pass
-        # Pass rate is in FINAL RESULT section; scan fully but cheaply.
         if info['task_name'] != '-':
             with path.open('r', encoding='utf-8') as f:
                 for line in f:
                     if line.startswith('Winner:'):
-                        # e.g. "Winner: agent_1_qwen  (round 2, 85%)"
                         if '%' in line:
                             pct = line.rsplit(',', 1)[-1].strip().rstrip(')')
                             pct = pct.replace('%', '')
@@ -327,7 +266,6 @@ def _scan_transcript_metadata(path: Path) -> dict:
 
 @app.route('/api/transcripts', methods=['GET'])
 def list_transcripts():
-    """List all saved debate transcripts with metadata."""
     if not TRANSCRIPTS_DIR.exists():
         return jsonify({'transcripts': []})
 
@@ -354,7 +292,6 @@ def list_transcripts():
 
 
 def _safe_transcript_path(filename: str) -> Path | None:
-    """Resolve a transcript filename to its path, blocking path traversal."""
     if '/' in filename or '\\' in filename or filename.startswith('.'):
         return None
     if not filename.endswith('.txt'):
@@ -371,7 +308,6 @@ def _safe_transcript_path(filename: str) -> Path | None:
 
 @app.route('/api/transcripts/<path:filename>', methods=['GET'])
 def get_transcript(filename: str):
-    """Return transcript content as text/plain."""
     path = _safe_transcript_path(filename)
     if path is None:
         abort(404)
@@ -384,7 +320,6 @@ def get_transcript(filename: str):
 
 @app.route('/api/transcripts/<path:filename>/download', methods=['GET'])
 def download_transcript(filename: str):
-    """Download transcript as attachment."""
     path = _safe_transcript_path(filename)
     if path is None:
         abort(404)
@@ -396,25 +331,12 @@ def download_transcript(filename: str):
     )
 
 
-# =============================================================================
-# WebSocket Events
-# =============================================================================
-
 @socketio.on('connect')
 def handle_connect():
-    """Handle client connection.
-
-    If a recent debate has finished while no client was listening (browser
-    tab reloaded, WebSocket disconnect during last round, sleep/wake), replay
-    the final ``debate_complete`` or ``debate_error`` event so the UI can
-    render results instead of staying stuck on the last "Round N — REVISE"
-    state.
-    """
     print("[DEBUG] Client connected via WebSocket")
     logger.info("Client connected")
     emit('connected', {'status': 'connected'})
 
-    # Replay last finished debate state if it's still fresh.
     if _last_finished_state is not None:
         import time as _time
         age = _time.time() - _last_finished_state["timestamp"]
@@ -430,13 +352,11 @@ def handle_connect():
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    """Handle client disconnection."""
     logger.info("Client disconnected")
 
 
 @socketio.on('start_debate')
 def handle_start_debate(data: dict):
-    """Start a new debate."""
     global current_debate_thread
 
     print(f"[DEBUG] start_debate received: {data}")
@@ -447,7 +367,6 @@ def handle_start_debate(data: dict):
         emit('error', {'message': 'LLM client not initialized'})
         return
 
-    # Parse request
     task_path = data.get('task_path')
     agent_models = data.get('agents', ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b-instruct'])
     max_rounds = data.get('max_rounds', 5)
@@ -456,15 +375,12 @@ def handle_start_debate(data: dict):
     agent_strategies = data.get('agent_strategies', {})
     adaptive_temperature = data.get('adaptive_temperature', False)
     critique_history = data.get('critique_history', False)
-    # Optional heterogeneous judge: a stronger model that critiques and votes
-    # but does NOT propose or revise. None / "" / "none" all mean "no judge".
     judge_model = (data.get('judge') or '').strip() or None
     if judge_model and judge_model.lower() == 'none':
         judge_model = None
 
     print(f"[DEBUG] task_path={task_path}, agents={agent_models}, judge={judge_model}, max_rounds={max_rounds}, show_all={show_all_solutions}, strategy={revision_strategy}, adaptive_temp={adaptive_temperature}, critique_hist={critique_history}")
 
-    # Load task
     try:
         with open(task_path) as f:
             task_data = json.load(f)
@@ -475,9 +391,6 @@ def handle_start_debate(data: dict):
         emit('error', {'message': f'Failed to load task: {e}'})
         return
 
-    # Create agent configs. Judge (if any) is appended with role=JUDGE so the
-    # orchestrator skips proposal/revision for it but still lets it critique
-    # and vote — see orchestrator._run_proposal_round / _run_revision_round.
     agent_configs = [
         AgentConfig(name=f"agent_{i+1}", model=model)
         for i, model in enumerate(agent_models)
@@ -489,7 +402,6 @@ def handle_start_debate(data: dict):
             role=AgentRole.JUDGE,
         ))
     
-    # Create config — min_rounds = max_rounds so all requested rounds are played
     config = DebateConfig(
         max_rounds=max_rounds, min_rounds=max_rounds,
         revision_show_all_solutions=show_all_solutions,
@@ -499,7 +411,6 @@ def handle_start_debate(data: dict):
         critique_history=critique_history,
     )
     
-    # Callbacks for real-time updates
     def on_round_complete(round_summary: RoundSummary):
         socketio.emit('round_complete', {
             'round_num': round_summary.round_num,
@@ -515,7 +426,7 @@ def handle_start_debate(data: dict):
             'agent_id': message.agent_id,
             'round_num': message.round_num,
             'message_type': message.message_type,
-            'content': message.content[:2000],  # Truncate for real-time
+            'content': message.content[:2000],
         })
 
     def on_phase(phase: str, round_num: int):
@@ -524,7 +435,6 @@ def handle_start_debate(data: dict):
             'round_num': round_num,
         })
 
-    # Create orchestrator
     orchestrator = DebateOrchestrator(
         llm_client=llm_client,
         config=config,
@@ -533,7 +443,6 @@ def handle_start_debate(data: dict):
         on_phase=on_phase,
     )
     
-    # Run debate in background
     debate_stop_event.clear()
 
     def run_debate():
@@ -541,32 +450,26 @@ def handle_start_debate(data: dict):
         asyncio.set_event_loop(loop)
 
         try:
-            # New debate starts — clear any stale "last finished" state so a
-            # late reconnect doesn't replay the previous run.
             global _last_finished_state
             _last_finished_state = None
 
             socketio.emit('debate_started', {
                 'task': task.name,
                 'agents': agent_models,
-                'judge': judge_model,  # None if no judge was configured
+                'judge': judge_model,
             })
 
             debate = loop.run_until_complete(
                 orchestrator.run_debate(task, agent_configs, stop_event=debate_stop_event)
             )
 
-            # Save to database (non-fatal — UI must get debate_complete regardless)
             _try_save_debate(debate)
 
-            # Save human-readable transcript
             _save_transcript(debate)
 
-            # Collect metrics
             collector = MetricsCollector()
             metrics = collector.collect_debate_metrics(debate)
 
-            # Build per-round evolution data for charts
             round_history = []
             for r in debate.rounds:
                 round_agents = {}
@@ -585,7 +488,6 @@ def handle_start_debate(data: dict):
                     'bugs_found': r.bugs_found,
                 })
 
-            # Collect critique summaries
             critique_summary = []
             for r in debate.rounds:
                 for c in r.critiques:
@@ -602,7 +504,6 @@ def handle_start_debate(data: dict):
                         'ratings_parsed': getattr(c, 'ratings_parsed', True),
                     })
 
-            # Send final result with full metrics
             complete_payload = {
                 'debate_id': debate.id,
                 'status': debate.status.value,
@@ -629,7 +530,6 @@ def handle_start_debate(data: dict):
             with _debate_lock:
                 current_debate_thread = None
 
-    # Start in background thread (with lock to prevent concurrent debates)
     with _debate_lock:
         if current_debate_thread and current_debate_thread.is_alive():
             emit('error', {'message': 'A debate is already running'})
@@ -643,7 +543,6 @@ def handle_start_debate(data: dict):
 
 @socketio.on('stop_debate')
 def handle_stop_debate():
-    """Stop the current debate."""
     if current_debate_thread and current_debate_thread.is_alive():
         debate_stop_event.set()
         emit('debate_stopped', {'message': 'Stopping debate...'})
@@ -653,7 +552,6 @@ def handle_stop_debate():
 
 @socketio.on('start_solo')
 def handle_start_solo(data: dict):
-    """Start a solo run (single agent, no debate)."""
     global current_debate_thread
 
     logger.info(f"start_solo event received: {data}")
@@ -715,7 +613,7 @@ def handle_start_solo(data: dict):
 
         try:
             global _last_finished_state
-            _last_finished_state = None  # clear stale replay state for new run
+            _last_finished_state = None
 
             socketio.emit('debate_started', {'task': task.name, 'agents': [agent_model], 'is_solo': True})
 
@@ -782,7 +680,6 @@ def handle_start_solo(data: dict):
 
 @socketio.on('start_batch')
 def handle_start_batch(data: dict):
-    """Start a batch experiment: multiple tasks with given agents."""
     global current_debate_thread
 
     logger.info(f"start_batch event received: {data}")
@@ -794,13 +691,12 @@ def handle_start_batch(data: dict):
     task_paths = data.get('task_paths', [])
     agent_models = data.get('agents', [])
     max_rounds = data.get('max_rounds', 5)
-    mode = data.get('mode', 'debate')  # 'debate' or 'solo'
+    mode = data.get('mode', 'debate')
     show_all_solutions = data.get('show_all_solutions', False)
     revision_strategy = data.get('revision_strategy', 'uniform')
     agent_strategies = data.get('agent_strategies', {})
     adaptive_temperature = data.get('adaptive_temperature', False)
     critique_history = data.get('critique_history', False)
-    # Optional heterogeneous judge (debate mode only — ignored in solo).
     judge_model = (data.get('judge') or '').strip() or None
     if judge_model and judge_model.lower() == 'none':
         judge_model = None
@@ -860,8 +756,6 @@ def handle_start_batch(data: dict):
                             AgentConfig(name=f"agent_{i+1}", model=m)
                             for i, m in enumerate(agent_models)
                         ]
-                        # Append judge (debate mode only) so it critiques + votes
-                        # without proposing. Solo mode ignores judge by design.
                         if judge_model:
                             agent_configs.append(AgentConfig(
                                 name="judge",
@@ -930,7 +824,6 @@ def handle_start_batch(data: dict):
 
 @app.route('/api/clear-data', methods=['POST'])
 def api_clear_data():
-    """Clear all debate data from the database."""
     if not repository:
         return jsonify({"error": "No database"}), 404
 
@@ -953,19 +846,16 @@ def api_clear_data():
 
 @app.route('/api/comparison')
 def api_comparison():
-    """Get comparison data between solo and debate runs."""
     if not repository:
         return jsonify({"tasks": [], "aggregate": {}})
     return jsonify(repository.get_comparison_data())
 
 
 def _extract_metrics_from_record(record) -> dict:
-    """Extract extended metrics from full_debate_data JSON."""
     data = record.full_debate_data or {}
     rounds = data.get("rounds", [])
     agents = data.get("agents", [])
 
-    # Collect all solutions across rounds
     all_solutions = []
     for rd in rounds:
         for sol in rd.get("solutions", []):
@@ -975,12 +865,10 @@ def _extract_metrics_from_record(record) -> dict:
     c = sum(1 for s in all_solutions
             if s.get("execution_result", {}).get("status") == "passed")
 
-    # Pass@k
     from ..analysis.metrics_collector import compute_pass_at_k
     pass_at_1 = compute_pass_at_k(n, c, 1) if n >= 1 else 0.0
     pass_at_3 = compute_pass_at_k(n, c, 3) if n >= 3 else 0.0
 
-    # Improvement over initial (round 1)
     initial_rates = []
     if rounds:
         for sol in rounds[0].get("solutions", []):
@@ -990,11 +878,10 @@ def _extract_metrics_from_record(record) -> dict:
     final_rate = record.final_pass_rate or 0.0
     best_initial = max(initial_rates) if initial_rates else 0.0
     avg_initial = (sum(initial_rates) / len(initial_rates)) if initial_rates else 0.0
-    # Relative improvement (ratio), consistent with metrics_collector.py
     if best_initial > 0:
         imp_best = (final_rate - best_initial) / best_initial
     elif final_rate > 0:
-        imp_best = final_rate  # absolute difference when initial was 0%
+        imp_best = final_rate
     else:
         imp_best = 0.0
     if avg_initial > 0:
@@ -1004,7 +891,6 @@ def _extract_metrics_from_record(record) -> dict:
     else:
         imp_avg = 0.0
 
-    # Critique stats
     all_critiques = []
     for rd in rounds:
         all_critiques.extend(rd.get("critiques", []))
@@ -1013,7 +899,6 @@ def _extract_metrics_from_record(record) -> dict:
     total_bugs = sum(len(cr.get("bugs", [])) for cr in all_critiques)
     total_improvements = sum(len(cr.get("improvements", [])) for cr in all_critiques)
 
-    # Bug fix rate: count test improvements between first and last round
     bugs_fixed = 0
     if len(rounds) >= 2:
         first_sols = {s.get("agent_id"): s for s in rounds[0].get("solutions", [])}
@@ -1027,19 +912,16 @@ def _extract_metrics_from_record(record) -> dict:
                     bugs_fixed += (t2 - t1)
     bug_fix_rate = (bugs_fixed / total_bugs) if total_bugs > 0 else 0.0
 
-    # Ratings (only from parsed critiques)
     parsed_critiques = [cr for cr in all_critiques if cr.get("ratings_parsed", False)]
     avg_corr = (sum(cr.get("correctness_rating", 0) for cr in parsed_critiques) / len(parsed_critiques)) if parsed_critiques else 0.0
     avg_eff = (sum(cr.get("efficiency_rating", 0) for cr in parsed_critiques) / len(parsed_critiques)) if parsed_critiques else 0.0
     avg_read = (sum(cr.get("readability_rating", 0) for cr in parsed_critiques) / len(parsed_critiques)) if parsed_critiques else 0.0
 
-    # Quality metrics from final solution
     final_sol = data.get("final_solution", {})
     final_qm = final_sol.get("quality_metrics", {}) if final_sol else {}
     final_pylint = final_qm.get("pylint_score", 0.0)
     final_complexity = final_qm.get("cyclomatic_complexity", 0.0)
 
-    # Initial quality (average from round 1)
     initial_pylints = []
     initial_complexities = []
     if rounds:
@@ -1051,18 +933,15 @@ def _extract_metrics_from_record(record) -> dict:
     init_avg_pylint = (sum(initial_pylints) / len(initial_pylints)) if initial_pylints else 0.0
     init_avg_complexity = (sum(initial_complexities) / len(initial_complexities)) if initial_complexities else 0.0
 
-    # LLM time and execution time from agent stats
     total_llm_time = sum(a.get("stats", a).get("total_generation_time", 0.0) for a in agents)
     total_exec_time = sum(
         s.get("execution_result", {}).get("execution_time", 0.0)
         for s in all_solutions
     )
 
-    # Consensus
     final_consensus = data.get("final_consensus", {})
     consensus_ratio = final_consensus.get("consensus_ratio", record.consensus_ratio or 0.0) if final_consensus else (record.consensus_ratio or 0.0)
 
-    # Rounds to consensus
     rounds_to_consensus = 0
     for rd in rounds:
         cr = rd.get("consensus_result", {})
@@ -1070,8 +949,6 @@ def _extract_metrics_from_record(record) -> dict:
             rounds_to_consensus = rd.get("round_num", 0)
             break
 
-    # Peak round detection — at which round did the BEST solution appear?
-    # Mirrored in src/analysis/csv_export.py — keep both in sync.
     best_round = 1
     best_round_pass_rate = 0.0
     for rd in rounds:
@@ -1085,7 +962,6 @@ def _extract_metrics_from_record(record) -> dict:
     duration = record.duration_seconds or 0.0
     avg_round_dur = (duration / total_rounds) if total_rounds > 0 else 0.0
 
-    # Agent behavior stats
     agent_behavior = []
     for a in agents:
         stats = a.get("stats", a)
@@ -1100,7 +976,6 @@ def _extract_metrics_from_record(record) -> dict:
             "times_won_debate": stats.get("times_won_debate", 0),
         })
 
-    # Find notable agents
     most_bugs_found_by = ""
     most_active_agent = ""
     most_successful_agent = ""
@@ -1149,7 +1024,6 @@ def _extract_metrics_from_record(record) -> dict:
 
 @app.route('/api/export/csv')
 def api_export_csv():
-    """Export all results as CSV with 35+ metrics columns."""
     import csv
     import io
 
@@ -1179,7 +1053,6 @@ def api_export_csv():
             'all_solutions_count', 'passing_solutions_count',
             'most_active_agent', 'most_successful_agent', 'most_bugs_found_by',
             'status', 'winning_agent',
-            # Peak-round metrics — answers "did debate help?"
             'best_round', 'best_round_pass_rate', 'peak_after_debate',
         ])
 
@@ -1217,12 +1090,7 @@ def api_export_csv():
         session.close()
 
 
-# =============================================================================
-# Main
-# =============================================================================
-
 def run_server(host: str = "0.0.0.0", port: int = 5050, debug: bool = False):
-    """Run the web server."""
     init_app()
     socketio.run(app, host=host, port=port, debug=debug)
 

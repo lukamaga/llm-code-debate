@@ -1,46 +1,35 @@
-# LLM Code Debate System - Dependencies
-
-# Core
 pydantic>=2.5.0
 pyyaml>=6.0
 httpx>=0.25.0
 asyncio-throttle>=1.0.2
 
-# Database
 sqlalchemy>=2.0.0
 alembic>=1.13.0
 
-# Code Execution
 pytest>=7.4.0
 pytest-timeout>=2.2.0
 
-# Code Quality Metrics
 pylint>=3.0.0
 radon>=6.0.0
 
-# Web Interface
 flask>=3.0.0
 flask-socketio>=5.3.0
 python-socketio>=5.10.0
 eventlet>=0.34.0
 
-# Analysis & Visualization
 pandas>=2.1.0
 matplotlib>=3.8.0
 seaborn>=0.13.0
 plotly>=5.18.0
 
-# Utilities
 rich>=13.7.0
 click>=8.1.0
 python-dotenv>=1.0.0
 tenacity>=8.2.0
 
-# Testing
 pytest-asyncio>=0.23.0
 pytest-cov>=4.1.0
 
-# Type checking
 mypy>=1.8.0
 types-PyYAML>=6.0.0
 types-requests>=2.31.0

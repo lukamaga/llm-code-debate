@@ -1,6 +1,3 @@
-"""
-Agent models for the LLM Code Debate System.
-"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -10,30 +7,23 @@ from datetime import datetime
 
 
 class AgentRole(Enum):
-    """Roles that agents can take in the debate."""
-    GENERAL = "general"      # Can do everything
-    PROPOSER = "proposer"    # Focuses on generating solutions
-    CRITIC = "critic"        # Focuses on finding bugs
-    OPTIMIZER = "optimizer"  # Focuses on performance improvements
-    JUDGE = "judge"          # Only votes, doesn't propose
+    GENERAL = "general"
+    PROPOSER = "proposer"
+    CRITIC = "critic"
+    OPTIMIZER = "optimizer"
+    JUDGE = "judge"
 
 
 @dataclass
 class AgentConfig:
-    """Configuration for a single agent."""
     name: str
     model: str
     role: AgentRole = AgentRole.GENERAL
     temperature: float = 0.3
-    # 8192 was too tight for multi-file / extreme tasks (e.g. calculator with
-    # tokenizer.py + evaluator.py): revisions and judge critiques were
-    # truncated mid-function, corrupting downstream critique/vote/judge. 7B
-    # models rarely emit > ~10k tokens of code in practice, so 12288 is safe.
     max_tokens: int = 12288
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> AgentConfig:
-        """Create AgentConfig from dictionary."""
         return cls(
             name=data.get("name", data.get("model", "unknown")),
             model=data.get("model", data.get("name", "")),
@@ -45,10 +35,9 @@ class AgentConfig:
 
 @dataclass
 class AgentMessage:
-    """A message sent by an agent during debate."""
     agent_id: str
     round_num: int
-    message_type: str  # "proposal", "critique", "revision", "vote"
+    message_type: str
     content: str
     timestamp: datetime = field(default_factory=datetime.now)
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -56,36 +45,29 @@ class AgentMessage:
 
 @dataclass
 class AgentStats:
-    """Statistics for a single agent across a debate."""
     agent_id: str
     model: str
     role: AgentRole
     
-    # Proposal stats
     solutions_proposed: int = 0
     solutions_revised: int = 0
     
-    # Critique stats
     critiques_given: int = 0
     critiques_received: int = 0
     bugs_found: int = 0
     improvements_suggested: int = 0
     
-    # Behavior stats
     times_changed_mind: int = 0
     times_defended: int = 0
     times_adopted_other: int = 0
     
-    # Outcome stats
     times_won_debate: int = 0
     final_votes_received: int = 0
     
-    # Timing
     total_generation_time: float = 0.0
     avg_response_time: float = 0.0
     
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for serialization."""
         return {
             "agent_id": self.agent_id,
             "model": self.model,
@@ -108,12 +90,6 @@ class AgentStats:
 
 @dataclass
 class Agent:
-    """
-    Represents an LLM agent in the debate.
-    
-    Each agent has a unique ID, associated model, and role.
-    Tracks all messages and maintains statistics.
-    """
     id: str
     config: AgentConfig
     messages: list[AgentMessage] = field(default_factory=list)
@@ -139,34 +115,28 @@ class Agent:
         return self.config.temperature
     
     def add_message(self, message: AgentMessage) -> None:
-        """Add a message to the agent's history."""
         self.messages.append(message)
         
-        # Update stats based on message type
         if message.message_type == "proposal":
             self.stats.solutions_proposed += 1
         elif message.message_type == "revision":
             self.stats.solutions_revised += 1
         elif message.message_type == "critique":
-            # critiques_given is updated in orchestrator (one per target solution)
             if "bugs" in message.metadata:
                 self.stats.bugs_found += len(message.metadata["bugs"])
             if "improvements" in message.metadata:
                 self.stats.improvements_suggested += len(message.metadata["improvements"])
     
     def get_messages_for_round(self, round_num: int) -> list[AgentMessage]:
-        """Get all messages for a specific round."""
         return [m for m in self.messages if m.round_num == round_num]
     
     def get_latest_solution(self) -> AgentMessage | None:
-        """Get the most recent proposal or revision."""
         for msg in reversed(self.messages):
             if msg.message_type in ("proposal", "revision"):
                 return msg
         return None
     
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for serialization."""
         return {
             "id": self.id,
             "model": self.config.model,

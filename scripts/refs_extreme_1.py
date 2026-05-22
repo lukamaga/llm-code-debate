@@ -1,5 +1,3 @@
-"""Reference implementations: cache_with_ttl, rate_limiter, event_bus_priority, parser_combinator, task_queue."""
-
 CACHE_WITH_TTL = {
     "cache_types.py": '''
 from dataclasses import dataclass

@@ -1,5 +1,3 @@
-"""Reference: pubsub_topics, validator_chain, dependency_resolver, circuit_breaker, retry_policy."""
-
 PUBSUB = {
     "pubsub_types.py": '''
 from dataclasses import dataclass

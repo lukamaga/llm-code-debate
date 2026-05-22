@@ -13,40 +13,40 @@
 
     <style>
         :root {
-            /* Modern research dashboard — Notion-style tinted zones */
-            --bg-page: #0a0c12; /* Page background — neutral dark behind panels */
-            --bg-panel: #171a22; /* Default panel (neutral) — used by Arena */
-            --bg-panel-config: #141828; /* Left panel — subtle indigo (control zone) */
-            --bg-panel-arena: #171a22; /* Center panel — neutral (content zone) */
-            --bg-panel-activity: #191624; /* Right panel — subtle violet (log zone) */
-            /* Semi-transparent so each control picks up its panel's tint */
-            --bg-elevated: rgba(255, 255, 255, 0.035); /* Cards & chips — slight elevation */
-            --bg-hover: rgba(255, 255, 255, 0.07); /* Hover state */
-            --bg-input: rgba(255, 255, 255, 0.025); /* Inputs — subtle elevation, inherits panel tint */
-            --bg-elevated-solid: #1f2330; /* Solid version for popovers/menus */
+
+            --bg-page: #0a0c12;
+            --bg-panel: #171a22;
+            --bg-panel-config: #141828;
+            --bg-panel-arena: #171a22;
+            --bg-panel-activity: #191624;
+
+            --bg-elevated: rgba(255, 255, 255, 0.035);
+            --bg-hover: rgba(255, 255, 255, 0.07);
+            --bg-input: rgba(255, 255, 255, 0.025);
+            --bg-elevated-solid: #1f2330;
             --bg-overlay: rgba(31, 35, 48, 0.97);
 
-            /* Legacy aliases for existing class rules */
+
             --bg: var(--bg-panel);
             --bg2: var(--bg-elevated);
             --bg3: var(--bg-hover);
             --bg4: #232830;
 
-            /* Text — high contrast for PDF print readability */
-            --text: #e8eaed; /* Primary — almost white */
+
+            --text: #e8eaed;
             --text-bright: #ffffff;
-            --text2: #b3b9c7; /* Secondary */
-            --text3: #8a91a3; /* Tertiary */
-            --text-dim: #5a6275; /* Muted */
+            --text2: #b3b9c7;
+            --text3: #8a91a3;
+            --text-dim: #5a6275;
             --text-muted: #6e7585;
 
-            /* Borders — semi-transparent so they adapt to each panel's tint */
-            --border: rgba(255, 255, 255, 0.05); /* Subtle separators */
-            --border2: rgba(255, 255, 255, 0.09); /* Input/control borders */
+
+            --border: rgba(255, 255, 255, 0.05);
+            --border2: rgba(255, 255, 255, 0.09);
             --border-bright: rgba(255, 255, 255, 0.16);
             --border-glow: rgba(99, 102, 241, 0.35);
 
-            /* Accent: Indigo (Linear / Hugging Face style) */
+
             --accent: #6366f1;
             --accent-bright: #818cf8;
             --accent-dim: #4f46e5;
@@ -56,7 +56,7 @@
             --accent-glow: rgba(99, 102, 241, 0.45);
             --accent-light: var(--accent-soft);
 
-            /* Semantic */
+
             --green: #10b981;
             --green-bright: #34d399;
             --green-soft: rgba(16, 185, 129, 0.12);
@@ -87,7 +87,7 @@
             --shadow-lg: 0 12px 32px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
             --shadow-glow: 0 0 0 4px rgba(99, 102, 241, 0.15);
 
-            /* Uniform control height — inputs, selects, triggers */
+
             --ctrl-height: 34px;
 
             --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -112,7 +112,7 @@
             font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
         }
 
-        /* Header */
+
         header {
             padding: 0 20px;
             height: 52px;
@@ -174,7 +174,7 @@
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
         }
 
-        /* Layout */
+
         .container {
             display: grid;
             grid-template-columns: 296px 1fr 340px;
@@ -185,19 +185,19 @@
         .panel {
             display: flex;
             flex-direction: column;
-            background: var(--bg-panel-config); /* default = left config panel (indigo undertone) */
+            background: var(--bg-panel-config);
             border-right: 1px solid var(--border);
             min-height: 0;
             position: relative;
         }
         .panel.arena-panel {
-            background: var(--bg-panel-arena); /* center — neutral */
+            background: var(--bg-panel-arena);
         }
         .panel.right-panel {
-            background: var(--bg-panel-activity); /* right — violet undertone */
+            background: var(--bg-panel-activity);
         }
 
-        /* Subtle accent stripe at the top of each panel to reinforce zone identity */
+
         .panel::before {
             content: '';
             position: absolute;
@@ -265,7 +265,7 @@
             border-right: none;
         }
 
-        /* Form Fields */
+
         .field { margin-bottom: 18px; }
 
         .field-label {
@@ -280,7 +280,7 @@
             text-transform: none;
         }
 
-        /* Hide the native select — replaced by custom dropdown component */
+
         select.cs-original {
             position: absolute !important;
             opacity: 0 !important;
@@ -336,7 +336,7 @@
             color: var(--text);
         }
 
-        /* Hide the default browser up/down spinners on number inputs — we use a custom stepper instead */
+
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -346,7 +346,7 @@
             -moz-appearance: textfield;
         }
 
-        /* ===== Custom Number Stepper ===== */
+
         .number-stepper {
             display: flex;
             align-items: stretch;
@@ -425,9 +425,9 @@
             color: var(--text-dim) !important;
         }
         .stepper-btn.minus { border-right: 1px solid var(--border); }
-        .stepper-btn.plus { border-left: 1px solid var(--border); }
+        .stepper-btn.plus  { border-left:  1px solid var(--border); }
 
-        /* ===== Custom Select Dropdown — Linear/HF style ===== */
+
         .cs-wrap {
             position: relative;
             width: 100%;
@@ -559,7 +559,7 @@
             color: var(--text-muted);
         }
 
-        /* Compact variant — for small inline dropdowns */
+
         .cs-wrap.compact .cs-trigger {
             height: 28px;
             min-height: 28px;
@@ -570,7 +570,7 @@
         .cs-wrap.compact .cs-menu { max-height: 220px; }
         .cs-wrap.compact .cs-option { padding: 6px 9px; font-size: 12px; }
 
-        /* Agent Cards (config) */
+
         .agent-cards { display: flex; flex-direction: column; gap: 6px; }
 
         .agent-chip {
@@ -612,7 +612,7 @@
             color: var(--red-bright);
         }
 
-        /* Judge field — inline hint + info box */
+
         .field-label-hint {
             margin-left: 4px;
             font-weight: 400;
@@ -647,7 +647,7 @@
             font-family: var(--font-sans);
         }
 
-        /* Buttons — Linear / HF clean style */
+
         .btn {
             width: 100%;
             height: 36px;
@@ -735,7 +735,7 @@
         }
         .modal-footer .btn { margin-top: 0; width: 100%; }
 
-        /* Arena */
+
         .round-bar {
             display: flex;
             align-items: center;
@@ -788,12 +788,12 @@
         }
 
         .phase-badge.active { display: inline-block; }
-        .phase-badge.propose { background: var(--blue-soft); color: var(--blue-bright); border-color: rgba(59,130,246,0.3); }
+        .phase-badge.propose  { background: var(--blue-soft);   color: var(--blue-bright);   border-color: rgba(59,130,246,0.3); }
         .phase-badge.critique { background: var(--yellow-soft); color: var(--yellow-bright); border-color: rgba(245,158,11,0.3); }
-        .phase-badge.revise { background: var(--green-soft); color: var(--green-bright); border-color: rgba(16,185,129,0.3); }
-        .phase-badge.vote { background: var(--purple-soft); color: var(--purple-bright); border-color: rgba(168,85,247,0.3); }
+        .phase-badge.revise   { background: var(--green-soft);  color: var(--green-bright);  border-color: rgba(16,185,129,0.3); }
+        .phase-badge.vote     { background: var(--purple-soft); color: var(--purple-bright); border-color: rgba(168,85,247,0.3); }
 
-        /* Debate Timeline */
+
         .timeline { display: flex; flex-direction: column; gap: 12px; }
 
         .timeline-round {
@@ -954,7 +954,7 @@
             margin-right: 3px;
         }
 
-        /* Arena view toggle */
+
         .view-toggle {
             display: inline-flex;
             background: var(--bg-elevated);
@@ -984,7 +984,7 @@
 
         .arena-view { display: block; }
 
-        /* Graph view */
+
         .graph-container {
             position: relative;
             background: var(--bg-panel);
@@ -1115,7 +1115,7 @@
         }
         @keyframes edgeFlow {
             from { stroke-dashoffset: 0; }
-            to { stroke-dashoffset: -24; }
+            to   { stroke-dashoffset: -24; }
         }
 
         .graph-particle { pointer-events: none; }
@@ -1227,12 +1227,12 @@
             width: 8px; height: 8px;
             border-radius: 50%;
         }
-        .graph-legend .legend-dot.propose { background: var(--blue-bright); }
+        .graph-legend .legend-dot.propose  { background: var(--blue-bright);   }
         .graph-legend .legend-dot.critique { background: var(--yellow-bright); }
-        .graph-legend .legend-dot.revise { background: var(--green-bright); }
-        .graph-legend .legend-dot.vote { background: var(--purple-bright); }
+        .graph-legend .legend-dot.revise   { background: var(--green-bright);  }
+        .graph-legend .legend-dot.vote     { background: var(--purple-bright); }
 
-        /* Inbox layer — text bubbles around agents */
+
         .graph-inbox-layer {
             position: absolute;
             inset: 0;
@@ -1266,7 +1266,7 @@
         }
         @keyframes inboxThinking {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.62; }
+            50%      { opacity: 0.62; }
         }
         .graph-inbox .inbox-title {
             font-size: 11px;
@@ -1291,16 +1291,16 @@
             line-height: 1.4;
             word-break: break-word;
         }
-        .graph-inbox.propose { border-color: rgba(59,130,246,0.5); }
-        .graph-inbox.propose .inbox-title { color: var(--blue-bright); }
+        .graph-inbox.propose  { border-color: rgba(59,130,246,0.5); }
+        .graph-inbox.propose  .inbox-title { color: var(--blue-bright); }
         .graph-inbox.critique { border-color: rgba(245,158,11,0.5); }
         .graph-inbox.critique .inbox-title { color: var(--yellow-bright); }
-        .graph-inbox.revise { border-color: rgba(16,185,129,0.5); }
-        .graph-inbox.revise .inbox-title { color: var(--green-bright); }
-        .graph-inbox.vote { border-color: rgba(168,85,247,0.5); }
-        .graph-inbox.vote .inbox-title { color: var(--purple-bright); }
-        .graph-inbox.sent { border-color: rgba(16,185,129,0.6); }
-        .graph-inbox.sent .inbox-title { color: var(--green-bright); }
+        .graph-inbox.revise   { border-color: rgba(16,185,129,0.5); }
+        .graph-inbox.revise   .inbox-title { color: var(--green-bright); }
+        .graph-inbox.vote     { border-color: rgba(168,85,247,0.5); }
+        .graph-inbox.vote     .inbox-title { color: var(--purple-bright); }
+        .graph-inbox.sent     { border-color: rgba(16,185,129,0.6); }
+        .graph-inbox.sent     .inbox-title { color: var(--green-bright); }
 
         .graph-empty {
             position: absolute;
@@ -1316,7 +1316,7 @@
         }
         .graph-empty .emoji { font-size: 36px; opacity: 0.4; margin-bottom: 12px; color: var(--accent); }
 
-        /* Placeholder */
+
         .placeholder {
             text-align: center;
             padding: 64px 20px;
@@ -1334,7 +1334,7 @@
             color: var(--accent);
         }
 
-        /* Final Code */
+
         .final-code {
             margin-top: 18px;
             border: 1px solid var(--border);
@@ -1369,7 +1369,7 @@
             color: var(--text);
         }
 
-        /* Activity Feed */
+
         .activity { max-height: calc(100vh - 100px); overflow-y: auto; }
 
         .activity-item {
@@ -1408,10 +1408,10 @@
             flex-shrink: 0;
         }
 
-        .activity-tag.proposal { background: var(--blue-soft); color: var(--blue-bright); }
+        .activity-tag.proposal { background: var(--blue-soft);   color: var(--blue-bright);   }
         .activity-tag.critique { background: var(--yellow-soft); color: var(--yellow-bright); }
-        .activity-tag.revision { background: var(--green-soft); color: var(--green-bright); }
-        .activity-tag.vote { background: var(--purple-soft); color: var(--purple-bright); }
+        .activity-tag.revision { background: var(--green-soft);  color: var(--green-bright);  }
+        .activity-tag.vote     { background: var(--purple-soft); color: var(--purple-bright); }
 
         .activity-text {
             font-size: 12px;
@@ -1453,7 +1453,7 @@
             text-decoration: underline;
         }
 
-        /* Phase event in activity */
+
         .activity-phase {
             padding: 8px 12px;
             margin: 8px -18px;
@@ -1469,7 +1469,7 @@
             text-transform: capitalize;
         }
 
-        /* Modal */
+
         .modal {
             display: none;
             position: fixed;
@@ -1542,7 +1542,7 @@
             font-family: var(--font-sans);
         }
 
-        /* Metrics Tabs */
+
         .metrics-tabs {
             display: flex;
             gap: 2px;
@@ -1771,7 +1771,7 @@
             font-weight: 500;
         }
 
-        /* Responsive */
+
         @media (max-width: 1200px) {
             .container { grid-template-columns: 280px 1fr; }
             .right-panel { display: none; }
@@ -1781,7 +1781,7 @@
             .container { grid-template-columns: 1fr; }
         }
 
-        /* Checkbox styling */
+
         input[type="checkbox"] {
             accent-color: var(--accent);
             cursor: pointer;
@@ -1792,14 +1792,14 @@
             color: var(--text2);
         }
 
-        /* Select option fallback (when native select used) */
+
         option {
             background: var(--bg-elevated);
             color: var(--text);
             font-family: var(--font-sans);
         }
 
-        /* Scrollbar */
+
         ::-webkit-scrollbar { width: 10px; height: 10px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
@@ -1811,19 +1811,19 @@
             background: var(--border-bright);
         }
 
-        /* Selection */
+
         ::selection {
             background: var(--accent-soft);
             color: var(--text-bright);
         }
 
-        /* Inputs / misc */
+
         input[type="text"]::placeholder,
         input[type="number"]::placeholder {
             color: var(--text-muted);
         }
 
-        /* Anchor reset */
+
         a { color: var(--accent-bright); text-decoration: none; }
         a:hover { color: var(--text-bright); text-decoration: underline; }
     </style>
@@ -1838,7 +1838,7 @@
     </header>
 
     <main class="container">
-        <!-- Config Panel -->
+
         <div class="panel">
             <div class="panel-header">Configuration</div>
             <div class="panel-body">
@@ -1944,7 +1944,7 @@
             </div>
         </div>
 
-        <!-- Arena -->
+
         <div class="panel arena-panel">
             <div class="panel-header">
                 <span>Arena</span>
@@ -2018,7 +2018,7 @@
             </div>
         </div>
 
-        <!-- Activity Feed -->
+
         <div class="panel right-panel">
             <div class="panel-header">
                 <span>Activity</span>
@@ -2033,7 +2033,7 @@
         </div>
     </main>
 
-    <!-- Results Modal -->
+
     <div class="modal" id="modal">
         <div class="modal-box">
             <div class="modal-title" id="modalTitle">Debate Complete</div>
@@ -2092,7 +2092,7 @@
         </div>
     </div>
 
-    <!-- Transcripts Modal -->
+
     <div class="modal" id="transcriptsModal">
         <div class="modal-box" style="max-width: 1100px; width: 95%;">
             <div class="modal-title" id="transcriptsTitle">Debate Transcripts</div>
@@ -2150,7 +2150,7 @@
     <script>
         const socket = io();
         let currentAgents = ['qwen2.5-coder:7b', 'deepseek-coder:6.7b', 'codellama:7b-instruct', 'mistral:7b'];
-        let currentJudge = null; // Optional heterogeneous judge model; null = "No judge"
+        let currentJudge = null;
         let agentData = {};
         let currentRoundEl = null;
         let currentMode = 'debate';
@@ -2257,23 +2257,23 @@
                 });
         }
 
-        // ============== Graph View ==============
+
         const PHASE_COLORS = {
             propose: '#60a5fa',
             critique: '#fbbf24',
             revise: '#34d399',
             vote: '#c084fc',
         };
-        // All agents share the same green — matches the "online" status indicator.
+
         const GRAPH_AGENT_COLORS = ['#10b981', '#10b981', '#10b981', '#10b981', '#10b981', '#10b981', '#10b981'];
         const AGENT_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-        // Inbox text per phase — описывает, что агент "держит у себя" в этот момент.
-        // N = количество агентов, task = имя выбранной задачи (если есть).
+
+
         const INBOX_BY_PHASE = {
-            propose: (n, task) => ({ title: 'Task', body: task || 'problem specification' }),
-            critique: (n) => ({ title: 'Review', body: Math.max(1, n - 1) + ' solutions to review' }),
-            revise: (n) => ({ title: 'Feedback', body: 'critiques + test results' }),
-            vote: (n) => ({ title: 'Evaluate', body: n + ' candidates to rank' }),
+            propose:  (n, task) => ({ title: 'Task',     body: task || 'problem specification' }),
+            critique: (n)       => ({ title: 'Review',   body: Math.max(1, n - 1) + ' solutions to review' }),
+            revise:   (n)       => ({ title: 'Feedback', body: 'critiques + test results' }),
+            vote:     (n)       => ({ title: 'Evaluate', body: n + ' candidates to rank' }),
         };
 
         const GraphView = {
@@ -2325,7 +2325,7 @@
                 if (this.emptyEl) this.emptyEl.style.display = 'none';
 
                 const n = agentModels.length;
-                // n=2 — горизонтальная линия, остальные — по кругу
+
                 const ring = n <= 2 ? 180 : n <= 4 ? 200 : 220;
                 this.agents = agentModels.map((model, i) => {
                     let x, y;
@@ -2354,8 +2354,7 @@
                 const nodesG = this.svg.querySelector('#graphNodes');
                 const NS = 'http://www.w3.org/2000/svg';
 
-                // Направленные дуги между всеми парами (A→B и B→A — разные изогнутые линии).
-                // Для каждой упорядоченной пары (i,j), i!==j создаём один curved <path>.
+
                 for (let i = 0; i < this.agents.length; i++) {
                     for (let j = 0; j < this.agents.length; j++) {
                         if (i === j) continue;
@@ -2371,7 +2370,7 @@
                     }
                 }
 
-                // Узлы агентов (маленькие, с буквой внутри)
+
                 this.agents.forEach(a => {
                     this._drawNode(nodesG, {
                         id: a.id, x: a.x, y: a.y,
@@ -2392,7 +2391,7 @@
                 g.setAttribute('data-node', opts.id);
                 g.setAttribute('transform', 'translate(' + opts.x + ',' + opts.y + ')');
                 g.addEventListener('pointerdown', (e) => this._beginDrag(e, opts.id));
-                // Tooltip hint
+
                 const ttl = document.createElementNS(NS, 'title');
                 ttl.textContent = 'Drag to reposition';
                 g.appendChild(ttl);
@@ -2482,7 +2481,7 @@
                 const offX = (svgRect.width - renderedW) / 2;
                 const offY = (svgRect.height - renderedH) / 2;
 
-                // Направление наружу от центра графа в SVG-координатах
+
                 const dx = agent.x - this.cx, dy = agent.y - this.cy;
                 const mag = Math.sqrt(dx * dx + dy * dy);
                 let svgPx, svgPy;
@@ -2523,7 +2522,7 @@
                 const n = this.agents.length;
                 const meta = (INBOX_BY_PHASE[phase] || (() => ({ title: phase, body: '' })))(n, this.taskName);
                 this._setInboxContent(el, phase, meta.title, meta.body);
-                // Force reflow so transition kicks in
+
                 void el.offsetWidth;
                 el.classList.add('visible', 'thinking');
             },
@@ -2563,11 +2562,11 @@
                 this._updateInboxPositions();
                 const color = PHASE_COLORS[phase] || '#6366f1';
 
-                // Inbox — у всех агентов одновременно: "получили X"
+
                 this.agents.forEach(a => this._showInbox(a.id, phase));
 
                 if (phase === 'propose') {
-                    // Каждый агент решает сам. Никаких стрелок между ними.
+
                     this.agents.forEach((a, i) => {
                         setTimeout(() => {
                             this._activateNode(a.id, color);
@@ -2575,7 +2574,7 @@
                         }, i * 120);
                     });
                 } else if (phase === 'critique') {
-                    // A → B для каждой пары. A критикует решение B.
+
                     this.agents.forEach(a => this._activateNode(a.id, color));
                     let delay = 0;
                     for (let i = 0; i < this.agents.length; i++) {
@@ -2587,7 +2586,7 @@
                         }
                     }
                 } else if (phase === 'revise') {
-                    // B получает агрегированные критики от A, C, D → B
+
                     this.agents.forEach(a => this._activateNode(a.id, color));
                     let delay = 0;
                     this.agents.forEach((b) => {
@@ -2598,14 +2597,14 @@
                         });
                     });
                 } else if (phase === 'vote') {
-                    // На phase_start голосующие "думают" — настоящие стрелки прилетят в showVotes()
+
                     this.agents.forEach(a => this._activateNode(a.id, color));
                 }
             },
 
             onMessage(data) {
                 if (!this.built) return;
-                // Агент отправил ответ — прячем его inbox (через transient "Sent X")
+
                 this._showInboxSent(data.agent_id, data.message_type);
                 const phase = this.currentPhase || (({proposal:'propose',critique:'critique',revision:'revise',vote:'vote'})[data.message_type]);
                 const color = PHASE_COLORS[phase] || '#6366f1';
@@ -2632,7 +2631,7 @@
                 this.agents.forEach(a => this._hideInbox(a.id));
                 if (this.phaseBadgeEl) this.phaseBadgeEl.style.display = 'none';
 
-                // Реальные стрелки голосов (данные уже приходят с сервера)
+
                 if (data.votes && data.votes.length) {
                     setTimeout(() => this.showVotes(data.votes), 600);
                 }
@@ -2771,8 +2770,7 @@
                 }
             },
 
-            // Заметная стрелка с хвостом и опциональным лейблом, летящая по изогнутой дуге
-            // (той же, что нарисована между двумя агентами). Используется для critique, revise, vote.
+
             _sendArrowParticle(fromId, toId, color, label) {
                 const fromAgent = this.agents.find(x => x.id === fromId);
                 const toAgent = this.agents.find(x => x.id === toId);
@@ -2784,7 +2782,7 @@
                 const particlesG = this.svg.querySelector('#graphParticles');
                 if (!particlesG) return;
 
-                // Подсветить саму направленную дугу на время полёта
+
                 const edge = this.svg.querySelector(
                     '.graph-edge.pair[data-from="' + CSS.escape(fromId) + '"][data-to="' + CSS.escape(toId) + '"]'
                 );
@@ -2793,7 +2791,7 @@
                     edge.style.stroke = color;
                 }
 
-                // Длина дуги — грубая оценка: хорда + часть кривизны. Замедление ~ ×1.5.
+
                 const chord = arc.len;
                 const arcLen = chord + Math.abs(arc.curvature) * 1.2;
                 const duration = Math.max(1500, Math.min(2400, arcLen * 4.5));
@@ -2802,7 +2800,7 @@
                 g.setAttribute('class', 'graph-particle');
                 particlesG.appendChild(g);
 
-                // Хвост — 5 затухающих шариков вдоль кривой
+
                 const trailCount = 5;
                 const trail = [];
                 for (let i = 0; i < trailCount; i++) {
@@ -2816,14 +2814,14 @@
                     trail.push(c);
                 }
 
-                // Голова — полигон-треугольник со смещённым хвостом (для ощущения стрелы)
+
                 const head = document.createElementNS(NS, 'polygon');
                 head.setAttribute('points', '-9,-7 11,0 -9,7 -5,0');
                 head.setAttribute('fill', color);
                 head.style.filter = 'drop-shadow(0 0 16px ' + color + ')';
                 g.appendChild(head);
 
-                // Лейбл — показывается на t≈0.45..0.75 и размещается рядом с вершиной дуги
+
                 let lblEl = null;
                 if (label) {
                     lblEl = document.createElementNS(NS, 'text');
@@ -2863,7 +2861,7 @@
                             labelOp = Math.sin(lp * Math.PI) * 0.95;
                         }
                         lblEl.setAttribute('opacity', String(labelOp));
-                        // Положение лейбла — в вершине дуги (t=0.5), немного приподнятое наружу
+
                         const mid = this._bezPoint(arc, 0.5);
                         const dx = arc.tx - arc.fx, dy = arc.ty - arc.fy;
                         const clen = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -2885,7 +2883,7 @@
                 requestAnimationFrame(step);
             },
 
-            // --- Drag-and-drop узлов агентов ---
+
             _beginDrag(e, agentId) {
                 if (e.button !== undefined && e.button !== 0) return;
                 e.preventDefault();
@@ -2960,21 +2958,19 @@
                 });
             },
 
-            // Квадратичная Bezier-дуга от from к to со смещённой контрольной точкой.
-            // Поскольку dx/dy меняют знак при развороте from<->to, перпендикуляр
-            // тоже инвертируется — A→B и B→A получаются на противоположных сторонах хорды.
+
             _arcGeometry(from, to) {
                 const dx = to.x - from.x, dy = to.y - from.y;
                 const len = Math.sqrt(dx * dx + dy * dy);
                 if (len < 1) return null;
                 const ux = dx / len, uy = dy / len;
-                const px = -uy, py = ux; // перпендикуляр по часовой
+                const px = -uy, py = ux;
                 const margin = this.nodeR + 3;
                 const fx = from.x + ux * margin;
                 const fy = from.y + uy * margin;
                 const tx = to.x - ux * margin;
                 const ty = to.y - uy * margin;
-                // Кривизна пропорциональна длине, но ограничена снизу/сверху
+
                 const curvature = Math.max(28, Math.min(72, len * 0.22));
                 const mx = (fx + tx) / 2;
                 const my = (fy + ty) / 2;
@@ -3020,17 +3016,17 @@
 
             if (view === 'graph') {
                 if (!GraphView.svg) GraphView.init();
-                // Build if empty but we have agents configured
+
                 if (!GraphView.built && currentAgents && currentAgents.length > 0) {
                     GraphView.build(currentAgents);
                 }
             }
         }
 
-        // Initialize GraphView on load
+
         GraphView.init();
 
-        // Connection
+
         socket.on('connect', () => {
             document.getElementById('statusDot').classList.add('connected');
             document.getElementById('statusText').textContent = 'Online';
@@ -3041,17 +3037,17 @@
             document.getElementById('statusText').textContent = 'Offline';
         });
 
-        // Phase events
+
         socket.on('phase_start', (data) => {
             const badge = document.getElementById('phaseBadge');
             badge.className = 'phase-badge active ' + data.phase;
             badge.textContent = data.phase;
             document.getElementById('roundNum').textContent = data.round_num;
 
-            // Add phase marker to activity
+
             addPhaseToActivity(data.phase, data.round_num);
 
-            // Set agent cards to thinking state
+
             document.querySelectorAll('.agent-card').forEach(c => {
                 c.classList.add('thinking');
                 const status = c.querySelector('.agent-status');
@@ -3061,13 +3057,13 @@
                 }
             });
 
-            // Graph view
+
             GraphView.setPhase(data.phase, data.round_num);
         });
 
-        // Debate events
+
         socket.on('debate_starting', (data) => {
-            // Server confirmed debate start — now safe to clear UI
+
             document.getElementById('startBtn').style.display = 'none';
             document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').style.display = 'block';
@@ -3084,14 +3080,14 @@
             agentData = {};
             createRoundBlock(1);
 
-            // Graph view — rebuild nodes for current agents, clear state
+
             GraphView.build(currentAgents);
             GraphView.onReset();
         });
 
         socket.on('debate_started', (data) => {
             document.getElementById('roundStatus').textContent = 'Debate running...';
-            // Show active enhancements in activity feed
+
             const showAll = document.getElementById('showAllSolutions').checked;
             const strategy = document.getElementById('revisionStrategy').value;
             const adaptiveT = document.getElementById('adaptiveTemp').checked;
@@ -3114,31 +3110,31 @@
             const bestPct = (data.best_pass_rate * 100).toFixed(0);
             document.getElementById('roundStatus').textContent = 'Best: ' + bestPct + '%';
 
-            // Update round header pass rate
+
             if (currentRoundEl) {
                 const rateEl = currentRoundEl.querySelector('.pass-rate');
                 if (rateEl) rateEl.textContent = bestPct + '% best';
             }
 
-            // Update agent cards
+
             data.solutions.forEach(sol => updateAgentCard(sol));
 
-            // Remove thinking state
+
             document.querySelectorAll('.agent-card').forEach(c => {
                 c.classList.remove('thinking');
                 const status = c.querySelector('.agent-status');
                 if (status) { status.textContent = ''; status.classList.remove('active'); }
             });
 
-            // Prepare next round block
+
             if (data.round_num < parseInt(document.getElementById('maxRounds').value)) {
                 createRoundBlock(data.round_num + 1);
             }
 
-            // Hide phase badge
+
             document.getElementById('phaseBadge').classList.remove('active');
 
-            // Graph view
+
             GraphView.onRoundComplete(data);
         });
 
@@ -3155,14 +3151,14 @@
             document.getElementById('roundNum').textContent = data.total_rounds || '-';
             document.getElementById('phaseBadge').classList.remove('active');
 
-            // Remove thinking
+
             document.querySelectorAll('.agent-card').forEach(c => {
                 c.classList.remove('thinking');
                 const status = c.querySelector('.agent-status');
                 if (status) { status.textContent = ''; status.classList.remove('active'); }
             });
 
-            // Rebuild all round blocks from round_history (fixes missed events on reconnect)
+
             const rh = data.round_history || [];
             if (rh.length > 0) {
                 document.getElementById('timeline').innerHTML = '';
@@ -3174,7 +3170,7 @@
                     const bestPct = (round.best_pass_rate * 100).toFixed(0);
                     const rateEl = block.querySelector('.pass-rate');
                     if (rateEl) rateEl.textContent = bestPct + '% best';
-                    // Update each agent card in this round
+
                     for (const [agentId, info] of Object.entries(round.agents || {})) {
                         const card = block.querySelector('[data-agent="' + agentId + '"]');
                         if (!card) continue;
@@ -3200,7 +3196,7 @@
             }
 
             if (data.winning_agent) {
-                // Mark winner only in the LAST round block
+
                 const allCards = document.querySelectorAll('[data-agent="' + data.winning_agent + '"]');
                 if (allCards.length > 0) {
                     const lastCard = allCards[allCards.length - 1];
@@ -3211,21 +3207,21 @@
             document.getElementById('modalTitle').textContent = data.is_solo ? 'Solo Run Complete' : 'Debate Complete';
             showResults(data);
 
-            // Graph view
+
             GraphView.onDebateComplete(data);
         });
 
         socket.on('debate_stopped', (data) => {
-            // Reset buttons
+
             document.getElementById('startBtn').style.display = 'block';
             document.getElementById('stopBtn').style.display = 'none';
 
-            // Reset status
+
             document.getElementById('roundStatus').textContent = 'Stopped';
             document.getElementById('phaseBadge').classList.remove('active');
             document.getElementById('phaseBadge').textContent = '';
 
-            // Reset agent cards
+
             document.querySelectorAll('.agent-card').forEach(c => {
                 c.classList.remove('thinking');
                 const status = c.querySelector('.agent-status');
@@ -3235,7 +3231,7 @@
                 }
             });
 
-            // Graph view
+
             GraphView.onReset();
         });
 
@@ -3246,23 +3242,23 @@
             document.getElementById('roundStatus').textContent = 'Error: ' + data.message;
             document.getElementById('phaseBadge').classList.remove('active');
 
-            // Graph view
+
             GraphView.onReset();
         });
 
         socket.on('error', (data) => {
-            // Server rejected (e.g. "A debate is already running")
+
             document.getElementById('startBtn').disabled = false;
         });
 
-        // Functions
+
         function getPhaseLabel(phase) {
             const labels = {propose: 'Proposing...', critique: 'Critiquing...', revise: 'Revising...', vote: 'Voting...'};
             return labels[phase] || phase;
         }
 
         function createRoundBlock(roundNum) {
-            // Guard: don't create duplicate round blocks
+
             if (document.getElementById('round-' + roundNum)) return;
             const timeline = document.getElementById('timeline');
             const block = document.createElement('div');
@@ -3305,9 +3301,9 @@
         }
 
         function updateAgentCard(sol) {
-            // Update all cards for this agent in the latest round
+
             const cards = document.querySelectorAll('[data-agent="' + sol.agent_id + '"]');
-            const card = cards[cards.length - 1]; // latest round
+            const card = cards[cards.length - 1];
             if (!card) return;
 
             const er = sol.execution_result;
@@ -3317,7 +3313,7 @@
             fill.style.width = rate + '%';
             fill.className = 'progress-fill' + (rate < 30 ? ' low' : rate < 70 ? ' mid' : '');
 
-            // Try to update stats in the round-specific elements
+
             const roundNum = currentRoundEl ? currentRoundEl.id.replace('round-','') : '1';
             const passEl = document.getElementById(sol.agent_id + '-r' + roundNum + '-pass');
             const testsEl = document.getElementById(sol.agent_id + '-r' + roundNum + '-tests');
@@ -3329,7 +3325,7 @@
             const feed = document.getElementById('activityFeed');
             if (feed.querySelector('.placeholder')) feed.innerHTML = '';
 
-            // Dedup: don't add the same phase marker twice
+
             const label = 'Round ' + roundNum + ' \u2014 ' + phase.toUpperCase();
             for (const existing of feed.querySelectorAll('.activity-phase')) {
                 if (existing.textContent === label) return;
@@ -3362,22 +3358,20 @@
                 <div class="activity-expand" data-target="${textId}">Show more</div>
             `;
 
-            // Insert after the MATCHING phase marker so messages group
-            // under the correct round/phase even if delivered out of order.
-            // Phase markers have data-round and data-phase attributes.
+
             const msgRound = String(data.round_num || '');
             const msgType = (data.message_type || '').toLowerCase();
-            // Map message_type to phase: proposal→propose, critique→critique, revision→revise, vote→vote
+
             const typeToPhase = {proposal: 'propose', critique: 'critique', revision: 'revise', vote: 'vote'};
             const msgPhase = typeToPhase[msgType] || msgType;
 
             const phaseMarkers = feed.querySelectorAll('.activity-phase');
             let inserted = false;
-            // First pass: find exact match (same round + same phase)
+
             for (const marker of phaseMarkers) {
                 if (marker.getAttribute('data-round') == msgRound &&
                     marker.getAttribute('data-phase') === msgPhase) {
-                    // Insert right after this marker
+
                     if (marker.nextSibling) {
                         feed.insertBefore(item, marker.nextSibling);
                     } else {
@@ -3387,7 +3381,7 @@
                     break;
                 }
             }
-            // Fallback: insert after the first marker for the same round
+
             if (!inserted) {
                 for (const marker of phaseMarkers) {
                     if (marker.getAttribute('data-round') == msgRound) {
@@ -3401,10 +3395,10 @@
                     }
                 }
             }
-            // Last fallback: insert at top
+
             if (!inserted) feed.insertBefore(item, feed.firstChild);
 
-            // Hide "Show more" if content is short enough
+
             requestAnimationFrame(() => {
                 const textEl = document.getElementById(textId);
                 const expandEl = item.querySelector('.activity-expand');
@@ -3424,7 +3418,7 @@
             const feed = document.getElementById('activityFeed');
             const items = feed.querySelectorAll('.activity-item, .activity-phase');
             const lines = [];
-            // Items are newest-first in DOM, reverse for chronological order
+
             const arr = Array.from(items).reverse();
             for (const el of arr) {
                 if (el.classList.contains('activity-phase')) {
@@ -3479,18 +3473,13 @@
         }
 
         function loadModels() {
-            // Populate both the "+ Add agent" dropdown and the "Judge" dropdown
-            // from the same model list. "Add agent" excludes the placeholder;
-            // "Judge" keeps its "No judge" default as the first option.
-            //
-            // Idempotent: clearing any previously-appended model options first
-            // means calling loadModels() twice (e.g. after a manual refresh)
-            // doesn't duplicate entries.
+
+
             const fallback = ['qwen2.5-coder:7b','deepseek-coder:6.7b','codellama:7b-instruct','starcoder2:7b','llama3:latest','mistral:7b','qwen2.5-coder:32b'];
             const applyModels = (models) => {
                 const agentSel = document.getElementById('addAgent');
                 const judgeSel = document.getElementById('judgeSelect');
-                // Preserve placeholder (<option value="">) on each select.
+
                 [agentSel, judgeSel].forEach(sel => {
                     if (!sel) return;
                     sel.querySelectorAll('option').forEach(o => {
@@ -3521,7 +3510,7 @@
             const list = document.getElementById('agentList');
             list.innerHTML = '';
             const isDiverse = document.getElementById('revisionStrategy').value === 'diverse';
-            // Keep graph in sync with agent list (safe — doesn't affect timeline view)
+
             if (window.GraphView && document.getElementById('graphView') &&
                 document.getElementById('graphView').style.display !== 'none') {
                 GraphView.build(currentAgents);
@@ -3532,12 +3521,12 @@
                 chip.style.flexDirection = 'column';
                 chip.style.alignItems = 'stretch';
                 chip.style.gap = '4px';
-                // Top row: model name + remove button
+
                 const topRow = document.createElement('div');
                 topRow.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
                 topRow.innerHTML = `<span style="font-size:12px;">${model}</span><span class="x" onclick="removeAgent('${model}')" style="cursor:pointer;">&times;</span>`;
                 chip.appendChild(topRow);
-                // Strategy dropdown (only visible in diverse mode)
+
                 if (isDiverse) {
                     const sel = document.createElement('select');
                     sel.className = 'agent-strategy-select';
@@ -3567,9 +3556,7 @@
             this.value = '';
         });
 
-        // Judge selector — single-select. Empty value ("No judge") means null.
-        // The orchestrator treats a judge as an extra agent with role=JUDGE:
-        // it critiques every proposal and votes, but never proposes or revises.
+
         document.getElementById('judgeSelect').addEventListener('change', function() {
             currentJudge = this.value ? this.value : null;
             const info = document.getElementById('judgeActiveInfo');
@@ -3577,7 +3564,7 @@
         });
 
         document.getElementById('revisionStrategy').addEventListener('change', function() {
-            renderAgents(); // re-render to show/hide strategy dropdowns
+            renderAgents();
         });
 
         document.getElementById('showAllSolutions').addEventListener('change', function() {
@@ -3585,13 +3572,13 @@
                 this.checked ? 'All solutions (more tokens)' : 'Best only';
         });
 
-        // Collect per-agent strategy assignments from UI
+
         function getAgentStrategies() {
             const strategies = {};
             document.querySelectorAll('.agent-strategy-select').forEach(sel => {
                 if (sel.value && sel.value !== 'auto') {
                     const model = sel.dataset.agent;
-                    // Build agent_id the same way server does: agent_{i+1}_{model.split(':')[0]}
+
                     const idx = currentAgents.indexOf(model);
                     const agentId = 'agent_' + (idx + 1) + '_' + model.split(':')[0];
                     strategies[agentId] = sel.value;
@@ -3600,7 +3587,7 @@
             return strategies;
         }
 
-        // Initial render
+
         renderAgents();
 
         function startDebate() {
@@ -3610,14 +3597,14 @@
             if (!taskPath) { alert('Select a task'); return; }
             if (currentAgents.length < 2) { alert('Add at least 2 agents'); return; }
 
-            // Only disable button here — actual UI clear happens in debate_starting
+
             document.getElementById('startBtn').disabled = true;
             document.getElementById('roundStatus').textContent = 'Starting...';
 
             socket.emit('start_debate', {
                 task_path: taskPath,
                 agents: currentAgents,
-                judge: currentJudge, // null when "No judge" is selected
+                judge: currentJudge,
                 max_rounds: maxRounds,
                 show_all_solutions: document.getElementById('showAllSolutions').checked,
                 revision_strategy: document.getElementById('revisionStrategy').value,
@@ -3637,7 +3624,7 @@
             const agentStats = m.agent_stats || [];
             const c = document.getElementById('modalContent');
 
-            // Helpers
+
             const pct = v => v != null ? (v * 100).toFixed(1) + '%' : '—';
             const num = v => v != null ? (typeof v === 'number' ? (v % 1 === 0 ? v : v.toFixed(1)) : v) : '—';
             const barColor = v => v >= 0.7 ? 'green' : v >= 0.3 ? 'yellow' : 'red';
@@ -3648,11 +3635,11 @@
                     : `<span class="improvement-arrow down">${(v*100).toFixed(1)}%</span>`;
             };
 
-            // Agent colors for chart — terminal-themed greens
+
             const chartColors = ['#818cf8', '#60a5fa', '#34d399', '#fbbf24'];
             const agentIds = [...new Set(rh.flatMap(r => Object.keys(r.agents)))];
 
-            // === Build round chart ===
+
             let chartHTML = '<div class="round-chart">';
             rh.forEach(r => {
                 chartHTML += `<div class="round-chart-bar-group"><div class="round-chart-bars">`;
@@ -3671,7 +3658,7 @@
             });
             chartHTML += '</div>';
 
-            // === Build critique ratings ===
+
             const validCrits = crits.filter(c => c.ratings_parsed !== false);
             const avgCorr = validCrits.length ? validCrits.reduce((s,c) => s + c.correctness_rating, 0) / validCrits.length : 0;
             const avgEff = validCrits.length ? validCrits.reduce((s,c) => s + c.efficiency_rating, 0) / validCrits.length : 0;
@@ -3684,7 +3671,7 @@
                     <div class="metric-value">${val.toFixed(1)}/10</div>
                 </div>`;
 
-            // === Build agent behavior ===
+
             let behaviorHTML = '<div class="agent-behavior-grid">';
             agentStats.forEach(a => {
                 const label = a.agent_id.replace('agent_', '').replace(/_/g, ' ');
@@ -3977,7 +3964,7 @@
                 list.appendChild(label);
             });
 
-            // Build agent info with strategy labels
+
             const rounds = document.getElementById('maxRounds').value;
             const isDiverse = document.getElementById('revisionStrategy').value === 'diverse';
             const strategies = getAgentStrategies();
@@ -4001,12 +3988,12 @@
             ).join('') + judgeChip + '<div style="margin-top:4px; font-size:11px; color:var(--text3); width:100%;">Max rounds: ' + esc(rounds) + '</div>';
             agentEl.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px; font-size:12px; color:var(--text2);';
 
-            // Build config summary tags
+
             const showAll = document.getElementById('showAllSolutions').checked;
             const strategy = document.getElementById('revisionStrategy').value;
             const adaptiveT = document.getElementById('adaptiveTemp').checked;
             const critHist = document.getElementById('critiqueHistory').checked;
-            // `mode` was declared above (for judgeChip); reuse it here.
+
 
             const tagStyle = (active) => active
                 ? 'padding:3px 10px; border-radius:4px; font-size:11px; font-weight:600; background:rgba(99,102,241,0.15); color:#818cf8;'
@@ -4022,7 +4009,7 @@
             }
             configEl.innerHTML = configHTML;
 
-            // Hide config section in solo mode
+
             document.getElementById('batchConfigField').style.display = mode === 'solo' ? 'none' : 'block';
 
             document.getElementById('batchProgress').style.display = 'none';
@@ -4052,7 +4039,7 @@
             socket.emit('start_batch', {
                 task_paths: taskPaths,
                 agents: currentAgents,
-                judge: mode === 'debate' ? currentJudge : null, // judge only applies to debate mode
+                judge: mode === 'debate' ? currentJudge : null,
                 max_rounds: parseInt(document.getElementById('maxRounds').value),
                 mode: mode,
                 show_all_solutions: document.getElementById('showAllSolutions').checked,
@@ -4093,10 +4080,7 @@
         loadTasks();
         loadModels();
 
-        // ============== Custom Select Dropdowns (terminal styled) ==============
-        // Wraps every native <select> with a custom UI while keeping the original
-        // element in the DOM and in sync. All existing addEventListener('change'),
-        // .value reads/writes, and dynamic <option> updates continue to work.
+
         (function () {
             const enhanced = new WeakSet();
             const compactSelectIds = new Set([
@@ -4114,10 +4098,10 @@
                 const isCompact = compactSelectIds.has(selectEl.id) ||
                     selectEl.classList.contains('agent-strategy-select');
 
-                // Build wrapper
+
                 const wrap = document.createElement('div');
                 wrap.className = 'cs-wrap' + (isCompact ? ' compact' : '');
-                // Preserve any inline width/flex styles set by surrounding code
+
                 if (selectEl.style.cssText) wrap.style.cssText = selectEl.style.cssText;
 
                 const trigger = document.createElement('button');
@@ -4129,14 +4113,13 @@
                 const menu = document.createElement('div');
                 menu.className = 'cs-menu';
 
-                // Insert wrapper before select, then move select inside (hidden)
+
                 selectEl.parentNode.insertBefore(wrap, selectEl);
                 wrap.appendChild(trigger);
                 wrap.appendChild(menu);
                 wrap.appendChild(selectEl);
                 selectEl.classList.add('cs-original');
-                // Reset inline display style (selectEl might have inherited width:100% etc.)
-                // We rely on the .cs-original class CSS rule to hide it visually.
+
 
                 let suppressSync = false;
 
@@ -4184,7 +4167,7 @@
                 }
 
                 function openMenu() {
-                    // Close any other open menus first
+
                     document.querySelectorAll('.cs-menu.open').forEach(m => {
                         if (m !== menu) {
                             m.classList.remove('open');
@@ -4219,21 +4202,20 @@
                     }
                 });
 
-                // Sync visual when external code triggers 'change' on the select
+
                 selectEl.addEventListener('change', () => {
                     if (suppressSync) return;
                     updateTrigger();
                 });
 
-                // Watch for programmatic option list changes (loadTasks/loadModels)
+
                 const obs = new MutationObserver(() => {
                     updateTrigger();
                     if (menu.classList.contains('open')) renderOptions();
                 });
                 obs.observe(selectEl, { childList: true, subtree: false, attributes: true, attributeFilter: ['value', 'disabled'] });
 
-                // Override the .value setter on this instance to keep UI in sync
-                // when existing code does `selectEl.value = '...'` without a 'change' event.
+
                 try {
                     const proto = Object.getPrototypeOf(selectEl);
                     const desc = Object.getOwnPropertyDescriptor(proto, 'value') ||
@@ -4249,7 +4231,7 @@
                             }
                         });
                     }
-                } catch (_) { /* best-effort */ }
+                } catch (_) {  }
 
                 updateTrigger();
             }
@@ -4258,7 +4240,7 @@
                 (root || document).querySelectorAll('select:not(.cs-original)').forEach(enhance);
             }
 
-            // Global close on outside click
+
             document.addEventListener('mousedown', (ev) => {
                 if (!ev.target.closest || !ev.target.closest('.cs-wrap')) {
                     document.querySelectorAll('.cs-menu.open').forEach(m => {
@@ -4269,10 +4251,10 @@
                 }
             });
 
-            // Initial pass
+
             enhanceAll(document);
 
-            // Watch for new selects added later (batch agents, per-agent strategies, etc.)
+
             const bodyObs = new MutationObserver((muts) => {
                 muts.forEach(m => {
                     m.addedNodes && m.addedNodes.forEach(n => {
@@ -4284,11 +4266,11 @@
             });
             bodyObs.observe(document.body, { childList: true, subtree: true });
 
-            // Expose for debugging if needed
+
             window.__enhanceSelects = enhanceAll;
         })();
 
-        // ============== Number Stepper ==============
+
         (function () {
             function attach(stepper) {
                 const input = stepper.querySelector('input[type="number"]');
@@ -4296,14 +4278,14 @@
                 stepper.dataset.wired = '1';
 
                 const minus = stepper.querySelector('[data-step="-1"]');
-                const plus = stepper.querySelector('[data-step="1"]');
+                const plus  = stepper.querySelector('[data-step="1"]');
 
                 const refresh = () => {
                     const val = parseInt(input.value, 10);
                     const min = parseInt(input.min, 10);
                     const max = parseInt(input.max, 10);
                     if (minus) minus.disabled = !isNaN(min) && !isNaN(val) && val <= min;
-                    if (plus) plus.disabled = !isNaN(max) && !isNaN(val) && val >= max;
+                    if (plus)  plus.disabled  = !isNaN(max) && !isNaN(val) && val >= max;
                 };
 
                 const bump = (step) => {
@@ -4315,7 +4297,7 @@
                     if (!isNaN(min)) val = Math.max(min, val);
                     if (!isNaN(max)) val = Math.min(max, val);
                     input.value = val;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('input',  { bubbles: true }));
                     input.dispatchEvent(new Event('change', { bubbles: true }));
                     refresh();
                 };
@@ -4328,14 +4310,14 @@
                     });
                 });
 
-                input.addEventListener('input', refresh);
+                input.addEventListener('input',  refresh);
                 input.addEventListener('change', refresh);
                 refresh();
             }
 
             document.querySelectorAll('.number-stepper').forEach(attach);
 
-            // Watch for steppers added later (e.g. inside modals rendered dynamically)
+
             new MutationObserver(muts => {
                 muts.forEach(m => m.addedNodes && m.addedNodes.forEach(n => {
                     if (n.nodeType !== 1) return;

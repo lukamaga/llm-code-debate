@@ -1,4 +1,3 @@
-"""Driver for validating tasks2/ via reference solutions."""
 from __future__ import annotations
 
 import sys

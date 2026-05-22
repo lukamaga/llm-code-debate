@@ -1,6 +1,3 @@
-"""
-Models for critiques, bugs, votes, and consensus.
-"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -10,7 +7,6 @@ from typing import Any
 
 
 class BugSeverity(Enum):
-    """Severity levels for bugs."""
     CRITICAL = "critical"
     MAJOR = "major"
     MINOR = "minor"
@@ -18,7 +14,6 @@ class BugSeverity(Enum):
 
 
 class ImprovementType(Enum):
-    """Types of improvements."""
     PERFORMANCE = "performance"
     READABILITY = "readability"
     ROBUSTNESS = "robustness"
@@ -27,16 +22,14 @@ class ImprovementType(Enum):
 
 
 class VoteType(Enum):
-    """Types of votes."""
-    ADOPT = "adopt"        # Adopt another's solution
-    DEFEND = "defend"      # Keep own solution
-    PROPOSE_NEW = "propose_new"  # Propose entirely new approach
-    ABSTAIN = "abstain"    # No preference
+    ADOPT = "adopt"
+    DEFEND = "defend"
+    PROPOSE_NEW = "propose_new"
+    ABSTAIN = "abstain"
 
 
 @dataclass
 class Bug:
-    """A bug found in code."""
     description: str
     severity: BugSeverity = BugSeverity.MINOR
     line_number: int | None = None
@@ -62,10 +55,9 @@ class Bug:
 
 @dataclass
 class Improvement:
-    """A suggested improvement."""
     description: str
     improvement_type: ImprovementType = ImprovementType.READABILITY
-    priority: int = 1  # 1-5, higher is more important
+    priority: int = 1
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -85,9 +77,6 @@ class Improvement:
 
 @dataclass
 class Critique:
-    """
-    A critique of a solution by an agent.
-    """
     id: str
     agent_id: str
     solution_id: str
@@ -96,27 +85,24 @@ class Critique:
     overall_assessment: str = ""
     bugs: list[Bug] = field(default_factory=list)
     improvements: list[Improvement] = field(default_factory=list)
-    correctness_rating: int = 5  # 1-10
-    efficiency_rating: int = 5   # 1-10
-    readability_rating: int = 5  # 1-10
+    correctness_rating: int = 5
+    efficiency_rating: int = 5
+    readability_rating: int = 5
     would_adopt: bool = False
     adoption_reason: str | None = None
-    ratings_parsed: bool = True  # False if ratings fell back to defaults
+    ratings_parsed: bool = True
     created_at: datetime = field(default_factory=datetime.now)
 
     @property
     def average_rating(self) -> float:
-        """Average of all ratings."""
         return (self.correctness_rating + self.efficiency_rating + self.readability_rating) / 3
 
     @property
     def critical_bugs(self) -> list[Bug]:
-        """Get only critical bugs."""
         return [b for b in self.bugs if b.severity == BugSeverity.CRITICAL]
 
     @property
     def total_issues(self) -> int:
-        """Total number of issues (bugs + improvements)."""
         return len(self.bugs) + len(self.improvements)
 
     def to_dict(self) -> dict[str, Any]:
@@ -161,19 +147,16 @@ class Critique:
 
 @dataclass
 class Vote:
-    """
-    A vote cast by an agent for a solution.
-    """
     id: str
     agent_id: str
     round_num: int
     vote_type: VoteType
     voted_solution_id: str | None = None
     voted_agent_id: str | None = None
-    confidence: float = 0.5  # 0-1, how confident in the vote
+    confidence: float = 0.5
     reasoning: str = ""
-    raw_response: str = ""  # Full LLM response for debugging
-    parse_failed: bool = False  # True if voted_solution could not be parsed
+    raw_response: str = ""
+    parse_failed: bool = False
     created_at: datetime = field(default_factory=datetime.now)
 
     def to_dict(self) -> dict[str, Any]:
@@ -210,13 +193,10 @@ class Vote:
 
 @dataclass
 class ConsensusResult:
-    """
-    Result of consensus detection.
-    """
     reached: bool
     winning_solution_id: str | None = None
     winning_agent_id: str | None = None
-    consensus_ratio: float = 0.0  # Ratio of agents who agreed
+    consensus_ratio: float = 0.0
     vote_distribution: dict[str, int] = field(default_factory=dict)
     round_num: int = 0
     reason: str = ""

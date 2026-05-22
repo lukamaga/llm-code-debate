@@ -1,9 +1,3 @@
-"""
-Tests for the DebateOrchestrator.
-
-All LLM calls are mocked. Code execution and quality analysis are also
-mocked for unit tests (but may be left real for integration tests).
-"""
 from __future__ import annotations
 
 import asyncio
@@ -36,28 +30,18 @@ from src.models import (
 from tests.helpers import make_proposal_response, make_critique_response, make_vote_response
 
 
-# =============================================================================
-# Fixtures local to orchestrator tests
-# =============================================================================
-
 @pytest.fixture
 def orchestrator(mock_llm_client, debate_config):
-    """Create an orchestrator with mocked LLM and patched executor/analyzer."""
     orch = DebateOrchestrator(llm_client=mock_llm_client, config=debate_config)
     return orch
 
 
 @pytest.fixture
 def patched_orchestrator(orchestrator, mock_execution_result, mock_quality_metrics):
-    """Orchestrator with executor and quality analyzer mocked out."""
     orchestrator.executor.execute = AsyncMock(return_value=mock_execution_result)
     orchestrator.quality_analyzer.analyze = AsyncMock(return_value=mock_quality_metrics)
     return orchestrator
 
-
-# =============================================================================
-# TestDebateOrchestratorInit
-# =============================================================================
 
 class TestDebateOrchestratorInit:
     def test_init_default_config(self, mock_llm_client):
@@ -97,10 +81,6 @@ class TestDebateOrchestratorInit:
         assert orch.on_phase is on_phase
 
 
-# =============================================================================
-# TestGetProposal
-# =============================================================================
-
 class TestGetProposal:
     async def test_get_proposal_success(self, patched_orchestrator, sample_agent, sample_task):
         sol = await patched_orchestrator._get_proposal(sample_agent, sample_task)
@@ -132,10 +112,6 @@ class TestGetProposal:
         assert sample_agent.stats.solutions_proposed == 1
 
 
-# =============================================================================
-# TestGetCritique
-# =============================================================================
-
 class TestGetCritique:
     async def test_get_critique_returns_critiques(
         self, patched_orchestrator, sample_agent, sample_task, passing_solution, failing_solution
@@ -144,7 +120,6 @@ class TestGetCritique:
         critiques = await patched_orchestrator._get_critique(
             sample_agent, sample_task, solutions
         )
-        # Agent critiques all solutions (none are its own since agent_id differs)
         assert len(critiques) >= 1
 
     async def test_get_critique_updates_stats(
@@ -181,13 +156,8 @@ class TestGetCritique:
         critiques = await patched_orchestrator._get_critique(
             sample_agent, sample_task, []
         )
-        # With empty solutions the method should handle gracefully
         assert isinstance(critiques, list)
 
-
-# =============================================================================
-# TestGetRevision
-# =============================================================================
 
 class TestGetRevision:
     async def test_get_revision_success(
@@ -204,8 +174,7 @@ class TestGetRevision:
     async def test_get_revision_detects_defended(
         self, patched_orchestrator, sample_agent, sample_task
     ):
-        # Make original solution and LLM return identical code
-        code = "def solution(x: int) -> int:\n return x + 1"
+        code = "def solution(x: int) -> int:\n    return x + 1"
         original = Solution(
             id="sol_1", agent_id=sample_agent.id, round_num=1,
             code=f"```python\n{code}\n```",
@@ -225,7 +194,6 @@ class TestGetRevision:
             id="sol_1", agent_id=sample_agent.id, round_num=1,
             code="```python\ndef solution(x): return x\n```",
         )
-        # LLM returns different code
         patched_orchestrator.llm_client.generate = AsyncMock(
             return_value=make_proposal_response("def solution(x): return x + 1")
         )
@@ -255,10 +223,6 @@ class TestGetRevision:
         assert sol is None
 
 
-# =============================================================================
-# TestGetVote
-# =============================================================================
-
 class TestGetVote:
     async def test_get_vote_adopt(
         self, patched_orchestrator, sample_agent, sample_task, passing_solution
@@ -277,9 +241,6 @@ class TestGetVote:
     async def test_get_vote_self_vote_rewritten_to_abstain(
         self, patched_orchestrator, sample_agent, sample_task
     ):
-        # TIER 1 Fix #2: if the LLM votes for its own solution despite the
-        # HARD RULE in the prompt, the orchestrator must rewrite that to
-        # ABSTAIN so echo-chamber self-promotion cannot inflate rankings.
         own_sol = Solution(
             id="sol_own", agent_id=sample_agent.id, round_num=1, code="code"
         )
@@ -306,16 +267,12 @@ class TestGetVote:
         vote = await patched_orchestrator._get_vote(
             sample_agent, sample_task, [passing_solution], round_num=2
         )
-        # Vote is created but voted_solution_id should be None (out of range)
         assert vote is not None
         assert vote.voted_solution_id is None
 
     async def test_get_vote_judge_defend_rewritten_to_abstain(
         self, patched_orchestrator, judge_agent_config, sample_task, passing_solution
     ):
-        # A JUDGE has no own solution, so DEFEND is meaningless. The orchestrator
-        # must rewrite DEFEND → ABSTAIN with a warning rather than leaving a
-        # "DEFEND with no target" vote that would pollute consensus and logs.
         judge = Agent(id="judge_agent", config=judge_agent_config)
         patched_orchestrator.llm_client.generate = AsyncMock(
             return_value=LLMResponse(
@@ -351,10 +308,6 @@ class TestGetVote:
         )
         assert vote is None
 
-
-# =============================================================================
-# TestFindBestSolution
-# =============================================================================
 
 class TestFindBestSolution:
     def test_empty_list(self, orchestrator):
@@ -405,10 +358,6 @@ class TestFindBestSolution:
         assert best.id == passing_solution.id
 
 
-# =============================================================================
-# TestRunDebate
-# =============================================================================
-
 class TestRunDebate:
     async def test_run_debate_completes(
         self, patched_orchestrator, sample_task, agent_configs_3
@@ -428,7 +377,6 @@ class TestRunDebate:
         assert len(debate.rounds) >= 1
 
     async def test_run_debate_max_rounds(self, mock_llm_client, sample_task):
-        """When no consensus forms, debate runs max_rounds times."""
         config = DebateConfig(max_rounds=2, min_rounds=1, consensus_threshold=0.99)
         orch = DebateOrchestrator(llm_client=mock_llm_client, config=config)
         orch.executor.execute = AsyncMock(return_value=ExecutionResult(
@@ -436,7 +384,6 @@ class TestRunDebate:
         ))
         orch.quality_analyzer.analyze = AsyncMock(return_value=CodeQualityMetrics())
 
-        # Return votes that disagree — each agent votes for a different solution
         call_count = {"n": 0}
         original_dispatch = mock_llm_client.generate.side_effect
 
@@ -459,7 +406,6 @@ class TestRunDebate:
         assert debate.status in (DebateStatus.MAX_ROUNDS_REACHED, DebateStatus.EARLY_STOP)
 
     async def test_run_debate_early_stop_perfect(self, mock_llm_client, sample_task):
-        """Perfect solution in round 1 triggers early stop."""
         config = DebateConfig(max_rounds=5, early_stop_on_perfect=True)
         orch = DebateOrchestrator(llm_client=mock_llm_client, config=config)
         orch.executor.execute = AsyncMock(return_value=ExecutionResult(
@@ -475,9 +421,7 @@ class TestRunDebate:
     async def test_run_debate_stop_event(
         self, patched_orchestrator, sample_task, agent_configs_3
     ):
-        """Setting stop_event mid-debate causes early stop."""
         stop = Event()
-        # Set stop before round 2
         original_run_debate_round = patched_orchestrator._run_debate_round
 
         async def _stop_after_round1(debate, round_num):
@@ -517,12 +461,10 @@ class TestRunDebate:
             AgentConfig(name="judge", model="model:7b", role=AgentRole.JUDGE),
         ]
         debate = await patched_orchestrator.run_debate(sample_task, configs)
-        # Judge agent should have 0 solutions_proposed
         judge = next(a for a in debate.agents if a.role == AgentRole.JUDGE)
         assert judge.stats.solutions_proposed == 0
 
     async def test_run_debate_error_handling(self, mock_llm_client, sample_task):
-        """If all LLM calls fail, debate ends with ERROR status."""
         mock_llm_client.generate = AsyncMock(side_effect=RuntimeError("total failure"))
         config = DebateConfig(max_rounds=2)
         orch = DebateOrchestrator(llm_client=mock_llm_client, config=config)
@@ -533,7 +475,6 @@ class TestRunDebate:
 
         configs = [AgentConfig(name="a1", model="m:7b")]
         debate = await orch.run_debate(sample_task, configs)
-        # Should complete without raising
         assert debate is not None
 
     async def test_run_debate_rounds_recorded(
@@ -544,10 +485,6 @@ class TestRunDebate:
         for i, round_summary in enumerate(debate.rounds):
             assert round_summary.round_num == i + 1
 
-
-# =============================================================================
-# TestGetSolutionById
-# =============================================================================
 
 class TestGetSolutionById:
     def test_found(self, orchestrator, passing_solution):
@@ -565,11 +502,6 @@ class TestGetSolutionById:
         assert result is None
 
 
-# =============================================================================
-# TIER 1 Fix #2 (extra edge cases): Anti-self-vote rewrite in orchestrator
-# =============================================================================
-
-
 def _vote_response(content: str) -> LLMResponse:
     return LLMResponse(
         content=content, model="test", tokens_used=10, generation_time=0.01,
@@ -577,14 +509,10 @@ def _vote_response(content: str) -> LLMResponse:
 
 
 class TestAntiSelfVote:
-    """Fix #2: the orchestrator must rewrite any vote cast for the voter's
-    own solution to ABSTAIN — the prompt-level HARD RULE is a soft guard,
-    this server-side check is the hard guarantee."""
 
     async def test_self_vote_rewritten_even_when_own_is_best(
         self, patched_orchestrator, sample_agent, sample_task
     ):
-        # Voter's own solution is Solution 1, another agent's is Solution 2.
         own = Solution(
             id="own", agent_id=sample_agent.id, round_num=2, code="code",
         )
@@ -603,7 +531,6 @@ class TestAntiSelfVote:
     async def test_legitimate_cross_vote_preserved(
         self, patched_orchestrator, sample_agent, sample_task
     ):
-        # Voting for the OTHER solution (agent_other) must not be touched.
         own = Solution(
             id="own", agent_id=sample_agent.id, round_num=2, code="code",
         )
@@ -634,11 +561,6 @@ class TestAntiSelfVote:
         assert vote.voted_solution_id is None
 
 
-# =============================================================================
-# TIER 1 Fix #3: Soft anti-regression policy — should_revert_revision helper
-# =============================================================================
-
-
 def _sol_with_result(agent_id: str, passed: int, total: int,
                      error_message: str | None = None) -> Solution:
     sol = Solution(id=f"sol_{agent_id}", agent_id=agent_id, round_num=1, code="x")
@@ -661,9 +583,6 @@ def _result(passed: int, total: int, error_message: str | None = None) -> Execut
 
 
 class TestShouldRevertRevision:
-    """Fix #3: policy for deciding whether to revert a revised solution to the
-    historical best. Old policy was ``any regression → revert``; the new policy
-    allows a 1-test regression to preserve exploration."""
 
     def test_no_prev_best_means_keep(self):
         revert, reason = should_revert_revision(None, _result(3, 5))
@@ -672,7 +591,6 @@ class TestShouldRevertRevision:
 
     def test_prev_best_without_execution_result_means_keep(self):
         sol = Solution(id="s", agent_id="a", round_num=1, code="x")
-        # No execution_result attached.
         revert, reason = should_revert_revision(sol, _result(3, 5))
         assert revert is False
         assert reason == "no_prev_best"
@@ -690,7 +608,6 @@ class TestShouldRevertRevision:
         assert reason == "no_regression"
 
     def test_regression_by_one_is_kept_for_exploration(self):
-        # KEY NEW BEHAVIOUR: 1-test regression must not revert.
         prev = _sol_with_result("a", passed=5, total=5)
         revert, reason = should_revert_revision(prev, _result(4, 5))
         assert revert is False
@@ -707,11 +624,10 @@ class TestShouldRevertRevision:
         prev = _sol_with_result("a", passed=8, total=8)
         revert, reason = should_revert_revision(prev, _result(0, 8))
         assert revert is True
-        assert "8" in reason # regressed by 8 tests
+        assert "8" in reason
 
     def test_syntax_error_always_reverts(self):
         prev = _sol_with_result("a", passed=3, total=5)
-        # tests_total=1 and SyntaxError in error_message → syntactically broken.
         broken = _result(0, 1, error_message="SyntaxError: unexpected EOF at line 7")
         revert, reason = should_revert_revision(prev, broken)
         assert revert is True
@@ -732,9 +648,6 @@ class TestShouldRevertRevision:
         assert reason == "syntax_broken"
 
     def test_assertion_error_in_single_test_is_not_syntax_broken(self):
-        # If tests_total == 1 but the failure is an AssertionError (not a parse
-        # failure), treat it as a normal test result — don't hit the
-        # syntax_broken path. Here regression_size = 1 → keep.
         prev = _sol_with_result("a", passed=1, total=1)
         failed = _result(0, 1, error_message="AssertionError: expected 5, got 3")
         revert, reason = should_revert_revision(prev, failed)
@@ -742,26 +655,14 @@ class TestShouldRevertRevision:
         assert reason == "regressed_by_one_kept"
 
     def test_syntax_error_on_new_code_reverts_even_if_prev_also_poor(self):
-        # Edge case: previous best was bad (1/8) and new code doesn't parse at all.
-        # Syntax-broken path must still revert — broken code has zero value.
         prev = _sol_with_result("a", passed=1, total=8)
         broken = _result(0, 1, error_message="SyntaxError: invalid syntax")
         revert, reason = should_revert_revision(prev, broken)
         assert revert is True
         assert reason == "syntax_broken"
 
-    # ------------------------------------------------------------------
-    # Fix #3.1: detection via ExecutionResult.status (not just substring).
-    # The executor sets status=RUNTIME_ERROR when pytest fails to collect
-    # any test (import-time failure), but the pytest stdout does NOT
-    # always contain the literal "ImportError" string — so we need the
-    # status-based path to catch these cases.
-    # ------------------------------------------------------------------
 
     def test_status_runtime_error_reverts_even_without_keyword_in_message(self):
-        # This is the real-world codellama R2 case: tests_total=1,
-        # tests_passed=0, status=RUNTIME_ERROR, and pytest output has
-        # "collected 0 items / 1 error" but NO 'ImportError' substring.
         prev = _sol_with_result("a", passed=0, total=8)
         pytest_output_no_keyword = (
             "============================= test session starts =========\n"
@@ -804,8 +705,6 @@ class TestShouldRevertRevision:
         assert reason == "syntax_broken"
 
     def test_status_test_failed_is_not_syntax_broken(self):
-        # Normal test failure → NOT syntax_broken. Falls through to
-        # regression policy. Regression = 1 here → keep.
         prev = _sol_with_result("a", passed=4, total=8)
         er = ExecutionResult(
             status=SolutionStatus.TEST_FAILED,

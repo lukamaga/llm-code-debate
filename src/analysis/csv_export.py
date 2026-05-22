@@ -1,22 +1,3 @@
-"""
-Standalone CSV export of debate results from the SQLite database.
-
-This module mirrors the metric-extraction and CSV-writing logic that the web
-``/api/export/csv`` endpoint provides, but does NOT depend on Flask. It is
-designed to be invoked from the HPC batch script directly:
-
-    python3 -m src.analysis.csv_export \\
-        --db debate_results.db \\
-        --out results/summary_<JOB_ID>.csv
-
-The CSV format is identical to the one produced by the web endpoint — same
-39 columns, same metric definitions — so spreadsheets generated locally and
-on HPC are interchangeable.
-
-The metric-extraction code is intentionally self-contained (not imported
-from ``src.web.app``) so the script has zero web/Flask dependencies and
-runs on any system with just the project's core requirements.
-"""
 from __future__ import annotations
 
 import argparse
@@ -29,20 +10,12 @@ logger = logging.getLogger(__name__)
 
 
 def extract_metrics_from_record(record) -> dict:
-    """Compute extended per-debate metrics from a ``DebateRecord``.
-
-    Mirrors the implementation in ``src/web/app.py::_extract_metrics_from_record``.
-    Kept as a separate copy here to avoid pulling Flask into the HPC pipeline.
-    Both implementations must be kept in sync — see the test in
-    ``tests/test_csv_export.py`` (if added) for parity verification.
-    """
     from .metrics_collector import compute_pass_at_k
 
     data = record.full_debate_data or {}
     rounds = data.get("rounds", [])
     agents = data.get("agents", [])
 
-    # Collect all solutions across rounds
     all_solutions = []
     for rd in rounds:
         for sol in rd.get("solutions", []):
@@ -55,7 +28,6 @@ def extract_metrics_from_record(record) -> dict:
     pass_at_1 = compute_pass_at_k(n, c, 1) if n >= 1 else 0.0
     pass_at_3 = compute_pass_at_k(n, c, 3) if n >= 3 else 0.0
 
-    # Improvement over initial (round 1)
     initial_rates = []
     if rounds:
         for sol in rounds[0].get("solutions", []):
@@ -78,7 +50,6 @@ def extract_metrics_from_record(record) -> dict:
     else:
         imp_avg = 0.0
 
-    # Critique stats
     all_critiques = []
     for rd in rounds:
         all_critiques.extend(rd.get("critiques", []))
@@ -87,7 +58,6 @@ def extract_metrics_from_record(record) -> dict:
     total_bugs = sum(len(cr.get("bugs", [])) for cr in all_critiques)
     total_improvements = sum(len(cr.get("improvements", [])) for cr in all_critiques)
 
-    # Bug fix rate: tests gained between first and last round
     bugs_fixed = 0
     if len(rounds) >= 2:
         first_sols = {s.get("agent_id"): s for s in rounds[0].get("solutions", [])}
@@ -138,12 +108,6 @@ def extract_metrics_from_record(record) -> dict:
             rounds_to_consensus = rd.get("round_num", 0)
             break
 
-    # Peak round detection — at which round did the BEST solution appear?
-    # This is the core "did debate help?" metric for thesis analysis:
-    # best_round=1 → solved on first try, debate added no value (early stop)
-    # best_round=2+ → cross-pollination through critique/revise actually helped
-    # We pick the EARLIEST round that hit the global peak (ties → smaller round
-    # number, since reaching peak earlier means less debate effort needed).
     best_round = 1
     best_round_pass_rate = 0.0
     for rd in rounds:
@@ -217,7 +181,6 @@ def extract_metrics_from_record(record) -> dict:
     }
 
 
-# Header order is locked here so HPC- and web-generated CSVs are byte-compatible.
 CSV_HEADER = [
     "debate_id", "task_id", "task_name", "difficulty", "mode",
     "agent_models", "num_agents",
@@ -234,21 +197,11 @@ CSV_HEADER = [
     "all_solutions_count", "passing_solutions_count",
     "most_active_agent", "most_successful_agent", "most_bugs_found_by",
     "status", "winning_agent",
-    # Peak-round metrics — answer "did debate help, or solved on round 1?":
-    # best_round=1 + peak_after_debate=False → trivial / early-stop case
-    # best_round=N>1 + peak_after_debate=True → genuine MAD success
     "best_round", "best_round_pass_rate", "peak_after_debate",
 ]
 
 
 def export_to_csv(db_path: str, output_path: str) -> int:
-    """Read every debate from ``db_path`` and write a CSV summary to
-    ``output_path``. Returns the number of rows written (excluding header).
-
-    Creates the parent directory if needed. Overwrites the file if it
-    already exists — the HPC script uses a unique filename with the SLURM
-    job id, so this only affects deliberate re-runs.
-    """
     from ..database.repository import DebateRepository
     from ..database.models import DebateRecord
 
@@ -267,9 +220,6 @@ def export_to_csv(db_path: str, output_path: str) -> int:
                 models = ",".join(r.agent_models) if r.agent_models else ""
                 num_agents = len(r.agent_models) if r.agent_models else 0
                 ext = extract_metrics_from_record(r)
-                # Prefer the record's stored consensus_ratio for column
-                # consistency; ext['consensus_ratio'] is identical when
-                # full_debate_data is well-formed but falls back gracefully.
                 consensus_ratio = r.consensus_ratio if r.consensus_ratio is not None else ext["consensus_ratio"]
                 writer.writerow([
                     r.id, r.task_id, r.task_name, r.task_difficulty, mode,
@@ -295,34 +245,16 @@ def export_to_csv(db_path: str, output_path: str) -> int:
 
 
 PER_ROUND_HEADER = [
-    # Identity
     "debate_id", "task_id", "task_name", "difficulty",
     "agent_id", "model", "role",
-    # Round position
     "round_num", "is_revision",
-    # Per-round result — round_num=1 is the SINGLE-AGENT BASELINE (the
-    # proposal prompt receives only the task, no info from other agents).
     "pass_rate", "tests_passed", "tests_total", "status",
-    # Costs
     "generation_time", "code_chars",
-    # Flags surfaced by orchestrator's defenses
     "was_truncated", "is_historical_best_reuse",
 ]
 
 
 def export_per_round_csv(db_path: str, output_path: str) -> int:
-    """Export per-round per-agent solutions to a long-format CSV.
-
-    One row per (debate × agent × round) — i.e. one row per Solution object.
-    Round 1 rows give the **single-agent baseline** (proposal phase, no peer
-    info), so this CSV alone answers "how much does debate add over solo?"
-    without needing a separate solo experiment.
-
-    For a typical batch of 60 tasks × 3 agents × 5 rounds = up to ~900 rows.
-    Pivot to wide via Pandas:
-        df.pivot_table(index=['debate_id','model'], columns='round_num',
-                       values='pass_rate')
-    """
     from ..database.repository import DebateRepository
     from ..database.models import DebateRecord
 
@@ -343,7 +275,6 @@ def export_per_round_csv(db_path: str, output_path: str) -> int:
                 rounds = data.get("rounds", [])
                 agents = data.get("agents", [])
 
-                # Build a quick lookup: agent_id → role (string), model
                 agent_meta = {}
                 for a in agents:
                     aid = a.get("id") or a.get("stats", {}).get("agent_id", "")
@@ -358,8 +289,6 @@ def export_per_round_csv(db_path: str, output_path: str) -> int:
                         agent_id = sol.get("agent_id", "")
                         meta = agent_meta.get(agent_id, {"model": "", "role": "general"})
                         er = sol.get("execution_result") or {}
-                        # `pass_rate` is on execution_result in stored data;
-                        # solution-level is sometimes None.
                         pass_rate = er.get("pass_rate")
                         if pass_rate is None:
                             tp = er.get("tests_passed", 0) or 0
@@ -378,9 +307,6 @@ def export_per_round_csv(db_path: str, output_path: str) -> int:
                             round(sol.get("generation_time", 0.0) or 0.0, 2),
                             len(code),
                             sol.get("was_truncated", False),
-                            # Heuristic: a revision that exactly equals an
-                            # earlier solution code is a historical-best reuse.
-                            # Stored as bool when the orchestrator falls back.
                             sol.get("is_historical_reuse", False),
                         ])
                         rows_written += 1

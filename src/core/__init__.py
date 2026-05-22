@@ -1,6 +1,3 @@
-"""
-Core components for the LLM Code Debate System.
-"""
 from .consensus import ConsensusConfig, ConsensusDetector
 from .executor import CodeExecutor, CodeQualityAnalyzer
 from .orchestrator import DebateOrchestrator
@@ -18,15 +15,11 @@ from .prompts import (
 )
 
 __all__ = [
-    # Orchestrator
     "DebateOrchestrator",
-    # Consensus
     "ConsensusConfig",
     "ConsensusDetector",
-    # Executor
     "CodeExecutor",
     "CodeQualityAnalyzer",
-    # Prompts
     "SYSTEM_PROMPT_CODER",
     "SYSTEM_PROMPT_CRITIC",
     "SYSTEM_PROMPT_JUDGE",

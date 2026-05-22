@@ -1,6 +1,3 @@
-"""
-Database repository for CRUD operations.
-"""
 from __future__ import annotations
 
 from datetime import datetime
@@ -20,27 +17,14 @@ from .models import (
 
 
 class DebateRepository:
-    """
-    Repository for managing debate records in the database.
-    """
     
     def __init__(self, db_path: str = "debate_results.db"):
         self.SessionMaker = create_database(db_path)
     
     def _get_session(self) -> Session:
-        """Get a new database session."""
         return self.SessionMaker()
     
     def save_debate(self, debate: Debate) -> DebateRecord:
-        """
-        Save a debate to the database.
-        
-        Args:
-            debate: The debate to save.
-            
-        Returns:
-            The saved DebateRecord.
-        """
         session = self._get_session()
         
         try:
@@ -69,7 +53,6 @@ class DebateRepository:
                 full_debate_data=debate.to_dict(),
             )
             
-            # Add round records
             for round_summary in debate.rounds:
                 round_record = RoundRecord(
                     debate_id=debate.id,
@@ -86,7 +69,6 @@ class DebateRepository:
                 )
                 record.rounds.append(round_record)
             
-            # Add agent stat records
             for agent in debate.agents:
                 stat_record = AgentStatRecord(
                     debate_id=debate.id,
@@ -113,7 +95,6 @@ class DebateRepository:
             session.close()
     
     def get_debate(self, debate_id: str) -> DebateRecord | None:
-        """Get a debate by ID."""
         session = self._get_session()
         try:
             return session.query(DebateRecord).filter_by(id=debate_id).first()
@@ -121,7 +102,6 @@ class DebateRepository:
             session.close()
     
     def get_debates_by_task(self, task_id: str) -> list[DebateRecord]:
-        """Get all debates for a task."""
         session = self._get_session()
         try:
             return session.query(DebateRecord).filter_by(task_id=task_id).all()
@@ -129,7 +109,6 @@ class DebateRepository:
             session.close()
     
     def get_debates_by_difficulty(self, difficulty: str) -> list[DebateRecord]:
-        """Get all debates for a difficulty level."""
         session = self._get_session()
         try:
             return session.query(DebateRecord).filter_by(task_difficulty=difficulty).all()
@@ -137,7 +116,6 @@ class DebateRepository:
             session.close()
     
     def get_all_debates(self, limit: int = 100) -> list[DebateRecord]:
-        """Get all debates."""
         session = self._get_session()
         try:
             return session.query(DebateRecord).order_by(DebateRecord.start_time.desc()).limit(limit).all()
@@ -145,7 +123,6 @@ class DebateRepository:
             session.close()
     
     def get_agent_stats_by_model(self, model: str) -> list[AgentStatRecord]:
-        """Get all agent stats for a model."""
         session = self._get_session()
         try:
             return session.query(AgentStatRecord).filter_by(model=model).all()
@@ -153,10 +130,8 @@ class DebateRepository:
             session.close()
     
     def save_task(self, task: Task) -> TaskRecord:
-        """Save a task to the database."""
         session = self._get_session()
         try:
-            # Check if task exists
             existing = session.query(TaskRecord).filter_by(id=task.id).first()
             if existing:
                 return existing
@@ -178,7 +153,6 @@ class DebateRepository:
             session.close()
     
     def get_summary_stats(self) -> dict[str, Any]:
-        """Get summary statistics across all debates."""
         session = self._get_session()
         try:
             debates = session.query(DebateRecord).all()
@@ -207,7 +181,6 @@ class DebateRepository:
             session.close()
     
     def _get_stats_by_difficulty(self, debates: list[DebateRecord]) -> dict[str, dict]:
-        """Get stats grouped by difficulty."""
         by_diff: dict[str, list[DebateRecord]] = {}
         for d in debates:
             diff = d.task_difficulty or "unknown"
@@ -233,7 +206,6 @@ class DebateRepository:
         description: str = "",
         config: dict | None = None,
     ) -> ExperimentRecord:
-        """Create a new experiment."""
         session = self._get_session()
         try:
             record = ExperimentRecord(
@@ -254,7 +226,6 @@ class DebateRepository:
         experiment_id: str,
         debate_id: str,
     ) -> None:
-        """Add a debate to an experiment."""
         session = self._get_session()
         try:
             experiment = session.query(ExperimentRecord).filter_by(id=experiment_id).first()
@@ -268,7 +239,6 @@ class DebateRepository:
             session.close()
 
     def get_comparison_data(self) -> dict[str, Any]:
-        """Get comparison data between solo and debate runs."""
         session = self._get_session()
         try:
             all_records = session.query(DebateRecord).all()
@@ -312,7 +282,6 @@ class DebateRepository:
                     "improvement": improvement,
                 })
 
-            # Aggregates
             improvements = [t["improvement"] for t in tasks if t["improvement"] is not None]
             return {
                 "tasks": tasks,

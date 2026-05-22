@@ -1,4 +1,3 @@
-"""Reference: state_persistence, stream_pipeline, mini_interpreter, acl_system, workflow_engine."""
 import copy
 
 STATE_PERSIST = {

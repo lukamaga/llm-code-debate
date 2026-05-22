@@ -1,8 +1,3 @@
-"""
-Tests for OllamaClient and MultiModelClient.
-
-All HTTP calls are mocked via httpx mock responses.
-"""
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -14,12 +9,7 @@ from src.llm import LLMRequest, LLMResponse
 from src.llm.ollama_client import OllamaClient, MultiModelClient
 
 
-# =============================================================================
-# Helpers
-# =============================================================================
-
 def _mock_httpx_response(status_code=200, json_data=None):
-    """Build a mock httpx.Response."""
     resp = MagicMock(spec=httpx.Response)
     resp.status_code = status_code
     resp.json.return_value = json_data or {}
@@ -30,10 +20,6 @@ def _mock_httpx_response(status_code=200, json_data=None):
         )
     return resp
 
-
-# =============================================================================
-# TestOllamaClient
-# =============================================================================
 
 class TestOllamaClient:
     @pytest.fixture
@@ -121,10 +107,6 @@ class TestOllamaClient:
         mock_http.aclose.assert_called_once()
         assert client._client is None
 
-
-# =============================================================================
-# TestMultiModelClient
-# =============================================================================
 
 class TestMultiModelClient:
     def test_get_client_creates_once(self):

@@ -1,13 +1,9 @@
-"""
-Tests for core functionality.
-"""
 import pytest
 from src.core.consensus import ConsensusDetector, ConsensusConfig
 from src.models import Vote, VoteType, Solution, SolutionStatus, ExecutionResult
 
 
 class TestConsensusDetector:
-    """Tests for ConsensusDetector."""
 
     @pytest.fixture
     def detector(self):
@@ -45,19 +41,15 @@ class TestConsensusDetector:
             Vote(id="v2", agent_id="agent_2", round_num=1, vote_type=VoteType.ADOPT, voted_solution_id="sol_2", confidence=0.8),
         ]
         result = detector.detect(votes, solutions, [], 1)
-        # With 50-50 split, no consensus
         assert not result.reached
 
     def test_passing_bonus(self, detector, solutions):
-        # With passing bonus, sol_1 (which passes tests) should have advantage
-        # even with lower initial confidence
         votes = [
             Vote(id="v1", agent_id="agent_1", round_num=1, vote_type=VoteType.ADOPT, voted_solution_id="sol_1", confidence=0.5),
             Vote(id="v2", agent_id="agent_2", round_num=1, vote_type=VoteType.ADOPT, voted_solution_id="sol_2", confidence=0.8),
             Vote(id="v3", agent_id="agent_3", round_num=1, vote_type=VoteType.ADOPT, voted_solution_id="sol_1", confidence=0.6),
         ]
         result = detector.detect(votes, solutions, [], 1)
-        # sol_1 passes all tests and has 2 votes, should win
         assert result.reached
         assert result.winning_solution_id == "sol_1"
 

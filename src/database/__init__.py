@@ -1,6 +1,3 @@
-"""
-Database module for the LLM Code Debate System.
-"""
 from .models import (
     AgentStatRecord,
     Base,

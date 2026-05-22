@@ -1,6 +1,3 @@
-"""
-LLM clients for the Code Debate System.
-"""
 from .base import BaseLLMClient, LLMRequest, LLMResponse
 from .ollama_client import MultiModelClient, OllamaClient
 

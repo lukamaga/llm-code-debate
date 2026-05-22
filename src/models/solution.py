@@ -1,6 +1,3 @@
-"""
-Solution models for the LLM Code Debate System.
-"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -10,25 +7,23 @@ from typing import Any
 
 
 class SolutionStatus(Enum):
-    """Status of a solution."""
-    PENDING = "pending" # Not yet tested
-    SYNTAX_ERROR = "syntax_error" # Failed to parse
-    RUNTIME_ERROR = "runtime_error" # Crashed during execution
-    TEST_FAILED = "test_failed" # Tests failed
-    TIMEOUT = "timeout" # Execution timed out
-    PASSED = "passed" # All tests passed
+    PENDING = "pending"
+    SYNTAX_ERROR = "syntax_error"
+    RUNTIME_ERROR = "runtime_error"
+    TEST_FAILED = "test_failed"
+    TIMEOUT = "timeout"
+    PASSED = "passed"
 
 
 @dataclass
 class TestResult:
-    """Result of running a single test."""
     test_name: str
     passed: bool
     execution_time: float = 0.0
     error_message: str | None = None
     stdout: str = ""
     stderr: str = ""
-
+    
     def to_dict(self) -> dict[str, Any]:
         return {
             "test_name": self.test_name,
@@ -42,26 +37,23 @@ class TestResult:
 
 @dataclass
 class ExecutionResult:
-    """Result of executing a solution against all tests."""
     status: SolutionStatus
     tests_passed: int = 0
     tests_total: int = 0
     test_results: list[TestResult] = field(default_factory=list)
     execution_time: float = 0.0
     error_message: str | None = None
-
+    
     @property
     def pass_rate(self) -> float:
-        """Calculate the pass rate."""
         if self.tests_total == 0:
             return 0.0
         return self.tests_passed / self.tests_total
-
+    
     @property
     def all_passed(self) -> bool:
-        """Check if all tests passed."""
         return self.status == SolutionStatus.PASSED
-
+    
     def to_dict(self) -> dict[str, Any]:
         return {
             "status": self.status.value,
@@ -76,23 +68,19 @@ class ExecutionResult:
 
 @dataclass
 class CodeQualityMetrics:
-    """Code quality metrics from static analysis."""
-    # Pylint
     pylint_score: float = 0.0
     pylint_errors: int = 0
     pylint_warnings: int = 0
     pylint_conventions: int = 0
-
-    # Radon
+    
     cyclomatic_complexity: float = 0.0
     max_complexity: int = 0
     maintainability_index: float = 0.0
-
-    # Basic metrics
+    
     lines_of_code: int = 0
     blank_lines: int = 0
     comment_lines: int = 0
-
+    
     def to_dict(self) -> dict[str, Any]:
         return {
             "pylint_score": self.pylint_score,
@@ -107,53 +95,39 @@ class CodeQualityMetrics:
 
 @dataclass
 class Solution:
-    """
-    A code solution proposed by an agent.
-
-    Contains the code, execution results, and quality metrics.
-    """
     id: str
     agent_id: str
     round_num: int
     code: str
-
-    # Execution
+    
     execution_result: ExecutionResult | None = None
-
-    # Quality
+    
     quality_metrics: CodeQualityMetrics | None = None
-
-    # Metadata
+    
     is_revision: bool = False
-    parent_solution_id: str | None = None # If this is a revision
+    parent_solution_id: str | None = None
     generation_time: float = 0.0
     timestamp: datetime = field(default_factory=datetime.now)
+    
+    code_files: dict[str, str] = field(default_factory=dict)
 
-    # Multi-file support
-    code_files: dict[str, str] = field(default_factory=dict) # filename → code for multi-file solutions
-
-    # Voting
     votes_received: int = 0
 
-    # Truncation detection
-    was_truncated: bool = False # True if LLM hit token limit (finish_reason="length")
-
+    was_truncated: bool = False
+    
     @property
     def passed_all_tests(self) -> bool:
-        """Check if solution passed all tests."""
         if self.execution_result is None:
             return False
         return self.execution_result.all_passed
-
+    
     @property
     def pass_rate(self) -> float:
-        """Get the test pass rate."""
         if self.execution_result is None:
             return 0.0
         return self.execution_result.pass_rate
-
+    
     def extract_code_files(self) -> dict[str, str]:
-        """Extract code files, stripping markdown markers from each."""
         result = {}
         for filename, file_code in self.code_files.items():
             code = file_code.strip()
@@ -167,20 +141,18 @@ class Solution:
         return result
 
     def extract_code_block(self) -> str:
-        """Extract code from markdown code block if present."""
         code = self.code.strip()
-
-        # Handle markdown code blocks
+        
         if code.startswith("```python"):
             code = code[9:]
         elif code.startswith("```"):
             code = code[3:]
-
+        
         if code.endswith("```"):
             code = code[:-3]
-
+        
         return code.strip()
-
+    
     def to_dict(self) -> dict[str, Any]:
         d = {
             "id": self.id,
@@ -204,11 +176,6 @@ class Solution:
 
 @dataclass
 class Task:
-    """
-    A coding task for the debate.
-
-    Contains the problem description, signature, and tests.
-    """
     id: str
     name: str
     difficulty: str
@@ -219,18 +186,16 @@ class Task:
     hints: list[str] = field(default_factory=list)
     expected_complexity: str | None = None
     tags: list[str] = field(default_factory=list)
-    helper_code: dict[str, str] = field(default_factory=dict) # filename → code for multi-file tasks
-    required_files: list[str] = field(default_factory=list) # files LLM must write for multi-file tasks
-    test_imports: list[str] = field(default_factory=list) # custom imports for test file
+    helper_code: dict[str, str] = field(default_factory=dict)
+    required_files: list[str] = field(default_factory=list)
+    test_imports: list[str] = field(default_factory=list)
 
     @property
     def is_multi_file(self) -> bool:
-        """True when the LLM must produce multiple files."""
         return len(self.required_files) > 0
-
+    
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Task:
-        """Create Task from dictionary."""
         return cls(
             id=data["id"],
             name=data["name"],
@@ -246,7 +211,7 @@ class Task:
             required_files=data.get("required_files", []),
             test_imports=data.get("test_imports", []),
         )
-
+    
     def to_dict(self) -> dict[str, Any]:
         d = {
             "id": self.id,
@@ -267,7 +232,6 @@ class Task:
         if self.test_imports:
             d["test_imports"] = self.test_imports
         return d
-
+    
     def get_test_code(self) -> str:
-        """Get all tests as a single code block."""
         return "\n\n".join(self.tests)

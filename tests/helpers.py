@@ -1,11 +1,7 @@
-"""
-Shared helper functions for building mock LLM responses in tests.
-"""
 from src.llm import LLMResponse
 
 
 def make_proposal_response(code="def solution(x: int) -> int:\n    return x + 1"):
-    """Build an LLMResponse that looks like a proposal."""
     return LLMResponse(
         content=f"```python\n{code}\n```",
         model="test-model",
@@ -15,7 +11,6 @@ def make_proposal_response(code="def solution(x: int) -> int:\n    return x + 1"
 
 
 def make_critique_response(correctness=8, bugs=None):
-    """Build an LLMResponse that looks like a critique."""
     bug_text = "\n".join(f"- Bug: {b}" for b in (bugs or ["edge case missing"]))
     return LLMResponse(
         content=(
@@ -34,7 +29,6 @@ def make_critique_response(correctness=8, bugs=None):
 
 
 def make_vote_response(solution_num=1, confidence=0.9):
-    """Build an LLMResponse that looks like a vote."""
     return LLMResponse(
         content=(
             f"VOTE: {solution_num}\n"

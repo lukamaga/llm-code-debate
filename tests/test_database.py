@@ -1,10 +1,3 @@
-"""
-Tests for DebateRepository with in-memory SQLite.
-
-Note: The repository closes sessions after each operation, so returned ORM
-objects are detached. Tests that need to inspect relationships (rounds,
-agent_stats) must re-query within a session.
-"""
 from __future__ import annotations
 
 import pytest
@@ -25,10 +18,6 @@ from src.models import (
     Task,
 )
 
-
-# =============================================================================
-# Helpers
-# =============================================================================
 
 def _make_task(task_id="t1", difficulty="easy"):
     return Task(
@@ -72,13 +61,11 @@ def _make_completed_debate(
 
 
 def _query_debate(repo, debate_id):
-    """Query a debate record within a session to avoid DetachedInstanceError."""
     session = repo._get_session()
     try:
         record = session.query(DebateRecord).filter_by(id=debate_id).first()
         if record is None:
             return None
-        # Eagerly access relationships while session is open
         result = {
             "id": record.id,
             "status": record.status,
@@ -94,19 +81,10 @@ def _query_debate(repo, debate_id):
         session.close()
 
 
-# =============================================================================
-# Fixtures
-# =============================================================================
-
 @pytest.fixture
 def repo():
-    """DebateRepository backed by in-memory SQLite."""
     return DebateRepository(db_path=":memory:")
 
-
-# =============================================================================
-# TestDebateRepository
-# =============================================================================
 
 class TestDebateRepository:
     def test_save_and_get_debate(self, repo):
@@ -162,7 +140,6 @@ class TestTaskRepository:
     def test_save_task(self, repo):
         task = _make_task("t1")
         repo.save_task(task)
-        # Re-query to verify
         session = repo._get_session()
         try:
             record = session.query(TaskRecord).filter_by(id="t1").first()
@@ -175,7 +152,6 @@ class TestTaskRepository:
         task = _make_task("t1")
         repo.save_task(task)
         repo.save_task(task)
-        # Should still be only one record
         session = repo._get_session()
         try:
             count = session.query(TaskRecord).count()
@@ -191,7 +167,6 @@ class TestSummaryStats:
         assert stats["overall_pass_rate"] == 0.0
 
     def test_with_data(self, repo):
-        # d1: 3/3 passed (1.0), d2: 1/3 passed (~0.333)
         repo.save_debate(_make_completed_debate("d1", tests_passed=3, tests_total=3))
         repo.save_debate(_make_completed_debate(
             "d2", tests_passed=1, tests_total=3,
@@ -200,7 +175,6 @@ class TestSummaryStats:
         stats = repo.get_summary_stats()
         assert stats["total_debates"] == 2
         assert stats["consensus_rate"] == 0.5
-        # avg pass_rate = (1.0 + 0.333) / 2 ≈ 0.667
         assert stats["overall_pass_rate"] == pytest.approx(0.667, abs=0.01)
 
 

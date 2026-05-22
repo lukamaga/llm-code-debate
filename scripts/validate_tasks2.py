@@ -1,9 +1,3 @@
-"""Validate tasks2/ by running reference solutions through the same harness as executor.py.
-
-For each task, we provide a reference implementation. We then write the code into a
-temporary directory exactly like CodeExecutor does, and run pytest on the task tests.
-Reports any failing tests so we know which task definitions are broken.
-"""
 from __future__ import annotations
 
 import json
@@ -16,7 +10,6 @@ TASKS_ROOT = Path(__file__).parent.parent / "tasks2"
 
 
 def run_single_file(task: dict, code: str) -> tuple[int, int, str]:
-    """Mirror executor.py single-file path."""
     test_code = "\n".join(task["tests"])
     with tempfile.TemporaryDirectory() as tmpdir:
         td = Path(tmpdir)
@@ -34,7 +27,6 @@ def run_single_file(task: dict, code: str) -> tuple[int, int, str]:
 
 
 def run_multi_file(task: dict, files: dict) -> tuple[int, int, str]:
-    """Mirror executor.py multi-file path."""
     test_code = "\n".join(task["tests"])
     import_lines = "\n".join(task.get("test_imports", []))
     with tempfile.TemporaryDirectory() as tmpdir:

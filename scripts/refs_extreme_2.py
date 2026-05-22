@@ -1,5 +1,3 @@
-"""Reference: bloom_filter, simple_orm, migration_runner, di_container, command_undo."""
-
 BLOOM = {
     "hash_utils.py": '''
 import hashlib
