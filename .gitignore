@@ -181,3 +181,6 @@ cython_debug/
 .cursorindexingignore
 *.db
 __pycache__/
+
+# Local runs (see README, Quick start)
+runs/

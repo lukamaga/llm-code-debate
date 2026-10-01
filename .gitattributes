@@ -1,1 +1,8 @@
 * text=auto
+*.sh   text eol=lf
+*.py   text eol=lf
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.db   binary
+*.sif  binary

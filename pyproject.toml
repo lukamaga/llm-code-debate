@@ -10,7 +10,7 @@ readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.11"
 authors = [
-    {name = "Lukas Patrik Magalinski", email = ""}
+    {name = "Lukaš Patrik Magalinski"}
 ]
 keywords = ["llm", "code-generation", "multi-agent", "debate", "ollama"]
 classifiers = [
@@ -45,8 +45,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/llm-code-debate"
-Repository = "https://github.com/yourusername/llm-code-debate"
+Homepage = "https://github.com/lukamaga/llm-code-debate"
+Repository = "https://github.com/lukamaga/llm-code-debate"
 
 [project.scripts]
 llm-debate = "src.main:main"
