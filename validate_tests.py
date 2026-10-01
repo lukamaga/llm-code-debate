@@ -8,9 +8,11 @@ import tempfile
 import textwrap
 from pathlib import Path
 
+TASKS_ROOT = Path(__file__).resolve().parent / "tasks"
+
 TASK_DIRS = [
-    Path("/Users/lukashm/Desktop/llm-code-debate/tasks/hard"),
-    Path("/Users/lukashm/Desktop/llm-code-debate/tasks/extreme"),
+    TASKS_ROOT / "hard",
+    TASKS_ROOT / "extreme",
 ]
 
 HARD_IMPLEMENTATIONS = {
@@ -2308,7 +2310,7 @@ def validate_extreme_task(task_path: Path) -> dict:
 def main():
     results = []
 
-    hard_dir = Path("/Users/lukashm/Desktop/llm-code-debate/tasks/hard")
+    hard_dir = TASKS_ROOT / "hard"
     for task_file in sorted(hard_dir.glob("*.json")):
         print(f"Validating hard/{task_file.name}...")
         try:
@@ -2319,7 +2321,7 @@ def main():
             results.append({"task": task_file.stem, "status": "ERROR", "message": str(e)})
             print(f"  -> ERROR: {e}")
 
-    extreme_dir = Path("/Users/lukashm/Desktop/llm-code-debate/tasks/extreme")
+    extreme_dir = TASKS_ROOT / "extreme"
     for task_file in sorted(extreme_dir.glob("*.json")):
         print(f"Validating extreme/{task_file.name}...")
         try:
