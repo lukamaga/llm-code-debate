@@ -129,7 +129,7 @@ Two task sets with 90 unique tasks in total (thesis §3.3, Table 4).
 | Extreme | 15 | 40 | 40 | multi-file tasks designed for this work (40) |
 | **Total** | **60** | **60** | **90** | |
 
-- The 15 hard and 15 extreme tasks of `tasks/` are also the first 15 tasks of `tasks2/hard` and `tasks2/extreme`, so 30 tasks of `tasks2/` overlap with `tasks/` and 30 are new.
+- The 15 hard and 15 extreme tasks of `tasks/` also appear in `tasks2/hard` (15 of 20) and `tasks2/extreme` (15 of 40), so 30 tasks of `tasks2/` overlap with `tasks/` and 30 are new.
 - Task descriptions were rewritten and all unit tests were written for this work (§3.3).
 - Every extreme task needs two or three Python modules with cross-module imports (§3.3).
 - Tests per task file range from 4 to 16, with a mean of 8.91 over the 120 task files of both sets (§2.7.4, §3.3).

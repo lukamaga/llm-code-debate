@@ -19,4 +19,4 @@ EXPOSE 5050
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_ENV=production
 
-CMD ["python", "-m", "src.web.app"]
+CMD ["python", "-m", "src.main", "--web"]
