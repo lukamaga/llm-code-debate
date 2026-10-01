@@ -25,6 +25,8 @@ classifiers = [
 
 dependencies = [
     "aiohttp>=3.9.0",
+    "httpx>=0.25.0",
+    "tenacity>=8.2.0",
     "flask>=3.0.0",
     "flask-socketio>=5.3.0",
     "eventlet>=0.34.0",

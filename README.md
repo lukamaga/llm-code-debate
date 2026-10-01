@@ -258,7 +258,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Install from `requirements.txt`; the dependency list in `pyproject.toml` is incomplete.
+Alternatively, `pip install -e .` installs the runtime dependencies from `pyproject.toml` and adds the `llm-debate` command (same options as `python -m src.main`). `requirements.txt` additionally contains the analysis, plotting and type-checking packages.
 
 Pull the models used in the experiments with their exact tags:
 
@@ -334,7 +334,14 @@ docker build -t llm-code-debate .
 docker run -it --rm --network host llm-code-debate
 ```
 
-`docker-compose.yml` is not maintained: its port mapping (5000) does not match the application port (5050), and the `OLLAMA_HOST` variable it sets is not read by the code.
+With Docker Compose, Ollama and the web interface run in two containers that share one network namespace, so the application reaches Ollama at `localhost:11434`. The Ollama service reserves an NVIDIA GPU, which requires the NVIDIA Container Toolkit:
+
+```bash
+docker compose up -d --build
+docker exec debate-ollama ollama pull qwen2.5-coder:7b   # repeat for each model
+```
+
+The web interface is then at `http://localhost:5050`. Compose mounts `tasks/`, `results/` and `debate_results.db` from the repository into the container.
 
 ## Configuration
 
