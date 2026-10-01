@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you use this software or its data, please cite the bachelor's thesis listed under preferred-citation."
+type: software
+title: "LLM Code Debate: a multi-agent debate system for code generation with local LLMs"
+version: 1.0.0
+license: MIT
+repository-code: "https://github.com/lukamaga/llm-code-debate"
+authors:
+  - given-names: "Lukaš Patrik"
+    family-names: "Magalinski"
+    affiliation: "Vilnius University, Faculty of Mathematics and Informatics"
+keywords:
+  - multi-agent debate
+  - large language models
+  - open-weight models
+  - code generation
+  - LLM-as-Judge
+  - multi-file programming tasks
+preferred-citation:
+  type: thesis
+  thesis-type: "Bachelor's thesis"
+  title: "The Impact of Multi-Agent Debate on the Code Generation Effectiveness of Local Large Language Models (LLMs) Across Varying Task Complexities"
+  authors:
+    - given-names: "Lukaš Patrik"
+      family-names: "Magalinski"
+  institution:
+    name: "Vilnius University, Faculty of Mathematics and Informatics"
+    city: "Vilnius"
+    country: LT
+  year: 2026
+  languages:
+    - lt
+  url: "https://github.com/lukamaga/llm-code-debate"
+  notes: "Original title (Lithuanian): Daugiaagentinių debatų įtaka lokalių didelių kalbos modelių (LLM) kodo generavimo efektyvumui skirtingo sudėtingumo užduotyse. Study programme: Informatics. Supervisor: Prof. Dr. Aistis Raudys."

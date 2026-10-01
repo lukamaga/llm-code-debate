@@ -1,5 +1,7 @@
 # Experimental plan — bachelor's thesis ablations
 
+> **Note.** This is the original experiment plan written before the HPC runs. The experiments actually carried out are the 15 SLURM jobs listed in thesis Table 2 and §3.1 (see the main README, *Experimental setup*). Phases 2 and 3 below (local seeded ablations, `qwen2.5-coder:32b` judge) were not carried out; the only ablation run was the adaptive-temperature A/B on `tasks2/` (thesis §4.5). Model facts follow thesis Table 3 (DeepSeek-Coder-V2-Lite: 16B total / 2.4B active).
+
 This file documents the full experiment matrix for the LLM Code Debate
 thesis. The structure is **HPC for headline results, local for ablations**.
 
@@ -103,7 +105,7 @@ Goal: justify the choice of `deepseek-coder-v2:16b` against alternatives.
 
 | Judge | Type | Size | Hypothesis |
 |---|---|---|---|
-| `deepseek-coder-v2:16b` | code-specialised, MoE | 16B (3B active) | Phase 1 default |
+| `deepseek-coder-v2:16b` | code-specialised, MoE | 16B (2.4B active) | Phase 1 default |
 | `deepseek-r1:14b` | reasoning-specialised | 14B | thinking model — better at multi-step bugs? |
 | `qwen2.5-coder:32b` | code-specialised | 32B | larger code model — strict upper bound on V100 |
 
