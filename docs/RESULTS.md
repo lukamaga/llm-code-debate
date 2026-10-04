@@ -11,11 +11,11 @@ The thesis PDF (Lithuanian, with an English summary) is in [thesis/Magalinski_20
 
 ## Part 1. Results reported in the thesis
 
-### Data and design (thesis §3.1–3.4)
+### Data and design (thesis §3.1-3.4)
 
 - **Main stage:** 11 SLURM jobs (10 debate configurations + 1 solo job covering 6 models), 960 unique run records: 600 debates and 360 solo runs, on 90 unique tasks (thesis §3.1, Tables 2 and 4).
 - **Adaptive-temperature ablation:** 4 further SLURM jobs re-ran the four `tasks2/` configurations without a judge or with the code judge with adaptive temperature off: 240 OFF records, paired with the corresponding ON runs of the main stage.
-- **Total:** 15 SLURM jobs and 1200 unique run records. Each configuration–task pair was run once (§4.8).
+- **Total:** 15 SLURM jobs and 1200 unique run records. Each configuration-task pair was run once (§4.8).
 - **Task sets:** `tasks/` has 60 tasks (15 easy, 15 medium, 15 hard, 15 extreme); `tasks2/` has 60 tasks (20 hard, 40 extreme). 30 tasks occur in both sets and 30 are new (§3.3, Table 4).
 - **Baselines** (§4.2): on `tasks/`, the mean of the independent solo runs of the six proposer models; on `tasks2/`, which has no solo runs, the mean of the debates' round-1 (R1) proposals. Combined figures are over **120 task-set pairs** (60 + 60), not 120 unique tasks.
 
@@ -23,8 +23,8 @@ Configurations used in the tables:
 
 | Name in tables | Proposers | Judge |
 |---|---|---|
-| Pool A (7B) | `qwen2.5-coder:7b`, `deepseek-coder:6.7b`, `codellama:7b-instruct` | – |
-| Pool B (9B) | `granite-code:8b`, `codegeex4:9b`, `yi-coder:9b` | – |
+| Pool A (7B) | `qwen2.5-coder:7b`, `deepseek-coder:6.7b`, `codellama:7b-instruct` | None |
+| Pool B (9B) | `granite-code:8b`, `codegeex4:9b`, `yi-coder:9b` | None |
 | + code judge | | `deepseek-coder-v2:16b` (DeepSeek-Coder-V2-Lite) |
 | + reasoning judge | | `deepseek-r1:14b` (DeepSeek-R1-Distill-Qwen-14B; "DeepSeek-R1" in the thesis) |
 
@@ -34,7 +34,7 @@ Definitions follow thesis §3.5 and the CSV exporter `src/analysis/csv_export.py
 
 | Metric | Definition |
 |---|---|
-| `final_pass_rate` | Share of the task's unit tests passed by the final solution (0–1). Tables report its mean over tasks ("pass rate"). The final solution is the best candidate found across all rounds, ranked by pass rate on the same unit tests (anti-regression policy, §2.4.1). |
+| `final_pass_rate` | Share of the task's unit tests passed by the final solution (0-1). Tables report its mean over tasks ("pass rate"). The final solution is the best candidate found across all rounds, ranked by pass rate on the same unit tests (anti-regression policy, §2.4.1). |
 | Fully solved | The final solution passes all unit tests (`final_pass_rate = 1.0`, §4.1). |
 | `pass_at_1`, `pass_at_3` | Unbiased pass@k estimator of Chen et al., computed over **all** candidate solutions stored in the run (all rounds); a candidate counts as correct when all of its tests pass. `pass_at_3 = 0` therefore means that no candidate in any round passed all tests. |
 | R1_max | Pass rate of the best round-1 proposal of the same debate. |
@@ -45,7 +45,7 @@ Definitions follow thesis §3.5 and the CSV exporter `src/analysis/csv_export.py
 | `bug_fix_rate` | `total_bugs_fixed / total_bugs_found`. |
 | `consensus_reached`, `rounds_to_consensus` | Whether and in which round the weighted-vote consensus was reached (§2.3.3). |
 | Duration | Wall-clock time of the run (`duration_seconds`). |
-| Pylint, CC | Pylint score (0–10) and Radon cyclomatic complexity; "initial" = mean of the round-1 proposals, "final" = final solution. |
+| Pylint, CC | Pylint score (0-10) and Radon cyclomatic complexity; "initial" = mean of the round-1 proposals, "final" = final solution. |
 
 ### 4.1 Solo baseline
 
@@ -102,8 +102,8 @@ Relative to the baseline this is +34% on `tasks/` and +73% on `tasks2/` (§4.8).
 
 | Difficulty | `tasks/` baseline (solo) | `tasks/` debate | `tasks2/` baseline (R1) | `tasks2/` debate |
 |---|---|---|---|---|
-| Easy | 90.0 | 100.0 | – | – |
-| Medium | 68.9 | 98.3 | – | – |
+| Easy | 90.0 | 100.0 | n/a | n/a |
+| Medium | 68.9 | 98.3 | n/a | n/a |
 | Hard | 32.2 | 68.3 | 40.8 | 73.8 |
 | Extreme | 7.8 | 21.7 | 5.4 | 23.1 |
 
@@ -225,7 +225,7 @@ Fully solved tasks on `tasks2/` (§4.3): Pool A, no judge 29/60 (48.3%); Pool A 
 | Pool B + code judge | 2.62 | 80.0 | 197.2 | 32.5 |
 | Pool B + reasoning judge | 2.50 | 80.0 | 268.8 | 27.5 |
 
-Mean duration: no judge 170–203 s, code judge 197–232 s (about 27–29 s more), reasoning judge 269–315 s (about 99–112 s more than without a judge) (§4.4).
+Mean duration: no judge 170-203 s, code judge 197-232 s (about 27-29 s more), reasoning judge 269-315 s (about 99-112 s more than without a judge) (§4.4).
 
 ### 4.5 Debate dynamics and adaptive-temperature ablation
 
@@ -235,10 +235,10 @@ Mean duration: no judge 170–203 s, code judge 197–232 s (about 27–29 s mor
 |---|---|---|---|---|---|
 | Pool A, no judge | 0.0% (15) | 0.0% (15) | 8.6% (35) | 27.3% (55) | 15.0% (120) |
 | Pool A + code judge | 0.0% (15) | 13.3% (15) | 8.6% (35) | 36.4% (55) | 20.8% (120) |
-| Pool A + reasoning judge | – | – | 20.0% (20) | 37.5% (40) | 31.7% (60) |
+| Pool A + reasoning judge | n/a | n/a | 20.0% (20) | 37.5% (40) | 31.7% (60) |
 | Pool B, no judge | 0.0% (15) | 0.0% (15) | 2.9% (35) | 32.7% (55) | 15.8% (120) |
 | Pool B + code judge | 0.0% (15) | 0.0% (15) | 0.0% (35) | 34.5% (55) | 15.8% (120) |
-| Pool B + reasoning judge | – | – | 10.0% (20) | 27.5% (40) | 21.7% (60) |
+| Pool B + reasoning judge | n/a | n/a | 10.0% (20) | 27.5% (40) | 21.7% (60) |
 
 **Number of rounds** (§4.5), 600 debates:
 
@@ -271,7 +271,7 @@ By pool, the first correlation is r = +0.560 for Pool A (n = 300, p < 10⁻²⁵
 | Pool A + code judge | 60 | 0.771 | 0.726 | +4.5 | 19 | 31 | 10 | +1.92 | 0.060 | 0.239 |
 | Pool B, no judge | 60 | 0.761 | 0.687 | +7.3 | 23 | 27 | 10 | +2.28 | 0.026 | 0.106 |
 | Pool B + code judge | 60 | 0.722 | 0.711 | +1.1 | 19 | 26 | 15 | +0.37 | 0.709 | 1.000 |
-| Combined | 240 | 0.758 | 0.718 | +3.99 | 76 | 116 | 48 | +2.60 | 0.010 | – |
+| Combined | 240 | 0.758 | 0.718 | +3.99 | 76 | 116 | 48 | +2.60 | 0.010 | n/a |
 
 - Wilcoxon signed-rank test on the 240 pairs: W = 2864, p = 0.012.
 - Pool B, no judge, extreme tasks: +10.6 pp (ON 0.658, OFF 0.552, n = 40, t = +2.26, p = 0.029 before multiple-comparison correction). Pool A + code judge, extreme: +5.9 pp, p = 0.093.
@@ -292,16 +292,16 @@ By pool, the first correlation is r = +0.560 for Pool A (n = 300, p < 10⁻²⁵
 |---|---|---|---|---|---|---|
 | Pool A, no judge | 14.6 | 18.6 | 62.1 | 283.3 | 152.1 | 120 |
 | Pool A + code judge | 14.1 | 25.9 | 68.3 | 297.0 | 161.0 | 120 |
-| Pool A + reasoning judge | – | – | 153.7 | 395.5 | 314.9 | 60 |
+| Pool A + reasoning judge | n/a | n/a | 153.7 | 395.5 | 314.9 | 60 |
 | Pool B, no judge | 10.5 | 12.4 | 60.1 | 225.2 | 123.6 | 120 |
 | Pool B + code judge | 9.6 | 27.0 | 55.0 | 241.9 | 131.5 | 120 |
-| Pool B + reasoning judge | – | – | 88.6 | 358.9 | 268.8 | 60 |
+| Pool B + reasoning judge | n/a | n/a | 88.6 | 358.9 | 268.8 | 60 |
 
 - Easy → extreme, no judge: about 19× longer for Pool A (14.6 → 283.3 s) and about 21× for Pool B (10.5 → 225.2 s); hard → extreme, Pool A: ×4.6.
 - Pool A is about 23% slower than Pool B without a judge (152.1 vs 123.6 s).
 - Judge overhead on extreme tasks: Pool A +4.8% (code) and +39.6% (reasoning); Pool B +7.4% (code) and +59.4% (reasoning).
 - Matched comparison on `tasks2/` (Table 17): the reasoning judge adds +55.1% (Pool A) and +58.2% (Pool B), the code judge +14.4% and +16.0%.
-- Solo runs: mean 7.9 s over 360 runs (median 5.8 s; from 4.2 s on easy to 14.1 s on extreme tasks). Debate means of 123–315 s are about 15–40× longer.
+- Solo runs: mean 7.9 s over 360 runs (median 5.8 s; from 4.2 s on easy to 14.1 s on extreme tasks). Debate means of 123-315 s are about 15-40× longer.
 
 **Thesis Table 23.** Static code quality before and after the debate, all 600 debates. Initial = mean of the round-1 proposals; final = final solution; CC = Radon cyclomatic complexity.
 
@@ -314,12 +314,12 @@ By pool, the first correlation is r = +0.560 for Pool A (n = 300, p < 10⁻²⁵
 | Pool B + code judge | 6.42 | 6.28 | −0.14 | 4.19 | 4.20 | +0.01 |
 | Pool B + reasoning judge | 5.63 | 5.30 | −0.33 | 3.80 | 3.78 | −0.02 |
 
-The Pylint score drops by 0.06–0.40 points (0.6%–4.0% of the 10-point scale); the absolute change of CC is at most 0.14 (Table 23; the text of §4.7 rounds this to "does not exceed 0.15"), with mean values around 4. The solo Pylint mean is 6.85 over 360 runs; the thesis notes that it is not directly comparable because the task sets differ.
+The Pylint score drops by 0.06-0.40 points (0.6%-4.0% of the 10-point scale); the absolute change of CC is at most 0.14 (Table 23; the text of §4.7 rounds this to "does not exceed 0.15"), with mean values around 4. The solo Pylint mean is 6.85 over 360 runs; the thesis notes that it is not directly comparable because the task sets differ.
 
 ### 4.8 Limitations stated in the thesis
 
 - Each configuration was run once per task, without repeated seeds; paired tests use tasks as pairs and do not measure run-to-run variation.
-- Only open-weight 7–9B models running locally were evaluated; commercial large-scale models were not compared.
+- Only open-weight 7-9B models running locally were evaluated; commercial large-scale models were not compared.
 - `tasks2/` is a custom set, not a public benchmark; absolute values are not comparable with HumanEval or MBPP.
 - Only Python was evaluated.
 - The "no regression" result reflects this system's anti-regression policy.
@@ -374,7 +374,7 @@ Important design facts for interpreting all results:
 
 | Debate stage | Independent comparator | Δ pass (pp) | Holm p |
 |---|---|---|---|
-| After round 1 (≤ 3 candidates) | best-of-3 | +0.4 [−0.3, 1.2] | – |
+| After round 1 (≤ 3 candidates) | best-of-3 | +0.4 [−0.3, 1.2] | n/a |
 | After round 2 (≤ 6) | best-of-6 | −2.0 [−3.0, −1.1] | 8e-5 |
 | After round 3 (≤ 9) | best-of-9 | −3.2 [−4.7, −1.7] | 4e-6 |
 | Final (mean 6.3 candidates) | matched best-of-k | −1.1 [−2.6, 0.4] | 0.248 |
@@ -423,7 +423,7 @@ Each item names the thesis statement and section, then the clarification.
 
 1. **"Rescue rate" 90.1% for "R1_max = 0" cases (§4.2, Conclusion 5, Summary).** The counts 254/282 (and 41/49, 48/51, 48/53, 54/58) were computed over debates in which no candidate in any round passed all tests (`pass_at_3 = 0`), with success defined as final > 0. For debates whose best round-1 proposal passed no test (R1_max = 0) the rate is 20/48 (41.7%); the four main configurations contain 37 such cases, not 211.
 2. **"0 regressions in 600 runs" (§4.2, §4.8, Conclusion 10).** This holds by construction, as the thesis notes: the reported final is the best candidate across all rounds by test pass rate. Without that selection, the last-round plurality vote winner is below the best round-1 proposal in 63 of 316 debates that reached a vote.
-3. **"Round 1 is about 2–4 pp below solo because of the debate prompt context" (§4.2).** Solo and round 1 use the same prompt, system prompt and temperature; the pooled difference is +1.2 pp [−1.1, 3.6].
+3. **"Round 1 is about 2-4 pp below solo because of the debate prompt context" (§4.2).** Solo and round 1 use the same prompt, system prompt and temperature; the pooled difference is +1.2 pp [−1.1, 3.6].
 4. **"7 of 480 runs (1.46%) below the solo task mean" (§4.2).** The relevant number of runs is 240 (the four main configurations on `tasks/`), so the share is 7 of 240.
 5. **t = 9.47 and t = 17.27 (§4.2, Table 7, Conclusion 5).** Recomputation gives t = 9.35 and t = 17.14; the means, win/tie/loss counts and t = 16.76 reproduce. Both p-values remain far below 0.001.
 6. **"Bugs fixed" and the fix ratio 5.2% → 2.1% (§4.4, Conclusion 8).** "Bugs fixed" counts additionally passed tests and "bugs found" counts bug statements in critiques; the ratio mixes these units, and the sentence compares Pool A without a judge with Pool B with a judge.
@@ -434,4 +434,4 @@ Each item names the thesis statement and section, then the clarification.
 11. **Table 21, "initial pass@3 = 0" (§4.6).** `pass_at_3` covers all rounds; in 13 of the 15 listed tasks the best score had already been reached in round 1.
 12. **"Tests of hard and extreme tasks validated against reference implementations in `validate_tests.py`" (§3.3).** Only 11 of those 30 references pass against the current task files; the references in `scripts/refs_*.py` pass 30/30, and two incorrect tests were found (see Benchmark notes).
 13. **"The round-1 prompt contains the list of unit tests" (§2.2.2).** In the code the round-1 prompt contains the task name, description, signature and constraints; test information reaches the agents from round 2 on, as per-test PASSED/FAILED results.
-14. **Minor items.** Table 14 gives 0.946 and Table 15 gives 0.947 for the same cell (Pool A + code judge, `tasks2/` hard). The text in §4.7 refers to the solo Pylint line as Fig. 17; it is in Fig. 18. The legend of Fig. 9 reads "solo baseline", but the hard and extreme bars include the `tasks2/` round-1 baseline. The judge raised the number of bug statements by +28% to +99% per configuration (Table 16), which the thesis summarises as "30–100%".
+14. **Minor items.** Table 14 gives 0.946 and Table 15 gives 0.947 for the same cell (Pool A + code judge, `tasks2/` hard). The text in §4.7 refers to the solo Pylint line as Fig. 17; it is in Fig. 18. The legend of Fig. 9 reads "solo baseline", but the hard and extreme bars include the `tasks2/` round-1 baseline. The judge raised the number of bug statements by +28% to +99% per configuration (Table 16), which the thesis summarises as "30-100%".

@@ -1,11 +1,11 @@
-# Experimental plan — bachelor's thesis ablations
+# Experimental plan: bachelor's thesis ablations
 
 > **Note.** This is the original experiment plan written before the HPC runs. The experiments actually carried out are the 15 SLURM jobs listed in thesis Table 2 and §3.1 (see the main README, *Experimental setup*). Phases 2 and 3 below (local seeded ablations, `qwen2.5-coder:32b` judge) were not carried out; the only ablation run was the adaptive-temperature A/B on `tasks2/` (thesis §4.5). Model facts follow thesis Table 3 (DeepSeek-Coder-V2-Lite: 16B total / 2.4B active).
 
 This file documents the full experiment matrix for the LLM Code Debate
 thesis. The structure is **HPC for headline results, local for ablations**.
 
-## Phase 1 — HPC headline (4 SLURM jobs)
+## Phase 1: HPC headline (4 SLURM jobs)
 
 Goal: measure the **effect of peer-pool strength** and the **effect of
 adding a judge**. 2 × 2 design.
@@ -39,10 +39,10 @@ echo "Submitted chain: $J1 → $J2 → $J3 → $J4"
 ```
 
 Outputs per job (where `<JOB_ID>` is the SLURM id):
-- `results/summary_<EXP_TAG>_<JOB_ID>.csv` — 60 rows × 44 cols (one per debate)
-- `results/per_round_<EXP_TAG>_<JOB_ID>.csv` — ~750 rows × 17 cols (one per agent×round)
-- `transcripts/*.txt` — 60 human-readable per-task transcripts
-- `logs/debate_<EXP_TAG>_<JOB_ID>.log` — stdout + stderr
+- `results/summary_<EXP_TAG>_<JOB_ID>.csv`: 60 rows × 44 cols (one per debate)
+- `results/per_round_<EXP_TAG>_<JOB_ID>.csv`: ~750 rows × 17 cols (one per agent×round)
+- `transcripts/*.txt`: 60 human-readable per-task transcripts
+- `logs/debate_<EXP_TAG>_<JOB_ID>.log`: stdout + stderr
 
 ### Headline questions Phase 1 answers
 
@@ -51,13 +51,13 @@ Outputs per job (where `<JOB_ID>` is the SLURM id):
    hard/extreme.
 2. **Does adding a judge help?** Compare runs 1 vs 2 and 3 vs 4. The
    judge contributes a heterogeneous critic + voter from a different lab
-   (DeepSeek) — should reduce hallucinated bug reports and tie-break
+   (DeepSeek); this should reduce hallucinated bug reports and tie-break
    votes when peers disagree.
 3. **Does the judge help weaker peers more?** Compare delta(1−2) vs
    delta(3−4). If the gap is larger on the 7B pool, that supports
    "weaker peers benefit more from a stronger external evaluator".
 
-## Phase 2 — Local ablation (single feature flips)
+## Phase 2: Local ablation (single feature flips)
 
 **Run after** Phase 1 reveals the best peer pool (likely 9B based on
 prior local runs). Take that pool + judge as the baseline, then flip
@@ -65,7 +65,7 @@ ONE flag at a time and re-run on a difficulty-balanced subset.
 
 Why "subset"? Each ablation needs ≥3 seeds per task to beat variance
 (see `shortest_path` evidence: same task, same models, results varied
-25% – 88% across runs). Running 60 tasks × 3 seeds × 5 ablations would
+25%-88% across runs). Running 60 tasks × 3 seeds × 5 ablations would
 exhaust GPU budget. Use 20 tasks (5 per difficulty) × 3 seeds × 5
 ablations ≈ 300 runs ≈ 4-5 hours locally on Mac (or 2 hours on V100).
 
@@ -97,24 +97,24 @@ done
 ```
 
 Same command **without** `--adaptive-temperature` to ablate it. (Note:
-seed support is not yet wired through to Ollama — see "Open work".)
+seed support is not yet wired through to Ollama; see "Open work".)
 
-## Phase 3 — Judge model comparison (local, extreme tasks only)
+## Phase 3: Judge model comparison (local, extreme tasks only)
 
 Goal: justify the choice of `deepseek-coder-v2:16b` against alternatives.
 
 | Judge | Type | Size | Hypothesis |
 |---|---|---|---|
 | `deepseek-coder-v2:16b` | code-specialised, MoE | 16B (2.4B active) | Phase 1 default |
-| `deepseek-r1:14b` | reasoning-specialised | 14B | thinking model — better at multi-step bugs? |
-| `qwen2.5-coder:32b` | code-specialised | 32B | larger code model — strict upper bound on V100 |
+| `deepseek-r1:14b` | reasoning-specialised | 14B | thinking model: better at multi-step bugs? |
+| `qwen2.5-coder:32b` | code-specialised | 32B | larger code model: strict upper bound on V100 |
 
 Run on 15 extreme tasks × 3 judges × 3 seeds = 135 runs. Each ~5 min →
 ~11 hours; do this overnight locally.
 
 ### Open work for Phase 3
 
-Seed propagation to Ollama is not yet implemented in the code path —
+Seed propagation to Ollama is not yet implemented in the code path;
 each run is currently non-deterministic. Without seeds, "3 runs per
 task" is the best-effort variance proxy (different sampling each time).
 A proper `--seed` CLI flag could be added to `src/main.py` and threaded
@@ -130,31 +130,31 @@ through `OllamaClient.options.seed`; this is a small future patch.
 | "Judge helps weaker peers more" | Phase 1 delta-of-deltas |
 | "Adaptive temperature improves convergence" | Phase 2 ablation, with significance test |
 | "Critique history reduces redundant bug reports" | Phase 2 + manual transcript inspection |
-| "DMAD-style diverse strategies help/hurt 7-9B peers" | Phase 2 (this is a real risk — may show DMAD is GPT-4 specific) |
+| "DMAD-style diverse strategies help/hurt 7-9B peers" | Phase 2 (this is a real risk: it may show DMAD is GPT-4 specific) |
 | "Showing only best solution avoids copy-paste failures" | Phase 2 + manual transcript inspection |
 | "Code-specialised judge ≥ reasoning judge on code" | Phase 3 (interesting if false!) |
 
 ## Negative results are valid
 
 If Phase 2 shows e.g. `+diverse_strategy` hurts on extreme tasks, that
-**is** a thesis finding — DMAD's claim ("diverse strategies always help")
+**is** a thesis finding: DMAD's claim ("diverse strategies always help")
 is then specific to GPT-4-class models, not 7-9B open models. Document
 and discuss; do not silently drop the feature.
 
-Same for `−critique_history` — if it improves results, the system was
+Same for `−critique_history`: if it improves results, the system was
 *hurting itself* by including history, and we have evidence to remove it.
 
 ## Files in this directory
 
-- `_lib_run.sh` — shared experiment-pipeline library (sourced by wrappers)
-- `run_7b_judge.sh` — Phase 1 run 1
-- `run_7b_no_judge.sh` — Phase 1 run 2
-- `run_9b_judge.sh` — Phase 1 run 3
-- `run_9b_no_judge.sh` — Phase 1 run 4
-- `run_experiment.sh` — **legacy** standalone reference (Pool B + judge,
+- `_lib_run.sh`: shared experiment-pipeline library (sourced by wrappers)
+- `run_7b_judge.sh`: Phase 1 run 1
+- `run_7b_no_judge.sh`: Phase 1 run 2
+- `run_9b_judge.sh`: Phase 1 run 3
+- `run_9b_no_judge.sh`: Phase 1 run 4
+- `run_experiment.sh`: **legacy** standalone reference (Pool B + judge,
   not used in the 2×2 plan; kept for ad-hoc runs)
-- `run_web.sh` — interactive web UI on a compute node (not for batch)
-- `singularity.def` — optional custom container build (Ollama image is
+- `run_web.sh`: interactive web UI on a compute node (not for batch)
+- `singularity.def`: optional custom container build (Ollama image is
   used by all batch scripts via `singularity pull`)
-- `README.md` — operational HPC guide (login, quotas, troubleshooting)
-- `EXPERIMENTS.md` — this file
+- `README.md`: operational HPC guide (login, quotas, troubleshooting)
+- `EXPERIMENTS.md`: this file
